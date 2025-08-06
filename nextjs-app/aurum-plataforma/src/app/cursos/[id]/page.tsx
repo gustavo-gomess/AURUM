@@ -8,19 +8,40 @@ interface Course {
   title: string;
   description: string;
   instructor: string;
-  modules: Module[];
+  modules: PopulatedModule[];
 }
 
-interface Module {
+interface PopulatedModule {
+  _id: string;
   title: string;
-  lessons: Lesson[];
+  lessons: PopulatedLesson[];
   order: number;
 }
 
-interface Lesson {
+interface PopulatedLesson {
+  _id: string;
   title: string;
   vimeoVideoId: string;
   order: number;
+  tasks?: string[];
+}
+
+interface Comment {
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+  };
+  lessonId: string;
+  content: string;
+  timestamp: string;
+  parentId?: string;
+  answeredBy?: {
+    _id: string;
+    name: string;
+  };
+  answerContent?: string;
+  replies?: Comment[];
 }
 
 export default function CoursePage() {
@@ -28,8 +49,101 @@ export default function CoursePage() {
   const [currentModule, setCurrentModule] = useState(0);
   const [currentLesson, setCurrentLesson] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isCourseCompleted, setIsCourseCompleted] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
   const router = useRouter();
   const params = useParams();
+
+  const fetchComments = async (lessonId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch(`/api/lessons/${lessonId}/comments`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setComments(data.data);
+      } else {
+        console.error("Error fetching comments:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    }
+  };
+
+  const handlePostComment = async (lessonId: string, parentId?: string) => {
+    if (!newComment.trim()) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch(`/api/lessons/${lessonId}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: newComment, parentId }),
+      });
+
+      if (response.ok) {
+        setNewComment("");
+        fetchComments(lessonId);
+      } else {
+        console.error("Error posting comment:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error posting comment:", error);
+    }
+  };
+
+  const handleReplyComment = async (commentId: string, replyContent: string) => {
+    if (!replyContent.trim()) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch(`/api/comments/${commentId}/reply`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ answerContent: replyContent }),
+      });
+
+      if (response.ok) {
+        fetchComments(currentLessonData?._id || "");
+      } else {
+        console.error("Error replying to comment:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error replying to comment:", error);
+    }
+  };
+
+  const checkCourseCompletion = async (courseId: string, token: string) => {
+    try {
+      const response = await fetch(`/api/certificates/check-completion?courseId=${courseId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setIsCourseCompleted(data.completed);
+      }
+    } catch (error) {
+      console.error("Error checking course completion:", error);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -43,10 +157,12 @@ export default function CoursePage() {
 
   const fetchCourse = async () => {
     try {
-      const response = await fetch(`/api/courses/${params.id}`);
+      const response = await fetch(`/api/courses/${params.id}?populate=modules.lessons`);
       if (response.ok) {
         const data = await response.json();
         setCourse(data.course);
+        checkCourseCompletion(params.id as string, token);
+
       } else {
         router.push('/dashboard');
       }
@@ -84,7 +200,16 @@ export default function CoursePage() {
   const selectLesson = (moduleIndex: number, lessonIndex: number) => {
     setCurrentModule(moduleIndex);
     setCurrentLesson(lessonIndex);
+    if (course?.modules[moduleIndex]?.lessons[lessonIndex]?._id) {
+      fetchComments(course.modules[moduleIndex].lessons[lessonIndex]._id);
+    }
   };
+
+  useEffect(() => {
+    if (currentLessonData?._id) {
+      fetchComments(currentLessonData._id);
+    }
+  }, [currentLessonData]);
 
   if (loading) {
     return (
@@ -194,6 +319,22 @@ export default function CoursePage() {
                 </div>
               </div>
 
+              {/* Tasks */}
+              {currentLessonData.tasks && currentLessonData.tasks.length > 0 && (
+                <div className="bg-gray-900 rounded-lg p-4 mt-6">
+                  <h3 className="text-xl font-bold mb-4">Tarefas</h3>
+                  <ul className="list-disc list-inside">
+                    {currentLessonData.tasks.map((task, index) => (
+                      <li key={index} className="text-gray-300 mb-2">
+                        {task}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+
+
               {/* Controls */}
               <div className="flex justify-between items-center">
                 <div className="flex space-x-4">
@@ -203,6 +344,16 @@ export default function CoursePage() {
                   >
                     Marcar como Concluída
                   </button>
+                  {isCourseCompleted && (
+                    <a
+                      href={`/api/certificates/generate?courseId=${params.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Gerar Certificado
+                    </a>
+                  )}
                 </div>
                 
                 <div className="text-sm text-gray-400">
@@ -222,4 +373,67 @@ export default function CoursePage() {
     </div>
   );
 }
+
+
+
+
+              {/* Comments Section */}
+              <div className="bg-gray-900 rounded-lg p-4 mt-6">
+                <h3 className="text-xl font-bold mb-4">Dúvidas e Comentários</h3>
+                <div className="mb-4">
+                  <textarea
+                    className="w-full p-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-yellow-500"
+                    rows={3}
+                    placeholder="Escreva sua dúvida ou comentário..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                  ></textarea>
+                  <button
+                    onClick={() => handlePostComment(currentLessonData?._id || "")}
+                    className="mt-2 bg-yellow-500 text-black px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
+                  >
+                    Postar Comentário
+                  </button>
+                </div>
+
+                <div>
+                  {comments.length === 0 ? (
+                    <p className="text-gray-400">Nenhum comentário ainda. Seja o primeiro a perguntar!</p>
+                  ) : (
+                    comments.map((comment) => (
+                      <div key={comment._id} className="bg-gray-800 p-3 rounded-lg mb-3 border border-gray-700">
+                        <p className="text-gray-300 text-sm mb-1">
+                          <strong>{comment.userId.name}</strong> em {new Date(comment.timestamp).toLocaleString("pt-BR")}
+                        </p>
+                        <p className="text-white mb-2">{comment.content}</p>
+                        {comment.answerContent && (
+                          <div className="bg-gray-700 p-2 rounded-lg mt-2 border border-gray-600">
+                            <p className="text-gray-300 text-sm mb-1">
+                              <strong>{comment.answeredBy?.name || "Admin"} (Resposta):</strong>
+                            </p>
+                            <p className="text-white">{comment.answerContent}</p>
+                          </div>
+                        )}
+                        {/* Reply form for admin */}
+                        {/* This part would typically be conditionally rendered based on user role */}
+                        {/* For simplicity, assuming admin can reply directly here */}
+                        <div className="mt-2">
+                          <input
+                            type="text"
+                            placeholder="Responder..."
+                            className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-yellow-500"
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter") {
+                                handleReplyComment(comment._id, (e.target as HTMLInputElement).value);
+                                (e.target as HTMLInputElement).value = "";
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
 

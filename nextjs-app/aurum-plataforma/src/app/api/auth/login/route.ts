@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import { comparePassword, generateToken } from '@/lib/auth';
+import rateLimit from '@/lib/rateLimit';
+import logger from '@/lib/logger';
+
+const loginLimiter = rateLimit(5, 60 * 1000); // 5 requests per minute
 
 export async function POST(request: NextRequest) {
+  const res = await loginLimiter(request);
+  if (res) return res;
+
   try {
     await dbConnect();
 
@@ -55,10 +62,10 @@ export async function POST(request: NextRequest) {
       token,
     });
 
-  } catch (error) {
-    console.error('Login error:', error);
+  } catch (error: any) {
+    logger.error("Login error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

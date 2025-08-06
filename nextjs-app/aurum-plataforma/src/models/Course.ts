@@ -1,53 +1,17 @@
 import mongoose, { Document, Schema } from 'mongoose';
-
-export interface ILesson {
-  title: string;
-  vimeoVideoId: string;
-  order: number;
-}
-
-export interface IModule {
-  title: string;
-  lessons: ILesson[];
-  order: number;
-}
+import { IModule } from './Module';
 
 export interface ICourse extends Document {
   title: string;
   description: string;
   instructor: string;
   price: number;
-  modules: IModule[];
+  modules: mongoose.Types.ObjectId[] | IModule[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-const LessonSchema: Schema = new Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  vimeoVideoId: {
-    type: String,
-    required: true,
-  },
-  order: {
-    type: Number,
-    required: true,
-  },
-});
 
-const ModuleSchema: Schema = new Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  lessons: [LessonSchema],
-  order: {
-    type: Number,
-    required: true,
-  },
-});
 
 const CourseSchema: Schema = new Schema({
   title: {
@@ -68,10 +32,14 @@ const CourseSchema: Schema = new Schema({
     required: [true, 'Please provide a price'],
     min: [0, 'Price cannot be negative'],
   },
-  modules: [ModuleSchema],
+  modules: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Module',
+  }],
 }, {
   timestamps: true,
 });
 
 export default mongoose.models.Course || mongoose.model<ICourse>('Course', CourseSchema);
+
 

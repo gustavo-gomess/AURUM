@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Course from '@/models/Course';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
+import { redisClient, connectRedis } from '@/lib/cache';
+import logger from '@/lib/logger';
 
 export async function GET(
   request: NextRequest,
@@ -9,22 +11,36 @@ export async function GET(
 ) {
   try {
     await dbConnect();
+    await connectRedis();
 
     const { id } = await params;
+    const cacheKey = `course:${id}`;
+
+    // Tentar buscar do cache
+    const cachedCourse = await redisClient.get(cacheKey);
+    if (cachedCourse) {
+      logger.info(`Course ${id} found in cache.`);
+      return NextResponse.json({ course: JSON.parse(cachedCourse) });
+    }
 
     // Buscar curso por ID
     const course = await Course.findById(id);
     if (!course) {
+      logger.warn(`Course ${id} not found.`);
       return NextResponse.json(
         { error: 'Course not found' },
         { status: 404 }
       );
     }
 
+    // Armazenar no cache (TTL de 1 hora)
+    await redisClient.set(cacheKey, JSON.stringify(course), { EX: 3600 });
+    logger.info(`Course ${id} cached.`);
+
     return NextResponse.json({ course });
 
-  } catch (error) {
-    console.error('Get course error:', error);
+  } catch (error: any) {
+    logger.error('Get course error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -38,12 +54,15 @@ export async function PUT(
 ) {
   try {
     await dbConnect();
+    await connectRedis();
 
     const { id } = await params;
+    const cacheKey = `course:${id}`;
 
     // Extrair token do header Authorization
     const token = extractTokenFromRequest(request);
     if (!token) {
+      logger.warn("Authorization token required for course update.");
       return NextResponse.json(
         { error: 'Authorization token required' },
         { status: 401 }
@@ -53,6 +72,7 @@ export async function PUT(
     // Verificar token
     const payload = verifyToken(token);
     if (!payload) {
+      logger.warn("Invalid or expired token for course update.");
       return NextResponse.json(
         { error: 'Invalid or expired token' },
         { status: 401 }
@@ -61,6 +81,7 @@ export async function PUT(
 
     // Verificar se é admin
     if (payload.role !== 'admin') {
+      logger.warn(`User ${payload.userId} attempted to update course ${id} without admin privileges.`);
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -77,16 +98,21 @@ export async function PUT(
     );
 
     if (!course) {
+      logger.warn(`Course ${id} not found for update.`);
       return NextResponse.json(
         { error: 'Course not found' },
         { status: 404 }
       );
     }
 
+    // Invalidar cache
+    await redisClient.del(cacheKey);
+    logger.info(`Cache for course ${id} invalidated.`);
+
     return NextResponse.json({ course });
 
-  } catch (error) {
-    console.error('Update course error:', error);
+  } catch (error: any) {
+    logger.error('Update course error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -100,12 +126,15 @@ export async function DELETE(
 ) {
   try {
     await dbConnect();
+    await connectRedis();
 
     const { id } = await params;
+    const cacheKey = `course:${id}`;
 
     // Extrair token do header Authorization
     const token = extractTokenFromRequest(request);
     if (!token) {
+      logger.warn("Authorization token required for course deletion.");
       return NextResponse.json(
         { error: 'Authorization token required' },
         { status: 401 }
@@ -115,6 +144,7 @@ export async function DELETE(
     // Verificar token
     const payload = verifyToken(token);
     if (!payload) {
+      logger.warn("Invalid or expired token for course deletion.");
       return NextResponse.json(
         { error: 'Invalid or expired token' },
         { status: 401 }
@@ -123,6 +153,7 @@ export async function DELETE(
 
     // Verificar se é admin
     if (payload.role !== 'admin') {
+      logger.warn(`User ${payload.userId} attempted to delete course ${id} without admin privileges.`);
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -133,16 +164,21 @@ export async function DELETE(
     const course = await Course.findByIdAndDelete(id);
 
     if (!course) {
+      logger.warn(`Course ${id} not found for deletion.`);
       return NextResponse.json(
         { error: 'Course not found' },
         { status: 404 }
       );
     }
 
+    // Invalidar cache
+    await redisClient.del(cacheKey);
+    logger.info(`Cache for course ${id} invalidated.`);
+
     return NextResponse.json({ message: 'Course deleted successfully' });
 
-  } catch (error) {
-    console.error('Delete course error:', error);
+  } catch (error: any) {
+    logger.error('Delete course error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

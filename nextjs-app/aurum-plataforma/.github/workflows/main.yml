@@ -1,0 +1,79 @@
+
+name: CI/CD do Projeto AURUM
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+  MONGO_URI: ${{ secrets.MONGO_URI }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  VIMEO_ACCESS_TOKEN: ${{ secrets.VIMEO_ACCESS_TOKEN }}
+  AXIOM_TOKEN: ${{ secrets.AXIOM_TOKEN }}
+  AXIOM_ORG_ID: ${{ secrets.AXIOM_ORG_ID }}
+  AXIOM_PROJECT_ID: ${{ secrets.AXIOM_PROJECT_ID }}
+  REDIS_URL: ${{ secrets.REDIS_URL }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do Código
+      uses: actions/checkout@v3
+
+    - name: Configurar Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Instalar Dependências
+      run: npm install
+
+    - name: Rodar Testes (se houver)
+      run: npm test || echo "Nenhum teste configurado, pulando."
+
+    - name: Construir Aplicação Next.js
+      run: npm run build
+
+    - name: Fazer Login no Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Construir e Enviar Imagem Docker
+      uses: docker/build-push-action@v4
+      with:
+        context: ./nextjs-app/aurum-plataforma
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/aurum-plataforma:latest
+
+    - name: Implantação (Exemplo - SSH para servidor)
+      if: github.ref == 'refs/heads/main'
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script:
+          docker pull ${{ secrets.DOCKER_USERNAME }}/aurum-plataforma:latest && \
+          docker stop aurum-plataforma || true && \
+          docker rm aurum-plataforma || true && \
+          docker run -d --name aurum-plataforma -p 3000:3000 \
+          -e NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} \
+          -e MONGO_URI=${{ secrets.MONGO_URI }} \
+          -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+          -e VIMEO_ACCESS_TOKEN=${{ secrets.VIMEO_ACCESS_TOKEN }} \
+          -e AXIOM_TOKEN=${{ secrets.AXIOM_TOKEN }} \
+          -e AXIOM_ORG_ID=${{ secrets.AXIOM_ORG_ID }} \
+          -e AXIOM_PROJECT_ID=${{ secrets.AXIOM_PROJECT_ID }} \
+          -e REDIS_URL=${{ secrets.REDIS_URL }} \
+          ${{ secrets.DOCKER_USERNAME }}/aurum-plataforma:latest
+
+

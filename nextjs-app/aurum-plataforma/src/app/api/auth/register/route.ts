@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import { hashPassword, generateToken } from '@/lib/auth';
+import rateLimit from '@/lib/rateLimit';
+import logger from '@/lib/logger';
+
+const registerLimiter = rateLimit(2, 60 * 1000); // 2 requests per minute
 
 export async function POST(request: NextRequest) {
+  const res = await registerLimiter(request);
+  if (res) return res;
+
   try {
     await dbConnect();
 
@@ -60,10 +67,10 @@ export async function POST(request: NextRequest) {
       token,
     }, { status: 201 });
 
-  } catch (error) {
-    console.error('Registration error:', error);
+  } catch (error: any) {
+    logger.error("Registration error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
