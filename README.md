@@ -1,10 +1,8 @@
-Claro, aqui está uma análise detalhada e um README completo para o projeto AURUM.
-
 # AURUM - Plataforma de Ensino
 
 ## 1\. Visão Geral do Projeto
 
-AURUM é uma plataforma de ensino online (E-learning) construída com Next.js, MongoDB e outras tecnologias modernas. O projeto visa fornecer uma experiência robusta e escalável para administração de cursos, gerenciamento de usuários, acompanhamento de progresso e muito mais. A plataforma é projetada para ser conteinerizada com Docker, facilitando o deploy e a escalabilidade.
+O objetivo é desenvolver uma plataforma de e-learning para um único curso com cerca de 10 módulos e 30 vídeos, focada no acompanhamento de progresso do aluno. A ferramenta permitirá que os usuários comentem em cada vídeo para que o administrador responda às dúvidas, além de oferecer um painel completo para gestão de usuários (CRUD). O dashboard do aluno exibirá seu avanço e um carrossel com novidades sobre futuros projetos. Opcionalmente, será implementado um sistema de avaliação com 5 estrelas para criar um ranking dos vídeos mais bem votados.
 
 ## 2\. Tecnologias Utilizadas
 
