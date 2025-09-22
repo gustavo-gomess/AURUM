@@ -1,0 +1,125 @@
+# ==============================
+# AURUM – Projeto de Plataforma EAD
+# Regras do Cursor para manter consistência de código
+# ==============================
+
+version: 1
+
+# ==============================
+# User Rules (globais – sempre ativas)
+# ==============================
+userRules:
+  - Always respond in Portuguese.
+  - Sempre explique o raciocínio antes de mostrar código.
+  - Prefira exemplos em TypeScript, Next.js e React.
+  - Inclua comentários explicativos no código.
+  - Use boas práticas de segurança (DevSecOps).
+  - Evite bibliotecas desatualizadas ou obsoletas.
+  - Quando sugerir melhorias, priorizar soluções modernas e escaláveis.
+
+# ==============================
+# Project Rules (AURUM específicas)
+# ==============================
+projectRules:
+  # Convenções gerais
+  - Código deve ser escrito em inglês (variáveis, funções, classes).
+  - Comentários e documentação devem estar em português.
+  - Sempre usar TypeScript.
+  - Padronização com ESLint + Prettier.
+  - Variáveis em camelCase, classes em PascalCase.
+
+  # Frontend
+  - Utilizar Next.js (App Router) + React + Tailwind CSS.
+  - Todos os componentes devem ser funcionais (hooks).
+  - Props e estados sempre tipados.
+  - Componentes reutilizáveis em /src/components.
+  - Hooks customizados em /src/hooks.
+  - Garantir responsividade e acessibilidade (a11y).
+
+  # Backend
+  - Usar Next.js API Routes para endpoints.
+  - Estrutura: Request → Validation (Zod) → Service → Repository → Response.
+  - Requisições sempre validadas com Zod.
+  - Resposta padronizada: { success: true, data } ou { success: false, error: { code, message } }.
+  - Usar JWT para autenticação.
+  - Hash de senhas com bcrypt.
+  - Implementar rate limiting com LRU Cache.
+  - Nunca expor erros internos diretamente ao usuário.
+
+  # Banco de Dados
+  - MongoDB + Mongoose.
+  - Models definidos em /src/models.
+  - Schemas devem incluir `timestamps: true`.
+  - Garantir índices para evitar duplicações.
+  - Repositórios devem usar `lean()` em queries de leitura.
+
+  # Infra & Segurança
+  - Docker para containerização.
+  - CI/CD via GitHub Actions.
+  - Cache de cursos em Redis.
+  - Logs centralizados com Winston + Axiom.
+  - Variáveis sensíveis sempre em `.env.local`.
+  - Requisições apenas via HTTPS em produção.
+
+# ==============================
+# Exemplos de saída esperada
+# Esses modelos guiam o Cursor no estilo de código
+# ==============================
+examples:
+  # Exemplo de endpoint API
+  - request: "Crie um endpoint POST /api/comments para criar comentários."
+    response: |
+      export async function POST(req: Request) {
+        const user = await getUserFromRequest(req);
+        const body = await req.json();
+        const parsed = createCommentSchema.safeParse({ body });
+        if (!parsed.success) {
+          return NextResponse.json(
+            { success: false, error: { code: 'VALIDATION_ERROR', message: parsed.error.message } },
+            { status: 400 }
+          );
+        }
+        const comment = await CommentService.create({ ...parsed.data.body, userId: user.id });
+        return NextResponse.json({ success: true, data: comment });
+      }
+
+  # Exemplo de model Mongoose
+  - request: "Crie o model Course."
+    response: |
+      import mongoose, { Schema, Document } from 'mongoose';
+
+      export interface ICourse extends Document {
+        title: string;
+        description: string;
+        createdAt: Date;
+        updatedAt: Date;
+      }
+
+      const CourseSchema: Schema = new Schema(
+        {
+          title: { type: String, required: true, maxlength: 200 },
+          description: { type: String, required: true },
+        },
+        { timestamps: true }
+      );
+
+      export default mongoose.models.Course || mongoose.model<ICourse>('Course', CourseSchema);
+
+  # Exemplo de componente React
+  - request: "Crie um componente de card de curso."
+    response: |
+      import React from 'react';
+
+      type CourseCardProps = {
+        title: string;
+        description: string;
+      };
+
+      export function CourseCard({ title, description }: CourseCardProps) {
+        return (
+          <div className="p-4 bg-white shadow rounded-2xl">
+            <h3 className="text-xl font-bold">{title}</h3>
+            <p className="text-gray-600">{description}</p>
+          </div>
+        );
+      }
