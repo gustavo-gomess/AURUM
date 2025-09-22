@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Course from '@/models/Course';
+import dbConnect from '@/lib/database';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect();
+    const prisma = dbConnect();
 
     // Buscar todos os cursos
-    const courses = await Course.find({});
+    const courses = await prisma.course.findMany({
+      include: {
+        modules: {
+          include: {
+            lessons: true
+          }
+        }
+      }
+    });
 
     return NextResponse.json({ courses });
 
@@ -23,7 +30,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
+    const prisma = dbConnect();
 
     // Extrair token do header Authorization
     const token = extractTokenFromRequest(request);
@@ -44,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar se é admin
-    if (payload.role !== 'admin') {
+    if (payload.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -54,8 +61,17 @@ export async function POST(request: NextRequest) {
     const courseData = await request.json();
 
     // Criar novo curso
-    const course = new Course(courseData);
-    await course.save();
+    const course = await prisma.course.create({
+      data: {
+        title: courseData.title,
+        description: courseData.description,
+        instructor: courseData.instructor,
+        price: courseData.price,
+      },
+      include: {
+        modules: true
+      }
+    });
 
     return NextResponse.json({ course }, { status: 201 });
 

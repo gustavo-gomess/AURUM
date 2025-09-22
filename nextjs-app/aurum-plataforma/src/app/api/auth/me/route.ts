@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import dbConnect from '@/lib/database';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect();
+    const prisma = dbConnect();
 
     // Extrair token do header Authorization
     const token = extractTokenFromRequest(request);
@@ -26,7 +25,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar usuário
-    const user = await User.findById(payload.userId).populate('courses');
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      include: {
+        enrollments: {
+          include: {
+            course: true
+          }
+        }
+      }
+    });
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
@@ -36,11 +44,11 @@ export async function GET(request: NextRequest) {
 
     // Retornar dados do usuário (sem a senha)
     const userResponse = {
-      id: user._id,
+      id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
-      courses: user.courses,
+      enrollments: user.enrollments,
     };
 
     return NextResponse.json({ user: userResponse });

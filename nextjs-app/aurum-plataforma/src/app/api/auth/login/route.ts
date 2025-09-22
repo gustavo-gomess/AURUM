@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import dbConnect from '@/lib/database';
 import { comparePassword, generateToken } from '@/lib/auth';
 import rateLimit from '@/lib/rateLimit';
 import logger from '@/lib/logger';
@@ -12,7 +11,7 @@ export async function POST(request: NextRequest) {
   if (res) return res;
 
   try {
-    await dbConnect();
+    const prisma = dbConnect();
 
     const { email, password } = await request.json();
 
@@ -24,7 +23,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar usuário por email
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await prisma.user.findUnique({ 
+      where: { email: email.toLowerCase() },
+      include: {
+        enrollments: {
+          include: {
+            course: true
+          }
+        }
+      }
+    });
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
@@ -43,18 +51,18 @@ export async function POST(request: NextRequest) {
 
     // Gerar token JWT
     const token = generateToken({
-      userId: user._id.toString(),
+      userId: user.id,
       email: user.email,
       role: user.role,
     });
 
     // Retornar dados do usuário (sem a senha) e token
     const userResponse = {
-      id: user._id,
+      id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
-      courses: user.courses,
+      enrollments: user.enrollments,
     };
 
     return NextResponse.json({

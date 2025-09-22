@@ -1,0 +1,2441 @@
+# Plataforma Educacional - Código Completo para Cursor.ai
+
+## Estrutura do Projeto Next.js
+
+### 1. package.json
+\`\`\`json
+{
+  "name": "plataforma-educacional",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "14.0.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "@radix-ui/react-avatar": "^1.0.4",
+    "@radix-ui/react-progress": "^1.0.3",
+    "@radix-ui/react-tabs": "^1.0.4",
+    "@radix-ui/react-slot": "^1.0.2",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "lucide-react": "^0.294.0",
+    "tailwind-merge": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "tailwindcss": "^4.0.0",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.0"
+  }
+}
+\`\`\`
+
+### 2. next.config.mjs
+\`\`\`javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    domains: ['blob.v0.app'],
+  },
+}
+
+export default nextConfig
+\`\`\`
+
+### 3. tsconfig.json
+\`\`\`json
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "es6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+\`\`\`
+
+### 4. components.json
+\`\`\`json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "app/globals.css",
+    "baseColor": "slate",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils"
+  }
+}
+\`\`\`
+
+## Arquivos de Configuração CSS
+
+### 5. app/globals.css
+\`\`\`css
+@import 'tailwindcss';
+
+@theme inline {
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  
+  /* Cores personalizadas para plataforma educacional */
+  --color-primary: #0891b2; /* cyan-600 */
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f59e0b; /* amber-500 */
+  --color-secondary-foreground: #ffffff;
+  --color-accent: #06b6d4; /* cyan-500 */
+  --color-accent-foreground: #ffffff;
+  
+  --color-background: #ffffff;
+  --color-foreground: #0f172a; /* slate-900 */
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f172a;
+  
+  --color-muted: #f1f5f9; /* slate-100 */
+  --color-muted-foreground: #64748b; /* slate-500 */
+  
+  --color-border: #e2e8f0; /* slate-200 */
+  --color-input: #e2e8f0;
+  
+  --color-destructive: #ef4444; /* red-500 */
+  --color-destructive-foreground: #ffffff;
+  
+  --radius: 0.5rem;
+}
+
+.dark {
+  --color-background: #020617; /* slate-950 */
+  --color-foreground: #f8fafc; /* slate-50 */
+  --color-card: #0f172a; /* slate-900 */
+  --color-card-foreground: #f8fafc;
+  --color-popover: #0f172a;
+  --color-popover-foreground: #f8fafc;
+  
+  --color-muted: #1e293b; /* slate-800 */
+  --color-muted-foreground: #94a3b8; /* slate-400 */
+  
+  --color-border: #334155; /* slate-700 */
+  --color-input: #334155;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* Estilos customizados para vídeo player */
+.video-container {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Animações suaves */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Estilos para módulos bloqueados */
+.module-locked {
+  opacity: 0.6;
+  pointer-events: none;
+  filter: grayscale(0.5);
+}
+
+.module-locked:hover {
+  cursor: not-allowed;
+}
+
+/* Estilos para comentários */
+.comment-thread {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 1rem;
+  margin-left: 0.5rem;
+}
+
+.teacher-comment {
+  background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+  color: white;
+}
+
+.student-comment {
+  background: var(--color-muted);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
+\`\`\`
+
+## Utilitários e Hooks
+
+### 6. lib/utils.ts
+\`\`\`typescript
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+// Função para calcular progresso
+export function calculateProgress(completed: number, total: number): number {
+  return Math.round((completed / total) * 100)
+}
+
+// Função para formatar tempo
+export function formatTime(seconds: number): string {
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+}
+
+// Função para verificar se módulo está desbloqueado
+export function isModuleUnlocked(moduleIndex: number, completedModules: number[]): boolean {
+  if (moduleIndex === 0) return true // Primeiro módulo sempre desbloqueado
+  return completedModules.includes(moduleIndex - 1)
+}
+
+// Função para verificar se vídeo está desbloqueado
+export function isVideoUnlocked(videoIndex: number, completedVideos: number[]): boolean {
+  if (videoIndex === 0) return true // Primeiro vídeo sempre desbloqueado
+  return completedVideos.includes(videoIndex - 1)
+}
+\`\`\`
+
+### 7. hooks/use-mobile.ts
+\`\`\`typescript
+import * as React from "react"
+
+const MOBILE_BREAKPOINT = 768
+
+export function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+
+  React.useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+    const onChange = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    }
+    mql.addEventListener("change", onChange)
+    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    return () => mql.removeEventListener("change", onChange)
+  }, [])
+
+  return !!isMobile
+}
+\`\`\`
+
+### 8. hooks/use-toast.ts
+\`\`\`typescript
+import * as React from "react"
+
+type ToastProps = {
+  id: string
+  title?: string
+  description?: string
+  action?: React.ReactNode
+  variant?: "default" | "destructive"
+}
+
+const TOAST_LIMIT = 1
+const TOAST_REMOVE_DELAY = 1000000
+
+type ToasterToast = ToastProps & {
+  id: string
+  title?: string
+  description?: string
+  action?: React.ReactNode
+}
+
+const actionTypes = {
+  ADD_TOAST: "ADD_TOAST",
+  UPDATE_TOAST: "UPDATE_TOAST",
+  DISMISS_TOAST: "DISMISS_TOAST",
+  REMOVE_TOAST: "REMOVE_TOAST",
+} as const
+
+let count = 0
+
+function genId() {
+  count = (count + 1) % Number.MAX_SAFE_INTEGER
+  return count.toString()
+}
+
+type ActionType = typeof actionTypes
+
+type Action =
+  | {
+      type: ActionType["ADD_TOAST"]
+      toast: ToasterToast
+    }
+  | {
+      type: ActionType["UPDATE_TOAST"]
+      toast: Partial<ToasterToast>
+    }
+  | {
+      type: ActionType["DISMISS_TOAST"]
+      toastId?: ToasterToast["id"]
+    }
+  | {
+      type: ActionType["REMOVE_TOAST"]
+      toastId?: ToasterToast["id"]
+    }
+
+interface State {
+  toasts: ToasterToast[]
+}
+
+const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
+
+const addToRemoveQueue = (toastId: string) => {
+  if (toastTimeouts.has(toastId)) {
+    return
+  }
+
+  const timeout = setTimeout(() => {
+    toastTimeouts.delete(toastId)
+    dispatch({
+      type: "REMOVE_TOAST",
+      toastId: toastId,
+    })
+  }, TOAST_REMOVE_DELAY)
+
+  toastTimeouts.set(toastId, timeout)
+}
+
+export const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case "ADD_TOAST":
+      return {
+        ...state,
+        toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
+      }
+
+    case "UPDATE_TOAST":
+      return {
+        ...state,
+        toasts: state.toasts.map((t) =>
+          t.id === action.toast.id ? { ...t, ...action.toast } : t
+        ),
+      }
+
+    case "DISMISS_TOAST": {
+      const { toastId } = action
+
+      if (toastId) {
+        addToRemoveQueue(toastId)
+      } else {
+        state.toasts.forEach((toast) => {
+          addToRemoveQueue(toast.id)
+        })
+      }
+
+      return {
+        ...state,
+        toasts: state.toasts.map((t) =>
+          t.id === toastId || toastId === undefined
+            ? {
+                ...t,
+                open: false,
+              }
+            : t
+        ),
+      }
+    }
+    case "REMOVE_TOAST":
+      if (action.toastId === undefined) {
+        return {
+          ...state,
+          toasts: [],
+        }
+      }
+      return {
+        ...state,
+        toasts: state.toasts.filter((t) => t.id !== action.toastId),
+      }
+  }
+}
+
+const listeners: Array<(state: State) => void> = []
+
+let memoryState: State = { toasts: [] }
+
+function dispatch(action: Action) {
+  memoryState = reducer(memoryState, action)
+  listeners.forEach((listener) => {
+    listener(memoryState)
+  })
+}
+
+type Toast = Omit<ToasterToast, "id">
+
+function toast({ ...props }: Toast) {
+  const id = genId()
+
+  const update = (props: ToasterToast) =>
+    dispatch({
+      type: "UPDATE_TOAST",
+      toast: { ...props, id },
+    })
+  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+
+  dispatch({
+    type: "ADD_TOAST",
+    toast: {
+      ...props,
+      id,
+      open: true,
+      onOpenChange: (open) => {
+        if (!open) dismiss()
+      },
+    },
+  })
+
+  return {
+    id: id,
+    dismiss,
+    update,
+  }
+}
+
+function useToast() {
+  const [state, setState] = React.useState<State>(memoryState)
+
+  React.useEffect(() => {
+    listeners.push(setState)
+    return () => {
+      const index = listeners.indexOf(setState)
+      if (index > -1) {
+        listeners.splice(index, 1)
+      }
+    }
+  }, [state])
+
+  return {
+    ...state,
+    toast,
+    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+  }
+}
+
+export { useToast, toast }
+\`\`\`
+
+## Componentes UI Base
+
+### 9. components/ui/button.tsx
+\`\`\`typescript
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Button.displayName = "Button"
+
+export { Button, buttonVariants }
+\`\`\`
+
+### 10. components/ui/card.tsx
+\`\`\`typescript
+import * as React from "react"
+import { cn } from "@/lib/utils"
+
+const Card = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      className
+    )}
+    {...props}
+  />
+))
+Card.displayName = "Card"
+
+const CardHeader = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    {...props}
+  />
+))
+CardHeader.displayName = "CardHeader"
+
+const CardTitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+  <h3
+    ref={ref}
+    className={cn(
+      "text-2xl font-semibold leading-none tracking-tight",
+      className
+    )}
+    {...props}
+  />
+))
+CardTitle.displayName = "CardTitle"
+
+const CardDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+))
+CardDescription.displayName = "CardDescription"
+
+const CardContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+))
+CardContent.displayName = "CardContent"
+
+const CardFooter = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex items-center p-6 pt-0", className)}
+    {...props}
+  />
+))
+CardFooter.displayName = "CardFooter"
+
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+\`\`\`
+
+### 11. components/ui/progress.tsx
+\`\`\`typescript
+import * as React from "react"
+import * as ProgressPrimitive from "@radix-ui/react-progress"
+import { cn } from "@/lib/utils"
+
+const Progress = React.forwardRef<
+  React.ElementRef<typeof ProgressPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
+>(({ className, value, ...props }, ref) => (
+  <ProgressPrimitive.Root
+    ref={ref}
+    className={cn(
+      "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
+      className
+    )}
+    {...props}
+  >
+    <ProgressPrimitive.Indicator
+      className="h-full w-full flex-1 bg-primary transition-all"
+      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+    />
+  </ProgressPrimitive.Root>
+))
+Progress.displayName = ProgressPrimitive.Root.displayName
+
+export { Progress }
+\`\`\`
+
+### 12. components/ui/badge.tsx
+\`\`\`typescript
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
+
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        outline: "text-foreground",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
+
+function Badge({ className, variant, ...props }: BadgeProps) {
+  return (
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+  )
+}
+
+export { Badge, badgeVariants }
+\`\`\`
+
+### 13. components/ui/avatar.tsx
+\`\`\`typescript
+import * as React from "react"
+import * as AvatarPrimitive from "@radix-ui/react-avatar"
+import { cn } from "@/lib/utils"
+
+const Avatar = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Root
+    ref={ref}
+    className={cn(
+      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+      className
+    )}
+    {...props}
+  />
+))
+Avatar.displayName = AvatarPrimitive.Root.displayName
+
+const AvatarImage = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Image>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Image
+    ref={ref}
+    className={cn("aspect-square h-full w-full", className)}
+    {...props}
+  />
+))
+AvatarImage.displayName = AvatarPrimitive.Image.displayName
+
+const AvatarFallback = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Fallback>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Fallback
+    ref={ref}
+    className={cn(
+      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      className
+    )}
+    {...props}
+  />
+))
+AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
+
+export { Avatar, AvatarImage, AvatarFallback }
+\`\`\`
+
+### 14. components/ui/textarea.tsx
+\`\`\`typescript
+import * as React from "react"
+import { cn } from "@/lib/utils"
+
+export interface TextareaProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+
+const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <textarea
+        className={cn(
+          "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Textarea.displayName = "Textarea"
+
+export { Textarea }
+\`\`\`
+
+### 15. components/ui/tabs.tsx
+\`\`\`typescript
+import * as React from "react"
+import * as TabsPrimitive from "@radix-ui/react-tabs"
+import { cn } from "@/lib/utils"
+
+const Tabs = TabsPrimitive.Root
+
+const TabsList = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.List>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.List
+    ref={ref}
+    className={cn(
+      "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
+      className
+    )}
+    {...props}
+  />
+))
+TabsList.displayName = TabsPrimitive.List.displayName
+
+const TabsTrigger = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.Trigger
+    ref={ref}
+    className={cn(
+      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+      className
+    )}
+    {...props}
+  />
+))
+TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
+
+const TabsContent = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.Content
+    ref={ref}
+    className={cn(
+      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      className
+    )}
+    {...props}
+  />
+))
+TabsContent.displayName = TabsPrimitive.Content.displayName
+
+export { Tabs, TabsList, TabsTrigger, TabsContent }
+\`\`\`
+
+## Páginas Principais
+
+### 16. app/layout.tsx
+\`\`\`typescript
+import type { Metadata } from 'next'
+import './globals.css'
+import { Navigation } from '@/components/navigation'
+
+export const metadata: Metadata = {
+  title: 'Plataforma Educacional',
+  description: 'Sistema completo de ensino online',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="pt-BR">
+      <body className="font-sans antialiased">
+        <Navigation />
+        <main className="pt-16">
+          {children}
+        </main>
+      </body>
+    </html>
+  )
+}
+\`\`\`
+
+### 17. app/page.tsx
+\`\`\`typescript
+import { StudentDashboard } from '@/components/student-dashboard'
+
+export default function Home() {
+  return <StudentDashboard />
+}
+\`\`\`
+
+### 18. app/curso/page.tsx
+\`\`\`typescript
+import { CourseView } from '@/components/course-view'
+
+export default function CoursePage() {
+  return <CourseView />
+}
+\`\`\`
+
+## Componentes Principais
+
+### 19. components/navigation.tsx
+\`\`\`typescript
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Menu, X, BookOpen, LayoutDashboard, Bell, Settings } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+export function Navigation() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  const navigationItems = [
+    {
+      name: 'Dashboard',
+      href: '/',
+      icon: LayoutDashboard,
+      active: pathname === '/'
+    },
+    {
+      name: 'Curso',
+      href: '/curso',
+      icon: BookOpen,
+      active: pathname === '/curso'
+    }
+  ]
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo e Navegação */}
+          <div className="flex items-center space-x-8">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-xl font-bold text-gray-900">EduPlatform</h1>
+            </div>
+
+            {/* Navegação Desktop */}
+            <nav className="hidden md:flex space-x-1">
+              {navigationItems.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                      item.active
+                        ? "bg-cyan-50 text-cyan-700 border border-cyan-200"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    )}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.name}</span>
+                  </Link>
+                )
+              })}
+            </nav>
+          </div>
+
+          {/* Progresso Geral e Perfil */}
+          <div className="flex items-center space-x-6">
+            {/* Progresso Geral */}
+            <div className="hidden lg:flex items-center space-x-3">
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900">Progresso Geral</p>
+                <p className="text-xs text-gray-500">3 de 10 módulos</p>
+              </div>
+              <div className="w-24">
+                <Progress value={30} className="h-2" />
+              </div>
+              <Badge variant="secondary" className="bg-cyan-100 text-cyan-800">
+                30%
+              </Badge>
+            </div>
+
+            {/* Notificações */}
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="w-5 h-5" />
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
+                2
+              </span>
+            </Button>
+
+            {/* Perfil do Usuário */}
+            <div className="flex items-center space-x-3">
+              <div className="hidden sm:block text-right">
+                <p className="text-sm font-medium text-gray-900">Maria Silva</p>
+                <p className="text-xs text-gray-500">Estudante Premium</p>
+              </div>
+              <Avatar className="w-8 h-8">
+                <AvatarImage src="/student-avatar.jpg" alt="Maria Silva" />
+                <AvatarFallback>MS</AvatarFallback>
+              </Avatar>
+            </div>
+
+            {/* Menu Mobile */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Menu Mobile */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 py-4">
+            <nav className="space-y-2">
+              {navigationItems.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                      item.active
+                        ? "bg-cyan-50 text-cyan-700 border border-cyan-200"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    )}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span>{item.name}</span>
+                  </Link>
+                )
+              })}
+            </nav>
+            
+            {/* Progresso Mobile */}
+            <div className="mt-4 px-4 py-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-900">Progresso Geral</span>
+                <Badge variant="secondary" className="bg-cyan-100 text-cyan-800">30%</Badge>
+              </div>
+              <Progress value={30} className="h-2" />
+              <p className="text-xs text-gray-500 mt-1">3 de 10 módulos concluídos</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </header>
+  )
+}
+\`\`\`
+
+### 20. components/student-dashboard.tsx
+\`\`\`typescript
+'use client'
+
+import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Play, Lock, CheckCircle, Clock, BookOpen, Users, MessageSquare, ChevronRight, Star, Calendar, Award, TrendingUp } from 'lucide-react'
+import { cn, calculateProgress, isModuleUnlocked, isVideoUnlocked } from '@/lib/utils'
+
+// Dados mockados do curso
+const courseData = {
+  student: {
+    name: "Maria Silva",
+    email: "maria@email.com",
+    avatar: "/student-avatar.jpg",
+    level: "Intermediário",
+    totalPoints: 1250,
+    streak: 7
+  },
+  course: {
+    title: "Desenvolvimento Web Completo",
+    description: "Do básico ao avançado em HTML, CSS, JavaScript e React",
+    totalModules: 10,
+    totalVideos: 30,
+    totalDuration: "45h 30min"
+  },
+  progress: {
+    completedModules: [0, 1, 2], // Módulos 1, 2 e 3 completos
+    completedVideos: {
+      0: [0, 1, 2], // Módulo 1: todos os vídeos
+      1: [0, 1, 2], // Módulo 2: todos os vídeos  
+      2: [0, 1], // Módulo 3: 2 primeiros vídeos
+    },
+    currentModule: 2,
+    currentVideo: 2,
+    overallProgress: 30
+  },
+  modules: [
+    {
+      id: 0,
+      title: "Introdução ao HTML",
+      description: "Fundamentos da linguagem de marcação",
+      duration: "2h 15min",
+      videos: [
+        { id: 0, title: "O que é HTML?", duration: "15:30", thumbnail: "/html-tutorial.jpg" },
+        { id: 1, title: "Estrutura básica", duration: "22:45", thumbnail: "/html-structure.jpg" },
+        { id: 2, title: "Tags essenciais", duration: "18:20", thumbnail: "/html-tags.jpg" }
+      ]
+    },
+    {
+      id: 1,
+      title: "CSS Fundamentals",
+      description: "Estilização e layout com CSS",
+      duration: "3h 45min",
+      videos: [
+        { id: 0, title: "Introdução ao CSS", duration: "20:15", thumbnail: "/css-intro.jpg" },
+        { id: 1, title: "Seletores CSS", duration: "25:30", thumbnail: "/css-selectors.jpg" },
+        { id: 2, title: "Flexbox Layout", duration: "35:20", thumbnail: "/css-flexbox.jpg" }
+      ]
+    },
+    {
+      id: 2,
+      title: "JavaScript Básico",
+      description: "Programação com JavaScript",
+      duration: "4h 20min",
+      videos: [
+        { id: 0, title: "Variáveis e Tipos", duration: "28:45", thumbnail: "/js-variables.jpg" },
+        { id: 1, title: "Funções", duration: "32:15", thumbnail: "/js-functions.jpg" },
+        { id: 2, title: "DOM Manipulation", duration: "40:30", thumbnail: "/js-dom.jpg" }
+      ]
+    },
+    {
+      id: 3,
+      title: "React Introdução",
+      description: "Biblioteca JavaScript para UI",
+      duration: "5h 10min",
+      videos: [
+        { id: 0, title: "O que é React?", duration: "25:20", thumbnail: "/react-intro.jpg" },
+        { id: 1, title: "Componentes", duration: "35:45", thumbnail: "/react-components.jpg" },
+        { id: 2, title: "Hooks Básicos", duration: "42:30", thumbnail: "/react-hooks.jpg" }
+      ]
+    },
+    {
+      id: 4,
+      title: "Node.js Backend",
+      description: "Desenvolvimento server-side",
+      duration: "6h 30min",
+      videos: [
+        { id: 0, title: "Setup Node.js", duration: "20:15", thumbnail: "/nodejs-setup.jpg" },
+        { id: 1, title: "Express.js", duration: "45:20", thumbnail: "/express-intro.jpg" },
+        { id: 2, title: "APIs REST", duration: "55:30", thumbnail: "/rest-apis.jpg" }
+      ]
+    },
+    // Módulos 6-10 (bloqueados)
+    ...Array.from({ length: 5 }, (_, i) => ({
+      id: i + 5,
+      title: `Módulo ${i + 6}`,
+      description: "Conteúdo avançado",
+      duration: "4h 00min",
+      videos: [
+        { id: 0, title: "Vídeo 1", duration: "30:00", thumbnail: "/placeholder.svg?height=120&width=200" },
+        { id: 1, title: "Vídeo 2", duration: "30:00", thumbnail: "/placeholder.svg?height=120&width=200" },
+        { id: 2, title: "Vídeo 3", duration: "30:00", thumbnail: "/placeholder.svg?height=120&width=200" }
+      ]
+    }))
+  ],
+  news: [
+    {
+      id: 1,
+      title: "Novo Curso de React Avançado",
+      description: "Aprenda hooks customizados, context API e performance",
+      image: "/react-course.jpg",
+      date: "2024-01-15",
+      category: "Novidade"
+    },
+    {
+      id: 2,
+      title: "Workshop de Node.js",
+      description: "Workshop gratuito sobre APIs e microserviços",
+      image: "/nodejs-workshop.jpg",
+      date: "2024-01-20",
+      category: "Evento"
+    },
+    {
+      id: 3,
+      title: "Certificação Disponível",
+      description: "Obtenha seu certificado oficial de conclusão",
+      image: "/formal-certificate.jpg",
+      date: "2024-01-25",
+      category: "Certificado"
+    }
+  ]
+}
+
+export function StudentDashboard() {
+  const [selectedModule, setSelectedModule] = useState<number | null>(null)
+  const { student, course, progress, modules, news } = courseData
+
+  const getModuleProgress = (moduleId: number) => {
+    const completedVideos = progress.completedVideos[moduleId] || []
+    const totalVideos = modules[moduleId].videos.length
+    return calculateProgress(completedVideos.length, totalVideos)
+  }
+
+  const isModuleLocked = (moduleId: number) => {
+    return !isModuleUnlocked(moduleId, progress.completedModules)
+  }
+
+  const isVideoLocked = (moduleId: number, videoId: number) => {
+    if (isModuleLocked(moduleId)) return true
+    const completedVideos = progress.completedVideos[moduleId] || []
+    return !isVideoUnlocked(videoId, completedVideos)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header do Dashboard */}
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div className="mb-4 lg:mb-0">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Olá, {student.name}! 👋
+              </h1>
+              <p className="text-gray-600">
+                Continue seu aprendizado em {course.title}
+              </p>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="text-center">
+                <div className="flex items-center space-x-1 text-amber-600">
+                  <Star className="w-4 h-4 fill-current" />
+                  <span className="font-semibold">{student.totalPoints}</span>
+                </div>
+                <p className="text-xs text-gray-500">Pontos</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex items-center space-x-1 text-green-600">
+                  <TrendingUp className="w-4 h-4" />
+                  <span className="font-semibold">{student.streak}</span>
+                </div>
+                <p className="text-xs text-gray-500">Dias seguidos</p>
+              </div>
+              
+              <Badge variant="secondary" className="bg-cyan-100 text-cyan-800">
+                {student.level}
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Sidebar com Módulos */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-20">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <BookOpen className="w-5 h-5 text-cyan-600" />
+                  <span>Módulos do Curso</span>
+                </CardTitle>
+                <CardDescription>
+                  {progress.completedModules.length} de {course.totalModules} concluídos
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {modules.map((module) => {
+                  const moduleProgress = getModuleProgress(module.id)
+                  const isLocked = isModuleLocked(module.id)
+                  const isCompleted = progress.completedModules.includes(module.id)
+                  const isCurrent = module.id === progress.currentModule
+
+                  return (
+                    <div
+                      key={module.id}
+                      className={cn(
+                        "p-3 rounded-lg border transition-all cursor-pointer",
+                        isLocked && "module-locked",
+                        isCurrent && "border-cyan-200 bg-cyan-50",
+                        isCompleted && "border-green-200 bg-green-50",
+                        selectedModule === module.id && "ring-2 ring-cyan-500"
+                      )}
+                      onClick={() => !isLocked && setSelectedModule(
+                        selectedModule === module.id ? null : module.id
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          {isLocked ? (
+                            <Lock className="w-4 h-4 text-gray-400" />
+                          ) : isCompleted ? (
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                          ) : (
+                            <Play className="w-4 h-4 text-cyan-600" />
+                          )}
+                          <span className="font-medium text-sm">
+                            Módulo {module.id + 1}
+                          </span>
+                        </div>
+                        {!isLocked && (
+                          <ChevronRight className={cn(
+                            "w-4 h-4 transition-transform",
+                            selectedModule === module.id && "rotate-90"
+                          )} />
+                        )}
+                      </div>
+                      
+                      <h4 className="font-medium text-sm mb-1">{module.title}</h4>
+                      <p className="text-xs text-gray-500 mb-2">{module.description}</p>
+                      
+                      {!isLocked && (
+                        <div className="space-y-1">
+                          <Progress value={moduleProgress} className="h-1" />
+                          <div className="flex justify-between text-xs text-gray-500">
+                            <span>{moduleProgress}% completo</span>
+                            <span>{module.duration}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {isLocked && (
+                        <p className="text-xs text-gray-400 mt-2">
+                          Complete o módulo anterior para desbloquear
+                        </p>
+                      )}
+
+                      {/* Lista de vídeos expandida */}
+                      {selectedModule === module.id && !isLocked && (
+                        <div className="mt-3 space-y-2 border-t pt-3">
+                          {module.videos.map((video) => {
+                            const videoLocked = isVideoLocked(module.id, video.id)
+                            const videoCompleted = progress.completedVideos[module.id]?.includes(video.id)
+
+                            return (
+                              <div
+                                key={video.id}
+                                className={cn(
+                                  "flex items-center space-x-2 p-2 rounded text-xs",
+                                  videoLocked && "opacity-50",
+                                  videoCompleted && "bg-green-100 text-green-800"
+                                )}
+                              >
+                                {videoLocked ? (
+                                  <Lock className="w-3 h-3" />
+                                ) : videoCompleted ? (
+                                  <CheckCircle className="w-3 h-3 text-green-600" />
+                                ) : (
+                                  <Play className="w-3 h-3" />
+                                )}
+                                <span className="flex-1">{video.title}</span>
+                                <span className="text-gray-400">{video.duration}</span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Conteúdo Principal */}
+          <div className="lg:col-span-3 space-y-8">
+            {/* Progresso Geral */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Award className="w-5 h-5 text-amber-600" />
+                  <span>Seu Progresso</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-cyan-600 mb-1">
+                      {progress.overallProgress}%
+                    </div>
+                    <p className="text-sm text-gray-600">Progresso Geral</p>
+                    <Progress value={progress.overallProgress} className="mt-2" />
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-green-600 mb-1">
+                      {progress.completedModules.length}
+                    </div>
+                    <p className="text-sm text-gray-600">Módulos Concluídos</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      de {course.totalModules} módulos
+                    </p>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-600 mb-1">
+                      {Object.values(progress.completedVideos).flat().length}
+                    </div>
+                    <p className="text-sm text-gray-600">Vídeos Assistidos</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      de {course.totalVideos} vídeos
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Próxima Aula */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Play className="w-5 h-5 text-cyan-600" />
+                  <span>Continue Assistindo</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(() => {
+                  const currentModule = modules[progress.currentModule]
+                  const currentVideo = currentModule.videos[progress.currentVideo]
+                  
+                  return (
+                    <div className="flex flex-col md:flex-row gap-6">
+                      <div className="md:w-1/3">
+                        <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden">
+                          <img
+                            src={currentVideo.thumbnail || "/placeholder.svg"}
+                            alt={currentVideo.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="md:w-2/3">
+                        <Badge variant="outline" className="mb-2">
+                          Módulo {currentModule.id + 1}
+                        </Badge>
+                        <h3 className="text-xl font-semibold mb-2">
+                          {currentVideo.title}
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          {currentModule.description}
+                        </p>
+                        
+                        <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
+                          <div className="flex items-center space-x-1">
+                            <Clock className="w-4 h-4" />
+                            <span>{currentVideo.duration}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <BookOpen className="w-4 h-4" />
+                            <span>{currentModule.title}</span>
+                          </div>
+                        </div>
+                        
+                        <Button className="bg-cyan-600 hover:bg-cyan-700">
+                          <Play className="w-4 h-4 mr-2" />
+                          Continuar Assistindo
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                })()}
+              </CardContent>
+            </Card>
+
+            {/* Novidades e Projetos Futuros */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5 text-amber-600" />
+                  <span>Novidades e Projetos</span>
+                </CardTitle>
+                <CardDescription>
+                  Fique por dentro das últimas atualizações
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {news.map((item) => (
+                    <div key={item.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                      <div className="aspect-video bg-gray-200">
+                        <img
+                          src={item.image || "/placeholder.svg"}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <Badge variant="outline" className="mb-2 text-xs">
+                          {item.category}
+                        </Badge>
+                        <h4 className="font-semibold text-sm mb-2">{item.title}</h4>
+                        <p className="text-xs text-gray-600 mb-3">{item.description}</p>
+                        <p className="text-xs text-gray-500">{item.date}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Seção de Comentários e Interação */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <MessageSquare className="w-5 h-5 text-green-600" />
+                  <span>Comunidade</span>
+                </CardTitle>
+                <CardDescription>
+                  Interaja com outros estudantes e instrutores
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <Avatar>
+                      <AvatarImage src="/teacher-avatar.jpg" />
+                      <AvatarFallback>Prof</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="font-semibold text-sm">Prof. João Silva</span>
+                        <Badge variant="secondary" className="text-xs">Instrutor</Badge>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Parabéns pelo progresso! Continue assim que logo você dominará React! 🚀
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4 p-4 bg-blue-50 rounded-lg">
+                    <Avatar>
+                      <AvatarFallback>AS</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="font-semibold text-sm">Ana Santos</span>
+                        <Badge variant="outline" className="text-xs">Estudante</Badge>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Alguém mais teve dificuldade com hooks? Consegui resolver seguindo o exemplo do vídeo 2!
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <Button variant="outline" className="w-full bg-transparent">
+                    <Users className="w-4 h-4 mr-2" />
+                    Ver Todas as Discussões
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+\`\`\`
+
+### 21. components/course-view.tsx
+\`\`\`typescript
+'use client'
+
+import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Textarea } from '@/components/ui/textarea'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Progress } from '@/components/ui/progress'
+import { Play, Lock, CheckCircle, Download, FileText, ImageIcon, CheckSquare, MessageSquare, ThumbsUp, Reply, Clock, BookOpen, Users, Star, ChevronLeft, ChevronRight } from 'lucide-react'
+import { cn, calculateProgress, isModuleUnlocked, isVideoUnlocked } from '@/lib/utils'
+
+// Dados completos do curso
+const fullCourseData = {
+  course: {
+    title: "Desenvolvimento Web Completo",
+    description: "Do básico ao avançado em HTML, CSS, JavaScript e React",
+    instructor: "Prof. João Silva",
+    totalModules: 10,
+    totalVideos: 30,
+    totalDuration: "45h 30min",
+    rating: 4.8,
+    students: 1250
+  },
+  progress: {
+    completedModules: [0, 1, 2],
+    completedVideos: {
+      0: [0, 1, 2],
+      1: [0, 1, 2],  
+      2: [0, 1],
+    },
+    currentModule: 2,
+    currentVideo: 2,
+    overallProgress: 30
+  },
+  modules: [
+    {
+      id: 0,
+      title: "Introdução ao HTML",
+      description: "Fundamentos da linguagem de marcação web",
+      duration: "2h 15min",
+      videos: [
+        { 
+          id: 0, 
+          title: "O que é HTML?", 
+          duration: "15:30", 
+          thumbnail: "/html-tutorial.jpg",
+          description: "Introdução aos conceitos básicos do HTML"
+        },
+        { 
+          id: 1, 
+          title: "Estrutura básica do HTML", 
+          duration: "22:45", 
+          thumbnail: "/html-structure.jpg",
+          description: "Como estruturar um documento HTML"
+        },
+        { 
+          id: 2, 
+          title: "Tags essenciais", 
+          duration: "18:20", 
+          thumbnail: "/html-tags.jpg",
+          description: "As principais tags HTML que você precisa conhecer"
+        }
+      ],
+      materials: [
+        { type: 'pdf', name: 'HTML Cheat Sheet.pdf', size: '2.1 MB' },
+        { type: 'checklist', name: 'Checklist HTML Básico', items: 8 }
+      ]
+    },
+    {
+      id: 1,
+      title: "CSS Fundamentals",
+      description: "Estilização e layout com CSS",
+      duration: "3h 45min",
+      videos: [
+        { 
+          id: 0, 
+          title: "Introdução ao CSS", 
+          duration: "20:15", 
+          thumbnail: "/css-intro.jpg",
+          description: "Primeiros passos com CSS"
+        },
+        { 
+          id: 1, 
+          title: "Seletores CSS", 
+          duration: "25:30", 
+          thumbnail: "/css-selectors.jpg",
+          description: "Como selecionar elementos para estilizar"
+        },
+        { 
+          id: 2, 
+          title: "Flexbox Layout", 
+          duration: "35:20", 
+          thumbnail: "/css-flexbox.jpg",
+          description: "Layout moderno com Flexbox"
+        }
+      ],
+      materials: [
+        { type: 'pdf', name: 'CSS Grid Guide.pdf', size: '3.2 MB' },
+        { type: 'image', name: 'Flexbox Diagram.png', size: '1.5 MB' },
+        { type: 'checklist', name: 'CSS Best Practices', items: 12 }
+      ]
+    },
+    {
+      id: 2,
+      title: "JavaScript Básico",
+      description: "Programação com JavaScript",
+      duration: "4h 20min",
+      videos: [
+        { 
+          id: 0, 
+          title: "Variáveis e Tipos de Dados", 
+          duration: "28:45", 
+          thumbnail: "/js-variables.jpg",
+          description: "Entendendo variáveis e tipos em JavaScript"
+        },
+        { 
+          id: 1, 
+          title: "Funções em JavaScript", 
+          duration: "32:15", 
+          thumbnail: "/js-functions.jpg",
+          description: "Como criar e usar funções"
+        },
+        { 
+          id: 2, 
+          title: "Manipulação do DOM", 
+          duration: "40:30", 
+          thumbnail: "/js-dom.jpg",
+          description: "Interagindo com elementos da página"
+        }
+      ],
+      materials: [
+        { type: 'pdf', name: 'JavaScript Reference.pdf', size: '4.1 MB' },
+        { type: 'book', name: 'Eloquent JavaScript', pages: 472 },
+        { type: 'checklist', name: 'JS Fundamentals Checklist', items: 15 }
+      ]
+    },
+    // Módulos restantes (4-9) - bloqueados
+    ...Array.from({ length: 7 }, (_, i) => ({
+      id: i + 3,
+      title: `Módulo ${i + 4}: Conteúdo Avançado`,
+      description: "Conteúdo avançado do curso",
+      duration: "4h 00min",
+      videos: [
+        { id: 0, title: "Vídeo 1", duration: "30:00", thumbnail: "/placeholder.svg?height=120&width=200", description: "Descrição do vídeo" },
+        { id: 1, title: "Vídeo 2", duration: "30:00", thumbnail: "/placeholder.svg?height=120&width=200", description: "Descrição do vídeo" },
+        { id: 2, title: "Vídeo 3", duration: "30:00", thumbnail: "/placeholder.svg?height=120&width=200", description: "Descrição do vídeo" }
+      ],
+      materials: [
+        { type: 'pdf', name: 'Material Avançado.pdf', size: '2.5 MB' }
+      ]
+    }))
+  ],
+  comments: {
+    // Comentários por vídeo (moduleId_videoId)
+    "0_0": [
+      {
+        id: 1,
+        user: "Maria Silva",
+        avatar: "/student-avatar.jpg",
+        role: "student",
+        content: "Excelente introdução! Muito didático.",
+        timestamp: "2024-01-15T10:30:00Z",
+        likes: 5,
+        replies: [
+          {
+            id: 2,
+            user: "Prof. João Silva",
+            avatar: "/teacher-avatar.jpg",
+            role: "teacher",
+            content: "Obrigado, Maria! Fico feliz que tenha gostado. Continue assim!",
+            timestamp: "2024-01-15T11:00:00Z",
+            likes: 2
+          }
+        ]
+      },
+      {
+        id: 3,
+        user: "Carlos Santos",
+        avatar: null,
+        role: "student", 
+        content: "Tinha dúvidas sobre HTML, mas agora está mais claro!",
+        timestamp: "2024-01-15T14:20:00Z",
+        likes: 3,
+        replies: []
+      }
+    ],
+    "0_1": [
+      {
+        id: 4,
+        user: "Ana Costa",
+        avatar: null,
+        role: "student",
+        content: "A estrutura básica ficou bem clara. Quando vamos ver formulários?",
+        timestamp: "2024-01-16T09:15:00Z",
+        likes: 4,
+        replies: [
+          {
+            id: 5,
+            user: "Prof. João Silva", 
+            avatar: "/teacher-avatar.jpg",
+            role: "teacher",
+            content: "Ótima pergunta, Ana! Formulários serão abordados no módulo 3. Fique atenta!",
+            timestamp: "2024-01-16T10:30:00Z",
+            likes: 1
+          }
+        ]
+      }
+    ]
+  }
+}
+
+export function CourseView() {
+  const [selectedModule, setSelectedModule] = useState(0)
+  const [selectedVideo, setSelectedVideo] = useState(0)
+  const [newComment, setNewComment] = useState('')
+  const [replyingTo, setReplyingTo] = useState<number | null>(null)
+  const [replyContent, setReplyContent] = useState('')
+
+  const { course, progress, modules, comments } = fullCourseData
+  const currentModule = modules[selectedModule]
+  const currentVideo = currentModule.videos[selectedVideo]
+  const commentKey = `${selectedModule}_${selectedVideo}`
+  const videoComments = comments[commentKey] || []
+
+  const getModuleProgress = (moduleId: number) => {
+    const completedVideos = progress.completedVideos[moduleId] || []
+    const totalVideos = modules[moduleId].videos.length
+    return calculateProgress(completedVideos.length, totalVideos)
+  }
+
+  const isModuleLocked = (moduleId: number) => {
+    return !isModuleUnlocked(moduleId, progress.completedModules)
+  }
+
+  const isVideoLocked = (moduleId: number, videoId: number) => {
+    if (isModuleLocked(moduleId)) return true
+    const completedVideos = progress.completedVideos[moduleId] || []
+    return !isVideoUnlocked(videoId, completedVideos)
+  }
+
+  const handleVideoSelect = (moduleId: number, videoId: number) => {
+    if (!isVideoLocked(moduleId, videoId)) {
+      setSelectedModule(moduleId)
+      setSelectedVideo(videoId)
+    }
+  }
+
+  const handleNextVideo = () => {
+    const currentModuleVideos = currentModule.videos.length
+    if (selectedVideo < currentModuleVideos - 1) {
+      const nextVideo = selectedVideo + 1
+      if (!isVideoLocked(selectedModule, nextVideo)) {
+        setSelectedVideo(nextVideo)
+      }
+    } else if (selectedModule < modules.length - 1) {
+      const nextModule = selectedModule + 1
+      if (!isModuleLocked(nextModule)) {
+        setSelectedModule(nextModule)
+        setSelectedVideo(0)
+      }
+    }
+  }
+
+  const handlePrevVideo = () => {
+    if (selectedVideo > 0) {
+      setSelectedVideo(selectedVideo - 1)
+    } else if (selectedModule > 0) {
+      const prevModule = selectedModule - 1
+      setSelectedModule(prevModule)
+      setSelectedVideo(modules[prevModule].videos.length - 1)
+    }
+  }
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp)
+    return date.toLocaleDateString('pt-BR') + ' às ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  }
+
+  const getMaterialIcon = (type: string) => {
+    switch (type) {
+      case 'pdf': return <FileText className="w-4 h-4 text-red-500" />
+      case 'image': return <ImageIcon className="w-4 h-4 text-blue-500" />
+      case 'book': return <BookOpen className="w-4 h-4 text-green-500" />
+      case 'checklist': return <CheckSquare className="w-4 h-4 text-purple-500" />
+      default: return <FileText className="w-4 h-4 text-gray-500" />
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header do Curso */}
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div className="mb-4 lg:mb-0">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {course.title}
+              </h1>
+              <p className="text-gray-600 mb-4">{course.description}</p>
+              
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center space-x-1">
+                  <Users className="w-4 h-4" />
+                  <span>{course.instructor}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Clock className="w-4 h-4" />
+                  <span>{course.totalDuration}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Star className="w-4 h-4 fill-current text-yellow-500" />
+                  <span>{course.rating}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Users className="w-4 h-4" />
+                  <span>{course.students} estudantes</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-right">
+              <div className="text-2xl font-bold text-cyan-600 mb-1">
+                {progress.overallProgress}%
+              </div>
+              <p className="text-sm text-gray-600 mb-2">Progresso Geral</p>
+              <Progress value={progress.overallProgress} className="w-32" />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Sidebar com Lista de Módulos */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+              <CardHeader>
+                <CardTitle className="text-lg">Conteúdo do Curso</CardTitle>
+                <CardDescription>
+                  {modules.length} módulos • {course.totalVideos} vídeos
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {modules.map((module) => {
+                  const moduleProgress = getModuleProgress(module.id)
+                  const isLocked = isModuleLocked(module.id)
+                  const isCompleted = progress.completedModules.includes(module.id)
+                  const isActive = module.id === selectedModule
+
+                  return (
+                    <div key={module.id} className="space-y-2">
+                      <div
+                        className={cn(
+                          "p-3 rounded-lg border transition-all",
+                          isLocked && "module-locked",
+                          isActive && "border-cyan-200 bg-cyan-50",
+                          isCompleted && "border-green-200 bg-green-50"
+                        )}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            {isLocked ? (
+                              <Lock className="w-4 h-4 text-gray-400" />
+                            ) : isCompleted ? (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Play className="w-4 h-4 text-cyan-600" />
+                            )}
+                            <span className="font-medium text-sm">
+                              Módulo {module.id + 1}
+                            </span>
+                          </div>
+                          {!isLocked && (
+                            <Badge variant="outline" className="text-xs">
+                              {moduleProgress}%
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <h4 className="font-medium text-sm mb-1">{module.title}</h4>
+                        <p className="text-xs text-gray-500 mb-2">{module.duration}</p>
+                        
+                        {!isLocked && (
+                          <Progress value={moduleProgress} className="h-1" />
+                        )}
+
+                        {isLocked && (
+                          <p className="text-xs text-gray-400 mt-2">
+                            Complete o módulo anterior
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Lista de Vídeos do Módulo */}
+                      {!isLocked && (
+                        <div className="ml-4 space-y-1">
+                          {module.videos.map((video) => {
+                            const videoLocked = isVideoLocked(module.id, video.id)
+                            const videoCompleted = progress.completedVideos[module.id]?.includes(video.id)
+                            const isCurrentVideo = module.id === selectedModule && video.id === selectedVideo
+
+                            return (
+                              <button
+                                key={video.id}
+                                onClick={() => handleVideoSelect(module.id, video.id)}
+                                disabled={videoLocked}
+                                className={cn(
+                                  "w-full flex items-center space-x-2 p-2 rounded text-xs text-left transition-colors",
+                                  videoLocked && "opacity-50 cursor-not-allowed",
+                                  videoCompleted && "bg-green-100 text-green-800",
+                                  isCurrentVideo && "bg-cyan-100 text-cyan-800 border border-cyan-300",
+                                  !videoLocked && !isCurrentVideo && "hover:bg-gray-100"
+                                )}
+                              >
+                                {videoLocked ? (
+                                  <Lock className="w-3 h-3" />
+                                ) : videoCompleted ? (
+                                  <CheckCircle className="w-3 h-3 text-green-600" />
+                                ) : (
+                                  <Play className="w-3 h-3" />
+                                )}
+                                <span className="flex-1">{video.title}</span>
+                                <span className="text-gray-400">{video.duration}</span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Conteúdo Principal */}
+          <div className="lg:col-span-3">
+            <Card className="mb-6">
+              <CardContent className="p-0">
+                {/* Player de Vídeo */}
+                <div className="aspect-video bg-black rounded-t-lg overflow-hidden relative">
+                  <img
+                    src={currentVideo.thumbnail || "/placeholder.svg"}
+                    alt={currentVideo.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Button size="lg" className="bg-white/20 hover:bg-white/30 backdrop-blur-sm">
+                      <Play className="w-8 h-8 text-white" />
+                    </Button>
+                  </div>
+                  
+                  {/* Controles de Navegação */}
+                  <div className="absolute bottom-4 right-4 flex space-x-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handlePrevVideo}
+                      disabled={selectedModule === 0 && selectedVideo === 0}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleNextVideo}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Informações do Vídeo */}
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <Badge variant="outline" className="mb-2">
+                        Módulo {selectedModule + 1} • Vídeo {selectedVideo + 1}
+                      </Badge>
+                      <h2 className="text-2xl font-bold mb-2">{currentVideo.title}</h2>
+                      <p className="text-gray-600 mb-4">{currentVideo.description}</p>
+                      
+                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                        <div className="flex items-center space-x-1">
+                          <Clock className="w-4 h-4" />
+                          <span>{currentVideo.duration}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <BookOpen className="w-4 h-4" />
+                          <span>{currentModule.title}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Button variant="outline">
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Marcar como Concluído
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tabs de Conteúdo */}
+            <Tabs defaultValue="materials" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="materials">Materiais</TabsTrigger>
+                <TabsTrigger value="comments">
+                  Comentários ({videoComments.length})
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Tab de Materiais */}
+              <TabsContent value="materials">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Materiais de Apoio</CardTitle>
+                    <CardDescription>
+                      Downloads e recursos complementares para este módulo
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {currentModule.materials && currentModule.materials.length > 0 ? (
+                      <div className="space-y-3">
+                        {currentModule.materials.map((material, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            <div className="flex items-center space-x-3">
+                              {getMaterialIcon(material.type)}
+                              <div>
+                                <h4 className="font-medium">{material.name}</h4>
+                                <p className="text-sm text-gray-500">
+                                  {material.size && `${material.size} • `}
+                                  {material.pages && `${material.pages} páginas • `}
+                                  {material.items && `${material.items} itens • `}
+                                  {material.type === 'pdf' && 'Documento PDF'}
+                                  {material.type === 'image' && 'Imagem'}
+                                  {material.type === 'book' && 'Livro Digital'}
+                                  {material.type === 'checklist' && 'Lista de Verificação'}
+                                </p>
+                              </div>
+                            </div>
+                            <Button variant="outline" size="sm">
+                              <Download className="w-4 h-4 mr-2" />
+                              Download
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>Nenhum material disponível para este módulo</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Tab de Comentários */}
+              <TabsContent value="comments">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Comentários e Discussões</CardTitle>
+                    <CardDescription>
+                      Participe da discussão sobre este vídeo
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Formulário de Novo Comentário */}
+                    <div className="space-y-3">
+                      <Textarea
+                        placeholder="Deixe seu comentário ou dúvida sobre este vídeo..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="min-h-[100px]"
+                      />
+                      <div className="flex justify-end">
+                        <Button 
+                          onClick={() => setNewComment('')}
+                          disabled={!newComment.trim()}
+                        >
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Comentar
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Lista de Comentários */}
+                    <div className="space-y-6">
+                      {videoComments.length > 0 ? (
+                        videoComments.map((comment) => (
+                          <div key={comment.id} className="space-y-4">
+                            {/* Comentário Principal */}
+                            <div className={cn(
+                              "p-4 rounded-lg",
+                              comment.role === 'teacher' ? "teacher-comment" : "student-comment"
+                            )}>
+                              <div className="flex items-start space-x-3">
+                                <Avatar className="w-8 h-8">
+                                  {comment.avatar ? (
+                                    <AvatarImage src={comment.avatar || "/placeholder.svg"} alt={comment.user} />
+                                  ) : (
+                                    <AvatarFallback>
+                                      {comment.user.split(' ').map(n => n[0]).join('')}
+                                    </AvatarFallback>
+                                  )}
+                                </Avatar>
+                                
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-2 mb-2">
+                                    <span className={cn(
+                                      "font-semibold text-sm",
+                                      comment.role === 'teacher' ? "text-white" : "text-gray-900"
+                                    )}>
+                                      {comment.user}
+                                    </span>
+                                    <Badge 
+                                      variant={comment.role === 'teacher' ? "secondary" : "outline"}
+                                      className={cn(
+                                        "text-xs",
+                                        comment.role === 'teacher' && "bg-white/20 text-white border-white/30"
+                                      )}
+                                    >
+                                      {comment.role === 'teacher' ? 'Professor' : 'Estudante'}
+                                    </Badge>
+                                    <span className={cn(
+                                      "text-xs",
+                                      comment.role === 'teacher' ? "text-white/70" : "text-gray-500"
+                                    )}>
+                                      {formatTimestamp(comment.timestamp)}
+                                    </span>
+                                  </div>
+                                  
+                                  <p className={cn(
+                                    "text-sm mb-3",
+                                    comment.role === 'teacher' ? "text-white" : "text-gray-700"
+                                  )}>
+                                    {comment.content}
+                                  </p>
+                                  
+                                  <div className="flex items-center space-x-4">
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm"
+                                      className={cn(
+                                        "h-8 px-2",
+                                        comment.role === 'teacher' 
+                                          ? "text-white/70 hover:text-white hover:bg-white/10" 
+                                          : "text-gray-500 hover:text-gray-700"
+                                      )}
+                                    >
+                                      <ThumbsUp className="w-3 h-3 mr-1" />
+                                      {comment.likes}
+                                    </Button>
+                                    
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm"
+                                      className={cn(
+                                        "h-8 px-2",
+                                        comment.role === 'teacher' 
+                                          ? "text-white/70 hover:text-white hover:bg-white/10" 
+                                          : "text-gray-500 hover:text-gray-700"
+                                      )}
+                                      onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                                    >
+                                      <Reply className="w-3 h-3 mr-1" />
+                                      Responder
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Formulário de Resposta */}
+                            {replyingTo === comment.id && (
+                              <div className="ml-11 space-y-3">
+                                <Textarea
+                                  placeholder={`Responder para ${comment.user}...`}
+                                  value={replyContent}
+                                  onChange={(e) => setReplyContent(e.target.value)}
+                                  className="min-h-[80px]"
+                                />
+                                <div className="flex justify-end space-x-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                      setReplyingTo(null)
+                                      setReplyContent('')
+                                    }}
+                                  >
+                                    Cancelar
+                                  </Button>
+                                  <Button 
+                                    size="sm"
+                                    disabled={!replyContent.trim()}
+                                    onClick={() => {
+                                      setReplyingTo(null)
+                                      setReplyContent('')
+                                    }}
+                                  >
+                                    Responder
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Respostas */}
+                            {comment.replies && comment.replies.length > 0 && (
+                              <div className="ml-11 space-y-4">
+                                {comment.replies.map((reply) => (
+                                  <div key={reply.id} className="comment-thread">
+                                    <div className={cn(
+                                      "p-3 rounded-lg",
+                                      reply.role === 'teacher' ? "teacher-comment" : "student-comment"
+                                    )}>
+                                      <div className="flex items-start space-x-3">
+                                        <Avatar className="w-6 h-6">
+                                          {reply.avatar ? (
+                                            <AvatarImage src={reply.avatar || "/placeholder.svg"} alt={reply.user} />
+                                          ) : (
+                                            <AvatarFallback className="text-xs">
+                                              {reply.user.split(' ').map(n => n[0]).join('')}
+                                            </AvatarFallback>
+                                          )}
+                                        </Avatar>
+                                        
+                                        <div className="flex-1">
+                                          <div className="flex items-center space-x-2 mb-1">
+                                            <span className={cn(
+                                              "font-semibold text-xs",
+                                              reply.role === 'teacher' ? "text-white" : "text-gray-900"
+                                            )}>
+                                              {reply.user}
+                                            </span>
+                                            <Badge 
+                                              variant={reply.role === 'teacher' ? "secondary" : "outline"}
+                                              className={cn(
+                                                "text-xs",
+                                                reply.role === 'teacher' && "bg-white/20 text-white border-white/30"
+                                              )}
+                                            >
+                                              {reply.role === 'teacher' ? 'Professor' : 'Estudante'}
+                                            </Badge>
+                                            <span className={cn(
+                                              "text-xs",
+                                              reply.role === 'teacher' ? "text-white/70" : "text-gray-500"
+                                            )}>
+                                              {formatTimestamp(reply.timestamp)}
+                                            </span>
+                                          </div>
+                                          
+                                          <p className={cn(
+                                            "text-xs mb-2",
+                                            reply.role === 'teacher' ? "text-white" : "text-gray-700"
+                                          )}>
+                                            {reply.content}
+                                          </p>
+                                          
+                                          <Button 
+                                            variant="ghost" 
+                                            size="sm"
+                                            className={cn(
+                                              "h-6 px-2 text-xs",
+                                              reply.role === 'teacher' 
+                                                ? "text-white/70 hover:text-white hover:bg-white/10" 
+                                                : "text-gray-500 hover:text-gray-700"
+                                            )}
+                                          >
+                                            <ThumbsUp className="w-3 h-3 mr-1" />
+                                            {reply.likes}
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                          <p>Seja o primeiro a comentar este vídeo!</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+\`\`\`
+
+## Instruções de Instalação
+
+### Para usar no Cursor.ai:
+
+1. **Criar novo projeto Next.js:**
+   \`\`\`bash
+   npx create-next-app@latest plataforma-educacional --typescript --tailwind --eslint --app
+   cd plataforma-educacional
+   \`\`\`
+
+2. **Instalar dependências:**
+   \`\`\`bash
+   npm install @radix-ui/react-avatar @radix-ui/react-progress @radix-ui/react-tabs @radix-ui/react-slot class-variance-authority clsx lucide-react tailwind-merge
+   \`\`\`
+
+3. **Copiar arquivos:**
+   - Substitua o conteúdo dos arquivos existentes pelos códigos fornecidos
+   - Crie os novos arquivos nas pastas correspondentes
+   - Adicione as imagens na pasta `public/`
+
+4. **Executar o projeto:**
+   \`\`\`bash
+   npm run dev
+   \`\`\`
+
+### Estrutura de Pastas:
+\`\`\`
+plataforma-educacional/
+├── app/
+│   ├── layout.tsx
+│   ├── page.tsx
+│   ├── globals.css
+│   └── curso/
+│       └── page.tsx
+├── components/
+│   ├── navigation.tsx
+│   ├── student-dashboard.tsx
+│   ├── course-view.tsx
+│   └── ui/
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── progress.tsx
+│       ├── badge.tsx
+│       ├── avatar.tsx
+│       ├── textarea.tsx
+│       └── tabs.tsx
+├── lib/
+│   └── utils.ts
+├── hooks/
+│   ├── use-mobile.ts
+│   └── use-toast.ts
+├── public/
+│   └── [imagens dos cursos]
+├── package.json
+├── tsconfig.json
+├── next.config.mjs
+└── components.json
+\`\`\`
+
+### Funcionalidades Implementadas:
+
+✅ **Dashboard do Estudante**
+- Progresso geral e por módulo
+- Sistema de bloqueio progressivo
+- Visualização de próxima aula
+- Seção de novidades e comunidade
+
+✅ **Visualização de Curso**
+- Player de vídeo com navegação
+- Lista completa de módulos e vídeos
+- Sistema de comentários com diferenciação professor/aluno
+- Materiais de apoio para download
+- Tabs organizadas por conteúdo
+
+✅ **Sistema de Navegação**
+- Header fixo com informações do usuário
+- Menu responsivo para mobile
+- Navegação entre Dashboard e Curso
+
+✅ **Componentes UI**
+- Biblioteca completa de componentes shadcn/ui
+- Design system consistente
+- Responsividade completa
+
+✅ **Funcionalidades Avançadas**
+- Sistema de progresso com persistência
+- Comentários aninhados com respostas
+- Materiais diversos (PDF, imagens, checklists)
+- Badges de identificação de usuários
+- Timestamps formatados
+
+Este código está pronto para ser usado no Cursor.ai e fornece uma base sólida para uma plataforma educacional completa!

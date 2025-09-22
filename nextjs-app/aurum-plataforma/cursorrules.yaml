@@ -47,11 +47,11 @@ projectRules:
   - Nunca expor erros internos diretamente ao usuário.
 
   # Banco de Dados
-  - MongoDB + Mongoose.
-  - Models definidos em /src/models.
-  - Schemas devem incluir `timestamps: true`.
-  - Garantir índices para evitar duplicações.
-  - Repositórios devem usar `lean()` em queries de leitura.
+  - PostgreSQL + Prisma ORM.
+  - Schema definido em /prisma/schema.prisma.
+  - Tipos TypeScript em /src/types/database.ts.
+  - Usar Prisma Client para todas as operações de banco.
+  - Relacionamentos configurados no schema Prisma.
 
   # Infra & Segurança
   - Docker para containerização.
@@ -83,27 +83,23 @@ examples:
         return NextResponse.json({ success: true, data: comment });
       }
 
-  # Exemplo de model Mongoose
-  - request: "Crie o model Course."
+  # Exemplo de operação Prisma
+  - request: "Crie uma operação para buscar cursos."
     response: |
-      import mongoose, { Schema, Document } from 'mongoose';
+      import dbConnect from '@/lib/database';
 
-      export interface ICourse extends Document {
-        title: string;
-        description: string;
-        createdAt: Date;
-        updatedAt: Date;
+      export async function getCourses() {
+        const prisma = dbConnect();
+        return await prisma.course.findMany({
+          include: {
+            modules: {
+              include: {
+                lessons: true
+              }
+            }
+          }
+        });
       }
-
-      const CourseSchema: Schema = new Schema(
-        {
-          title: { type: String, required: true, maxlength: 200 },
-          description: { type: String, required: true },
-        },
-        { timestamps: true }
-      );
-
-      export default mongoose.models.Course || mongoose.model<ICourse>('Course', CourseSchema);
 
   # Exemplo de componente React
   - request: "Crie um componente de card de curso."

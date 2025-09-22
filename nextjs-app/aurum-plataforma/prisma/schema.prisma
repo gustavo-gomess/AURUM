@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(60)
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  enrollments Enrollment[]
+  comments    Comment[]
+  answeredComments Comment[] @relation("AnsweredBy")
+
+  @@map("users")
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String   @db.VarChar(100)
+  description String
+  instructor  String
+  price       Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  modules     Module[]
+  enrollments Enrollment[]
+
+  @@map("courses")
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  title       String   @db.VarChar(100)
+  description String?
+  order       Int
+  courseId    String   @map("course_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@map("modules")
+}
+
+model Lesson {
+  id           String   @id @default(cuid())
+  title        String   @db.VarChar(100)
+  description  String?
+  vimeoVideoId String   @map("vimeo_video_id")
+  order        Int
+  tasks        String[]
+  moduleId     String   @map("module_id")
+  courseId     String   @map("course_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  module   Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  comments Comment[]
+
+  @@map("lessons")
+}
+
+model Enrollment {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  courseId    String    @map("course_id")
+  enrolledAt  DateTime  @default(now()) @map("enrolled_at")
+  completedAt DateTime? @map("completed_at")
+
+  // Relacionamentos
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress Progress[]
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+model Progress {
+  id           String    @id @default(cuid())
+  enrollmentId String    @map("enrollment_id")
+  moduleIndex  Int       @map("module_index")
+  lessonIndex  Int       @map("lesson_index")
+  completed    Boolean   @default(false)
+  completedAt  DateTime? @map("completed_at")
+
+  // Relacionamentos
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, moduleIndex, lessonIndex])
+  @@map("progress")
+}
+
+model Comment {
+  id            String    @id @default(cuid())
+  userId        String    @map("user_id")
+  lessonId      String    @map("lesson_id")
+  content       String
+  timestamp     DateTime  @default(now())
+  parentId      String?   @map("parent_id")
+  answeredBy    String?   @map("answered_by")
+  answerContent String?   @map("answer_content")
+
+  // Relacionamentos
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson       Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  parent       Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies      Comment[] @relation("CommentReplies")
+  answeredByUser User?   @relation("AnsweredBy", fields: [answeredBy], references: [id])
+
+  @@map("comments")
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}

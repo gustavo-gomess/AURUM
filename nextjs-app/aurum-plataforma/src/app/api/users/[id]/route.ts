@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
-import Enrollment from '@/models/Enrollment';
+import dbConnect from '@/lib/database';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    await dbConnect();
-
-    const { id } = await params;
+    const prisma = dbConnect();
+    const { id } = params;
 
     // Extrair token do header Authorization
     const token = extractTokenFromRequest(request);
@@ -32,15 +29,40 @@ export async function GET(
     }
 
     // Verificar se é admin ou o próprio usuário
-    if (payload.role !== 'admin' && payload.userId !== id) {
+    if (payload.role !== 'ADMIN' && payload.userId !== id) {
       return NextResponse.json(
         { error: 'Access denied' },
         { status: 403 }
       );
     }
 
-    // Buscar usuário
-    const user = await User.findById(id, '-password').populate('courses');
+    // Buscar usuário com enrollments
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        enrollments: {
+          include: {
+            course: {
+              include: {
+                modules: {
+                  include: {
+                    lessons: true
+                  }
+                }
+              }
+            },
+            progress: true
+          }
+        }
+      }
+    });
+
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
@@ -48,12 +70,9 @@ export async function GET(
       );
     }
 
-    // Buscar progresso do usuário
-    const enrollments = await Enrollment.find({ user: id }).populate('course');
-
     return NextResponse.json({
       user,
-      enrollments,
+      enrollments: user.enrollments,
     });
 
   } catch (error) {
@@ -67,12 +86,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    await dbConnect();
-
-    const { id } = await params;
+    const prisma = dbConnect();
+    const { id } = params;
 
     // Extrair token do header Authorization
     const token = extractTokenFromRequest(request);
@@ -93,7 +111,7 @@ export async function PUT(
     }
 
     // Verificar se é admin
-    if (payload.role !== 'admin') {
+    if (payload.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -104,21 +122,23 @@ export async function PUT(
 
     // Remover campos que não devem ser atualizados diretamente
     delete updateData.password;
-    delete updateData._id;
+    delete updateData.id;
+    delete updateData.createdAt;
+    delete updateData.updatedAt;
 
     // Atualizar usuário
-    const user = await User.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    ).select('-password');
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
+    const user = await prisma.user.update({
+      where: { id },
+      data: updateData,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
 
     return NextResponse.json({ user });
 
@@ -130,4 +150,3 @@ export async function PUT(
     );
   }
 }
-

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
-import dbConnect from '@/lib/mongodb';
-import Course from '@/models/Course';
+import dbConnect from '@/lib/database';
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN!,
@@ -9,7 +8,7 @@ const client = new MercadoPagoConfig({
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
+    const prisma = dbConnect();
 
     const { courseId, userEmail, userName } = await request.json();
 
@@ -21,7 +20,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar curso
-    const course = await Course.findById(courseId);
+    const course = await prisma.course.findUnique({
+      where: { id: courseId }
+    });
     if (!course) {
       return NextResponse.json(
         { error: 'Course not found' },
@@ -34,11 +35,11 @@ export async function POST(request: NextRequest) {
     const preferenceData = {
       items: [
         {
-          id: course._id.toString(),
+          id: course.id,
           title: course.title,
           description: course.description,
           quantity: 1,
-          unit_price: course.price,
+          unit_price: Number(course.price),
         },
       ],
       payer: {
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
       auto_return: 'approved',
       notification_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/mercadopago`,
       external_reference: JSON.stringify({
-        courseId: course._id.toString(),
+        courseId: course.id,
         userEmail,
         userName,
       }),
@@ -75,4 +76,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

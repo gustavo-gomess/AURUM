@@ -1,11 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 
-const JWT_SECRET = process.env.JWT_SECRET!;
-
-if (!JWT_SECRET) {
-  throw new Error('Please define the JWT_SECRET environment variable inside .env.local');
-}
+const JWT_SECRET = process.env.JWT_SECRET || "aurum-jwt-secret-muito-seguro-para-desenvolvimento-local";
 
 export interface JWTPayload {
   userId: string;

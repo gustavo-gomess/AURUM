@@ -1,26 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Comment from '@/models/Comment';
+import dbConnect from '@/lib/database';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  await dbConnect();
+  const prisma = dbConnect();
   try {
     const { id: lessonId } = params;
-    const comments = await Comment.find({ lessonId, parentId: { $exists: false } })
-      .populate("userId", "name")
-      .populate("answeredBy", "name")
-      .sort({ timestamp: 1 });
+    
+    // Buscar comentários principais (sem parentId)
+    const comments = await prisma.comment.findMany({
+      where: { 
+        lessonId, 
+        parentId: null 
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true
+          }
+        },
+        answeredByUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true
+          }
+        },
+        replies: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true
+              }
+            },
+            answeredByUser: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true
+              }
+            }
+          },
+          orderBy: { timestamp: 'asc' }
+        }
+      },
+      orderBy: { timestamp: 'asc' }
+    });
 
-    const populatedComments = await Promise.all(comments.map(async (comment) => {
-      const replies = await Comment.find({ parentId: comment._id })
-        .populate("userId", "name")
-        .populate("answeredBy", "name")
-        .sort({ timestamp: 1 });
-      return { ...comment.toObject(), replies };
-    }));
-
-    return NextResponse.json({ success: true, data: populatedComments }, { status: 200 });
+    return NextResponse.json({ success: true, data: comments }, { status: 200 });
   } catch (error: any) {
     console.error("Error fetching comments:", error);
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
@@ -28,7 +63,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  await dbConnect();
+  const prisma = dbConnect();
   try {
     const { id: lessonId } = params;
     const { content, parentId } = await req.json();
@@ -43,7 +78,24 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return NextResponse.json({ success: false, message: "Invalid or expired token" }, { status: 401 });
     }
 
-    const comment = await Comment.create({ userId: payload.userId, lessonId, content, parentId });
+    const comment = await prisma.comment.create({
+      data: { 
+        userId: payload.userId, 
+        lessonId, 
+        content, 
+        parentId: parentId || null 
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true
+          }
+        }
+      }
+    });
 
     return NextResponse.json({ success: true, data: comment }, { status: 201 });
   } catch (error: any) {
@@ -51,5 +103,3 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
   }
 }
-
-

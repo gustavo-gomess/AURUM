@@ -11,7 +11,7 @@ on:
 
 env:
   NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-  MONGO_URI: ${{ secrets.MONGO_URI }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
   VIMEO_ACCESS_TOKEN: ${{ secrets.VIMEO_ACCESS_TOKEN }}
   AXIOM_TOKEN: ${{ secrets.AXIOM_TOKEN }}
@@ -67,7 +67,7 @@ jobs:
           docker rm aurum-plataforma || true && \
           docker run -d --name aurum-plataforma -p 3000:3000 \
           -e NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} \
-          -e MONGO_URI=${{ secrets.MONGO_URI }} \
+          -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
           -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
           -e VIMEO_ACCESS_TOKEN=${{ secrets.VIMEO_ACCESS_TOKEN }} \
           -e AXIOM_TOKEN=${{ secrets.AXIOM_TOKEN }} \

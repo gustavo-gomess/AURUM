@@ -11,12 +11,12 @@ export async function middleware(request: NextRequest) {
 
   try {
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET || "");
-    if (request.nextUrl.pathname.startsWith("/admin") && decoded.role !== "admin") {
+    if (request.nextUrl.pathname.startsWith("/admin") && decoded.role !== "ADMIN") {
       return NextResponse.json({ message: "Access Denied: Admins only" }, { status: 403 });
     }
     return NextResponse.next();
   } catch (error) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/login", request.url)); 
   }
 }
 

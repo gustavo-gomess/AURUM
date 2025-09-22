@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
-import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
-import Course from '@/models/Course';
-import Enrollment from '@/models/Enrollment';
+import dbConnect from '@/lib/database';
 import { hashPassword } from '@/lib/auth';
+import { Role } from '@prisma/client';
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN!,
@@ -12,8 +10,7 @@ const client = new MercadoPagoConfig({
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
-
+    const prisma = dbConnect();
     const body = await request.json();
 
     // Verificar se é uma notificação de pagamento
@@ -42,48 +39,44 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar se o usuário já existe
-    let user = await User.findOne({ email: userEmail.toLowerCase() });
+    let user = await prisma.user.findUnique({
+      where: { email: userEmail.toLowerCase() }
+    });
 
     if (!user) {
       // Criar novo usuário com senha temporária
       const tempPassword = Math.random().toString(36).slice(-8);
       const hashedPassword = await hashPassword(tempPassword);
 
-      user = new User({
-        name: userName,
-        email: userEmail.toLowerCase(),
-        password: hashedPassword,
-        role: 'student',
-        courses: [courseId],
+      user = await prisma.user.create({
+        data: {
+          name: userName,
+          email: userEmail.toLowerCase(),
+          password: hashedPassword,
+          role: Role.STUDENT,
+        }
       });
-
-      await user.save();
 
       // TODO: Enviar email com credenciais de acesso
       console.log(`User created with temporary password: ${tempPassword}`);
-    } else {
-      // Adicionar curso ao usuário existente se ainda não tiver
-      if (!user.courses.includes(courseId)) {
-        user.courses.push(courseId);
-        await user.save();
-      }
     }
 
     // Verificar se já existe matrícula
-    const existingEnrollment = await Enrollment.findOne({
-      user: user._id,
-      course: courseId,
+    const existingEnrollment = await prisma.enrollment.findFirst({
+      where: {
+        userId: user.id,
+        courseId: courseId,
+      }
     });
 
     if (!existingEnrollment) {
       // Criar nova matrícula
-      const enrollment = new Enrollment({
-        user: user._id,
-        course: courseId,
-        progress: [],
+      await prisma.enrollment.create({
+        data: {
+          userId: user.id,
+          courseId: courseId,
+        }
       });
-
-      await enrollment.save();
     }
 
     return NextResponse.json({ message: 'Payment processed successfully' });
@@ -101,4 +94,3 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
 }
-

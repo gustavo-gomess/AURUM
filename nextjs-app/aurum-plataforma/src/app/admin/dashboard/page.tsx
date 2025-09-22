@@ -92,6 +92,31 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleRoleChange = async (userId: string, role: string) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role }),
+      });
+      if (response.ok) {
+        // Atualiza a lista em memória
+        setUsers((prev) => prev.map((u) => (u._id === userId ? { ...u, role } : u)));
+      } else if (response.status === 403) {
+        alert('Apenas administradores podem alterar papéis.');
+      } else {
+        alert('Erro ao atualizar papel do usuário.');
+      }
+    } catch (e) {
+      alert('Erro de conexão ao atualizar papel.');
+    }
+  };
+
 
 
   if (loading) {

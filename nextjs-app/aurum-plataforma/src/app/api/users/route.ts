@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import dbConnect from '@/lib/database';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect();
+    const prisma = dbConnect();
 
     // Extrair token do header Authorization
     const token = extractTokenFromRequest(request);
@@ -26,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verificar se é admin
-    if (payload.role !== 'admin') {
+    if (payload.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -34,9 +33,23 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar todos os usuários (sem senhas)
-    const users = await User.find({}, '-password').populate('courses');
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        enrollments: {
+          include: {
+            course: true
+          }
+        }
+      }
+    });
 
-    return NextResponse.json({ users });
+    return NextResponse.json({ data: users });
 
   } catch (error) {
     console.error('Get users error:', error);

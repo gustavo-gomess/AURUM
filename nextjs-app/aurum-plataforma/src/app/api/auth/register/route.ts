@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import dbConnect from '@/lib/database';
+import { Role } from '@prisma/client';
 import { hashPassword, generateToken } from '@/lib/auth';
 import rateLimit from '@/lib/rateLimit';
 import logger from '@/lib/logger';
@@ -12,9 +12,9 @@ export async function POST(request: NextRequest) {
   if (res) return res;
 
   try {
-    await dbConnect();
+    const prisma = dbConnect();
 
-    const { name, email, password, role = 'student' } = await request.json();
+    const { name, email, password, role = 'STUDENT' } = await request.json();
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -24,7 +24,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar se o email já existe
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const existingUser = await prisma.user.findUnique({ 
+      where: { email: email.toLowerCase() }
+    });
     if (existingUser) {
       return NextResponse.json(
         { error: 'User with this email already exists' },
@@ -36,30 +38,28 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await hashPassword(password);
 
     // Criar novo usuário
-    const user = new User({
-      name,
-      email: email.toLowerCase(),
-      password: hashedPassword,
-      role,
-      courses: [],
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        role: role.toUpperCase() as Role,
+      },
     });
-
-    await user.save();
 
     // Gerar token JWT
     const token = generateToken({
-      userId: user._id.toString(),
+      userId: user.id,
       email: user.email,
       role: user.role,
     });
 
     // Retornar dados do usuário (sem a senha) e token
     const userResponse = {
-      id: user._id,
+      id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
-      courses: user.courses,
     };
 
     return NextResponse.json({

@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Enrollment from '@/models/Enrollment';
+import dbConnect from '@/lib/database';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
+    const prisma = dbConnect();
 
     // Extrair token do header Authorization
     const token = extractTokenFromRequest(request);
@@ -35,9 +34,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar matrícula do usuário no curso
-    const enrollment = await Enrollment.findOne({
-      user: payload.userId,
-      course: courseId,
+    const enrollment = await prisma.enrollment.findFirst({
+      where: {
+        userId: payload.userId,
+        courseId: courseId,
+      },
+      include: {
+        progress: true
+      }
     });
 
     if (!enrollment) {
@@ -48,33 +52,44 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar se já existe progresso para esta aula
-    const existingProgressIndex = enrollment.progress.findIndex(
-      (p: any) => p.moduleIndex === moduleIndex && p.lessonIndex === lessonIndex
-    );
-
-    if (existingProgressIndex >= 0) {
-      // Atualizar progresso existente
-      enrollment.progress[existingProgressIndex].completed = completed;
-      if (completed) {
-        enrollment.progress[existingProgressIndex].completedAt = new Date();
-      } else {
-        enrollment.progress[existingProgressIndex].completedAt = undefined;
+    const existingProgress = await prisma.progress.findFirst({
+      where: {
+        enrollmentId: enrollment.id,
+        moduleIndex: moduleIndex,
+        lessonIndex: lessonIndex,
       }
+    });
+
+    if (existingProgress) {
+      // Atualizar progresso existente
+      await prisma.progress.update({
+        where: { id: existingProgress.id },
+        data: {
+          completed,
+          completedAt: completed ? new Date() : null,
+        }
+      });
     } else {
       // Criar novo progresso
-      enrollment.progress.push({
-        moduleIndex,
-        lessonIndex,
-        completed,
-        completedAt: completed ? new Date() : undefined,
+      await prisma.progress.create({
+        data: {
+          enrollmentId: enrollment.id,
+          moduleIndex,
+          lessonIndex,
+          completed,
+          completedAt: completed ? new Date() : null,
+        }
       });
     }
 
-    await enrollment.save();
+    // Buscar progresso atualizado
+    const updatedProgress = await prisma.progress.findMany({
+      where: { enrollmentId: enrollment.id }
+    });
 
     return NextResponse.json({
       message: 'Progress updated successfully',
-      progress: enrollment.progress,
+      progress: updatedProgress,
     });
 
   } catch (error) {
@@ -85,4 +100,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

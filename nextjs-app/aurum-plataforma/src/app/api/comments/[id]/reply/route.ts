@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Comment from '@/models/Comment';
+import dbConnect from '@/lib/database';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  await dbConnect();
+  const prisma = dbConnect();
   try {
     const { id: commentId } = params;
     const { answerContent } = await req.json();
@@ -15,24 +14,44 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     const payload: any = verifyToken(token);
-    if (!payload || payload.role !== 'admin') {
+    if (!payload || payload.role !== 'ADMIN') {
       return NextResponse.json({ success: false, message: 'Admin access required' }, { status: 403 });
     }
 
-    const comment = await Comment.findById(commentId);
+    const comment = await prisma.comment.findUnique({ where: { id: commentId } });
     if (!comment) {
       return NextResponse.json({ success: false, message: 'Comment not found' }, { status: 404 });
     }
 
-    comment.answeredBy = payload.userId;
-    comment.answerContent = answerContent;
-    await comment.save();
+    const updatedComment = await prisma.comment.update({
+      where: { id: commentId },
+      data: {
+        answeredBy: payload.userId,
+        answerContent: answerContent,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true
+          }
+        },
+        answeredByUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true
+          }
+        }
+      }
+    });
 
-    return NextResponse.json({ success: true, data: comment }, { status: 200 });
+    return NextResponse.json({ success: true, data: updatedComment }, { status: 200 });
   } catch (error: any) {
     console.error('Error replying to comment:', error);
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
   }
 }
-
-

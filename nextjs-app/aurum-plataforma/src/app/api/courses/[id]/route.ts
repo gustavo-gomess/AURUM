@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Course from '@/models/Course';
+import dbConnect from '@/lib/database';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 import { redisClient, connectRedis } from '@/lib/cache';
 import logger from '@/lib/logger';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    await dbConnect();
+    const prisma = dbConnect();
     await connectRedis();
 
-    const { id } = await params;
+    const { id } = params;
     const cacheKey = `course:${id}`;
 
     // Tentar buscar do cache
@@ -24,7 +23,16 @@ export async function GET(
     }
 
     // Buscar curso por ID
-    const course = await Course.findById(id);
+    const course = await prisma.course.findUnique({
+      where: { id },
+      include: {
+        modules: {
+          include: {
+            lessons: true
+          }
+        }
+      }
+    });
     if (!course) {
       logger.warn(`Course ${id} not found.`);
       return NextResponse.json(
@@ -50,13 +58,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    await dbConnect();
+    const prisma = dbConnect();
     await connectRedis();
 
-    const { id } = await params;
+    const { id } = params;
     const cacheKey = `course:${id}`;
 
     // Extrair token do header Authorization
@@ -80,7 +88,7 @@ export async function PUT(
     }
 
     // Verificar se é admin
-    if (payload.role !== 'admin') {
+    if (payload.role !== 'ADMIN') {
       logger.warn(`User ${payload.userId} attempted to update course ${id} without admin privileges.`);
       return NextResponse.json(
         { error: 'Admin access required' },
@@ -91,11 +99,17 @@ export async function PUT(
     const updateData = await request.json();
 
     // Atualizar curso
-    const course = await Course.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    const course = await prisma.course.update({
+      where: { id },
+      data: updateData,
+      include: {
+        modules: {
+          include: {
+            lessons: true
+          }
+        }
+      }
+    });
 
     if (!course) {
       logger.warn(`Course ${id} not found for update.`);
@@ -122,13 +136,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    await dbConnect();
+    const prisma = dbConnect();
     await connectRedis();
 
-    const { id } = await params;
+    const { id } = params;
     const cacheKey = `course:${id}`;
 
     // Extrair token do header Authorization
@@ -152,7 +166,7 @@ export async function DELETE(
     }
 
     // Verificar se é admin
-    if (payload.role !== 'admin') {
+    if (payload.role !== 'ADMIN') {
       logger.warn(`User ${payload.userId} attempted to delete course ${id} without admin privileges.`);
       return NextResponse.json(
         { error: 'Admin access required' },
@@ -161,7 +175,9 @@ export async function DELETE(
     }
 
     // Deletar curso
-    const course = await Course.findByIdAndDelete(id);
+    const course = await prisma.course.delete({
+      where: { id }
+    });
 
     if (!course) {
       logger.warn(`Course ${id} not found for deletion.`);
