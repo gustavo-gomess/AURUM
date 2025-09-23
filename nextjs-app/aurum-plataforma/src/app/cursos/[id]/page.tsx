@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Navigation } from '@/components/navigation'
+import { VimeoPlayer } from '@/components/VimeoPlayer'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -351,33 +352,10 @@ export default function CoursePage() {
                 {/* Player de Vídeo */}
                 <Card className="bg-gray-900 border-gray-800">
                   <CardContent className="p-6">
-                    <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden">
-                      {currentLessonData.vimeoVideoId && currentLessonData.vimeoVideoId !== '000000000' ? (
-                        <iframe
-                          src={`https://player.vimeo.com/video/${currentLessonData.vimeoVideoId}?title=0&byline=0&portrait=0`}
-                          width="100%"
-                          height="100%"
-                          frameBorder="0"
-                          allow="autoplay; fullscreen; picture-in-picture"
-                          allowFullScreen
-                          className="w-full h-full"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                              <Play className="w-8 h-8 text-gray-500" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-400 mb-2">
-                              Conteúdo em breve
-                            </h3>
-                            <p className="text-gray-500">
-                              Esta aula estará disponível em breve
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    <VimeoPlayer 
+                      videoId={currentLessonData.vimeoVideoId}
+                      title={currentLessonData.title}
+                    />
                   </CardContent>
                 </Card>
 
