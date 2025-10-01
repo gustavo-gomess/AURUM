@@ -6,12 +6,13 @@ O objetivo é desenvolver uma plataforma de e-learning para um único curso com 
 
 ## 2\. Tecnologias Utilizadas
 
-  - **Frontend:** Next.js (com React), Tailwind CSS
+  - **Frontend:** Next.js 15 (com React 19), Tailwind CSS, Radix UI
   - **Backend:** Next.js (API Routes), TypeScript
-  - **Banco de Dados:** MongoDB com Mongoose
+  - **Banco de Dados:** PostgreSQL com Prisma ORM
   - **Autenticação:** JWT (JSON Web Tokens) com bcrypt para hashing de senhas
-  - **Cache:** Redis
+  - **Cache:** Redis (implementado mas não configurado em produção)
   - **Pagamentos:** Mercado Pago
+  - **Player de Vídeo:** Vimeo
   - **Geração de PDF:** Puppeteer
   - **CI/CD:** GitHub Actions, Docker
   - **Logging:** Winston, Axiom
@@ -25,8 +26,8 @@ Siga os passos abaixo para configurar e executar o ambiente de desenvolvimento l
 
   - Node.js (versão 20 ou superior)
   - npm, yarn, pnpm ou bun
-  - MongoDB (pode ser uma instância local ou um serviço como o MongoDB Atlas)
-  - Redis (pode ser uma instância local)
+  - PostgreSQL (versão 14 ou superior - local ou serviço como Neon, Supabase, Railway)
+  - Redis (opcional, para cache - pode ser uma instância local)
   - Docker (opcional, para rodar via contêiner)
 
 ### 3.2. Configuração do Ambiente
@@ -54,13 +55,13 @@ Siga os passos abaixo para configurar e executar o ambiente de desenvolvimento l
     Crie um arquivo `.env.local` na raiz do diretório `nextjs-app/aurum-plataforma` e adicione as seguintes variáveis. Substitua os valores de exemplo pelos seus.
 
     ```env
-    # URL da sua instância do MongoDB
-    MONGO_URI=mongodb://localhost:27017/aurum
+    # URL da sua instância do PostgreSQL
+    DATABASE_URL=postgresql://usuario:senha@localhost:5432/aurum_db?schema=public
 
     # Segredo para a geração de tokens JWT (use uma string longa e segura)
     JWT_SECRET=SEU_SEGREDO_SUPER_SECRETO
 
-    # URL da sua instância do Redis
+    # URL da sua instância do Redis (opcional)
     REDIS_URL=redis://localhost:6379
 
     # URL pública da sua aplicação (para webhooks e redirects)
@@ -78,6 +79,15 @@ Siga os passos abaixo para configurar e executar o ambiente de desenvolvimento l
     VIMEO_ACCESS_TOKEN=
     ```
 
+4.  **Configure o Banco de Dados:**
+    Execute as migrations do Prisma para criar as tabelas no banco de dados:
+
+    ```bash
+    npx prisma migrate dev
+    # ou para apenas gerar o cliente Prisma
+    npx prisma generate
+    ```
+
 ### 3.3. Rodando a Aplicação
 
 Com as dependências instaladas e as variáveis de ambiente configuradas, inicie o servidor de desenvolvimento:
@@ -92,7 +102,36 @@ pnpm dev
 bun dev
 ```
 
-Abra [http://localhost:3000](https://www.google.com/search?q=http://localhost:3000) no seu navegador para ver a aplicação em funcionamento.
+Abra [http://localhost:3000](http://localhost:3000) no seu navegador para ver a aplicação em funcionamento.
+
+### 3.4. Populando o Banco com Dados de Demonstração
+
+Para facilitar o desenvolvimento e testes, existe uma API de seed que cria um curso completo com 6 módulos e 40 aulas:
+
+1. **Primeiro, crie um usuário admin:**
+   - Faça o registro através da API ou interface
+   - Ou use a rota de desenvolvimento: `POST /api/dev/create-users`
+
+2. **Execute o seed:**
+   ```bash
+   # Via API (com token de admin):
+   POST http://localhost:3000/api/dev/seed
+   Authorization: Bearer SEU_TOKEN_ADMIN
+   ```
+
+   Ou use o script batch no Windows:
+   ```bash
+   cd nextjs-app/aurum-plataforma
+   .\seed-course.bat
+   ```
+
+Isso criará o curso "EDUCAÇÃO FINANCEIRA BÁSICA" com:
+- Módulo 1: Mentalidade Financeira (15 aulas)
+- Módulo 2: Orçamento Pessoal (5 aulas)
+- Módulo 3: Investimentos Básicos (5 aulas)
+- Módulo 4: Controle de Dívidas (5 aulas)
+- Módulo 5: Planejamento Financeiro (5 aulas)
+- Módulo Extra: Conteúdo Bônus (5 aulas)
 
 ## 4\. Análise Detalhada da Estrutura e Classes
 
@@ -140,74 +179,83 @@ Abra [http://localhost:3000](https://www.google.com/search?q=http://localhost:30
 └── package.json            # Dependências e scripts do projeto
 ```
 
-### 4.2. Análise dos Models (Mongoose)
+### 4.2. Análise do Schema do Prisma (PostgreSQL)
 
-Os models definem a estrutura dos dados no MongoDB.
+O schema do Prisma define a estrutura das tabelas no banco de dados PostgreSQL. Localização: `prisma/schema.prisma`
 
-#### **User.ts**
+#### **Model User**
+  - `id`: CUID, chave primária
+  - `name`: String (máx. 60 caracteres)
+  - `email`: String, único
+  - `password`: String (hash bcrypt)
+  - `role`: Enum (ADMIN | STUDENT), padrão: STUDENT
+  - `createdAt`, `updatedAt`: Timestamps automáticos
+  - **Relacionamentos**: enrollments (1:N), comments (1:N), answeredComments (1:N)
 
-  - **Interface `IUser`**: Define a estrutura de um documento de usuário.
-  - **Schema `UserSchema`**:
-      - `name`: `String`, obrigatório, máximo de 60 caracteres.
-      - `email`: `String`, obrigatório, único e em minúsculas.
-      - `password`: `String`, obrigatório, mínimo de 6 caracteres.
-      - `role`: `String`, pode ser 'admin' ou 'student', com 'student' como padrão.
-      - `courses`: Array de `ObjectId`s, referenciando o model `Course`. Armazena os cursos nos quais o usuário está matriculado.
-  - **Timestamps**: Adiciona os campos `createdAt` e `updatedAt` automaticamente.
+#### **Model Course**
+  - `id`: CUID, chave primária
+  - `title`: String (máx. 100 caracteres)
+  - `description`: String
+  - `instructor`: String
+  - `price`: Decimal (10,2)
+  - `createdAt`, `updatedAt`: Timestamps automáticos
+  - **Relacionamentos**: modules (1:N), enrollments (1:N)
 
-#### **Course.ts**
+#### **Model Module**
+  - `id`: CUID, chave primária
+  - `title`: String (máx. 100 caracteres)
+  - `description`: String (opcional)
+  - `order`: Integer
+  - `courseId`: String, foreign key para Course
+  - `createdAt`, `updatedAt`: Timestamps automáticos
+  - **Relacionamentos**: course (N:1), lessons (1:N)
+  - **Cascata**: Delete cascade ao deletar curso
 
-  - **Interface `ICourse`**: Define a estrutura de um documento de curso.
-  - **Schema `CourseSchema`**:
-      - `title`: `String`, obrigatório, máximo de 100 caracteres.
-      - `description`: `String`, obrigatório.
-      - `instructor`: `String`, obrigatório.
-      - `price`: `Number`, obrigatório, não pode ser negativo.
-      - `modules`: Array de `ObjectId`s, referenciando o model `Module`.
+#### **Model Lesson**
+  - `id`: CUID, chave primária
+  - `title`: String (máx. 100 caracteres)
+  - `description`: String (opcional)
+  - `vimeoVideoId`: String
+  - `order`: Integer
+  - `tasks`: Array de strings
+  - `moduleId`: String, foreign key para Module
+  - `courseId`: String, foreign key para Course
+  - `createdAt`, `updatedAt`: Timestamps automáticos
+  - **Relacionamentos**: module (N:1), comments (1:N)
+  - **Cascata**: Delete cascade ao deletar módulo
 
-#### **Module.ts**
+#### **Model Enrollment**
+  - `id`: CUID, chave primária
+  - `userId`: String, foreign key para User
+  - `courseId`: String, foreign key para Course
+  - `enrolledAt`: DateTime (padrão: now)
+  - `completedAt`: DateTime (opcional)
+  - **Relacionamentos**: user (N:1), course (N:1), progress (1:N)
+  - **Constraint**: Unique index em (userId, courseId) para evitar matrículas duplicadas
+  - **Cascata**: Delete cascade ao deletar usuário ou curso
 
-  - **Interface `IModule`**: Define a estrutura de um documento de módulo.
-  - **Schema `ModuleSchema`**:
-      - `title`: `String`, obrigatório, máximo de 100 caracteres.
-      - `description`: `String`, opcional.
-      - `lessons`: Array de um sub-schema `LessonSchema`, permitindo que as aulas sejam aninhadas diretamente no módulo.
-      - `order`: `Number`, obrigatório, para definir a ordem dos módulos no curso.
-      - `courseId`: `ObjectId`, obrigatório, referenciando o model `Course`.
+#### **Model Progress**
+  - `id`: CUID, chave primária
+  - `enrollmentId`: String, foreign key para Enrollment
+  - `moduleIndex`: Integer
+  - `lessonIndex`: Integer
+  - `completed`: Boolean (padrão: false)
+  - `completedAt`: DateTime (opcional)
+  - **Relacionamentos**: enrollment (N:1)
+  - **Constraint**: Unique index em (enrollmentId, moduleIndex, lessonIndex)
+  - **Cascata**: Delete cascade ao deletar enrollment
 
-#### **Lesson.ts**
-
-  - **Interface `ILesson`**: Define a estrutura de um documento de aula.
-  - **Schema `LessonSchema`**:
-      - `title`: `String`, obrigatório, máximo de 100 caracteres.
-      - `description`: `String`, opcional.
-      - `vimeoVideoId`: `String`, obrigatório, para o ID do vídeo no Vimeo.
-      - `order`: `Number`, obrigatório, para a ordem das aulas no módulo.
-      - `tasks`: Array de `String`s, opcional.
-      - `moduleId`: `ObjectId`, obrigatório, referenciando `Module`.
-      - `courseId`: `ObjectId`, obrigatório, referenciando `Course`.
-
-#### **Enrollment.ts**
-
-  - **Interface `IEnrollment` e `IProgress`**: Define a matrícula e o progresso do aluno.
-  - **Schema `EnrollmentSchema`**:
-      - `user`: `ObjectId`, obrigatório, referenciando `User`.
-      - `course`: `ObjectId`, obrigatório, referenciando `Course`.
-      - `progress`: Array de `ProgressSchema`, armazenando o status de cada aula (concluída ou não).
-      - `enrolledAt`: `Date`, data da matrícula.
-      - `completedAt`: `Date`, data de conclusão do curso.
-  - **Índice**: Um índice único em `user` e `course` para evitar matrículas duplicadas.
-
-#### **Comment.ts**
-
-  - **Interface `IComment`**: Estrutura para os comentários nas aulas.
-  - **Schema `CommentSchema`**:
-      - `userId`: `ObjectId`, referenciando `User`.
-      - `lessonId`: `ObjectId`, referenciando `Lesson`.
-      - `content`: `String`, o texto do comentário.
-      - `parentId`: `ObjectId`, opcional, para respostas a outros comentários.
-      - `answeredBy`: `ObjectId`, opcional, para a resposta do administrador.
-      - `answerContent`: `String`, opcional, o conteúdo da resposta.
+#### **Model Comment**
+  - `id`: CUID, chave primária
+  - `userId`: String, foreign key para User
+  - `lessonId`: String, foreign key para Lesson
+  - `content`: String
+  - `timestamp`: DateTime (padrão: now)
+  - `parentId`: String (opcional), para respostas a comentários
+  - `answeredBy`: String (opcional), foreign key para User (admin)
+  - `answerContent`: String (opcional)
+  - **Relacionamentos**: user (N:1), lesson (N:1), parent (N:1), replies (1:N), answeredByUser (N:1)
+  - **Cascata**: Delete cascade ao deletar usuário ou aula
 
 ### 4.3. Análise das Rotas da API (`src/app/api`)
 
@@ -246,38 +294,331 @@ A API segue o padrão RESTful e utiliza o App Router do Next.js.
 ### 4.5. Análise dos Módulos de Suporte (`src/lib`)
 
   - **`auth.ts`**: Centraliza toda a lógica de JWT e hashing de senhas. Funções como `generateToken`, `verifyToken`, `hashPassword`, e `comparePassword` são exportadas daqui.
-  - **`cache.ts`**: Configura a conexão com o Redis, que é usado para cachear dados de cursos e reduzir a carga no banco de dados.
-  - **`logger.ts`**: Implementa o logging com Winston, configurado para salvar logs em arquivos e no console durante o desenvolvimento.
-  - **`mongodb.ts`**: Gerencia a conexão com o MongoDB, utilizando um padrão de cache para evitar múltiplas conexões em ambientes serverless.
-  - **`rateLimit.ts`**: Fornece um middleware de limitação de requisições para proteger a API contra ataques de força bruta, especialmente nos endpoints de login e registro.
+  - **`cache.ts`**: Configura a conexão com o Redis, que é usado para cachear dados de cursos e reduzir a carga no banco de dados (atualmente implementado mas não ativado).
+  - **`logger.ts`**: Implementa o logging com Winston, configurado para salvar logs em arquivos (combined.log, error.log) e no console durante o desenvolvimento.
+  - **`database.ts`**: Gerencia a conexão com o PostgreSQL através do Prisma Client, utilizando um padrão de cache global para evitar múltiplas conexões em ambientes serverless do Next.js.
+  - **`rateLimit.ts`**: Fornece um middleware de limitação de requisições usando LRU Cache para proteger a API contra ataques de força bruta, especialmente nos endpoints de login e registro (5 requisições por minuto).
+  - **`axiom.ts`**: Configuração para integração com Axiom para logging em produção.
+  - **`utils.ts`**: Funções utilitárias gerais (provavelmente inclui helpers do Tailwind com clsx e tailwind-merge).
 
-## 5\. Próximos Passos e Melhorias (O que precisa ser feito)
+## 5\. Status Detalhado do Projeto
 
-Esta seção pode ser usada para guiar novos desenvolvedores sobre as tarefas pendentes e áreas para melhoria.
+Esta seção apresenta uma análise completa do que foi implementado, o que está em progresso e o que ainda precisa ser desenvolvido.
 
-### 5.1. Funcionalidades a Implementar
+### 5.1. ✅ FUNCIONALIDADES CONCLUÍDAS
 
-  - **Recuperação de Senha**: Implementar um fluxo de "Esqueci minha senha" com envio de email e token de reset.
-  - **Edição de Perfil**: Permitir que os usuários editem suas informações de perfil (nome, senha).
-  - **Paginação na API**: Adicionar paginação nos endpoints que retornam listas (ex: `GET /api/users`, `GET /api/courses`).
-  - **Upload de Arquivos**: Criar uma funcionalidade para que os instrutores possam fazer upload de materiais de apoio para as aulas.
-  - **Notificações por Email**:
-      - Enviar email de boas-vindas no registro.
-      - Enviar email com credenciais temporárias após a compra (conforme `// TODO` no webhook do Mercado Pago).
-      - Notificar administradores sobre novos comentários.
-  - **Testes**: Escrever testes unitários e de integração para a API e componentes frontend. O `package.json` possui um script `test`, mas não há testes configurados.
+#### **Autenticação e Autorização**
+- ✅ Sistema de login com JWT
+- ✅ Registro de usuários
+- ✅ Hash de senhas com bcrypt
+- ✅ Rate limiting em rotas sensíveis (5 req/min no login)
+- ✅ Middleware de proteção para rotas admin
+- ✅ Endpoint `/api/auth/me` para dados do usuário autenticado
+- ✅ Roles (ADMIN e STUDENT)
 
-### 5.2. Melhorias de Código e Arquitetura
+#### **Banco de Dados**
+- ✅ Migração completa de MongoDB para PostgreSQL + Prisma
+- ✅ Schema completo com 7 models (User, Course, Module, Lesson, Enrollment, Progress, Comment)
+- ✅ Relacionamentos configurados com cascade delete
+- ✅ Índices únicos para evitar duplicatas (email, enrollment)
+- ✅ Sistema de migrations configurado
 
-  - **Validação de Entrada (API)**: Utilizar uma biblioteca como Zod ou Joi para validar os corpos das requisições na API, tornando o código mais robusto e seguro.
-  - **Tratamento de Erros**: Padronizar e melhorar o tratamento de erros na API e no frontend para fornecer feedback mais claro ao usuário.
-  - **Variáveis de Ambiente**: Mover todas as strings "mágicas" e configurações (como `expiresIn` do JWT) para variáveis de ambiente.
-  - **Componentização**: Refatorar páginas grandes como `cursos/[id]/page.tsx` e `admin/dashboard/page.tsx` em componentes menores e mais gerenciáveis.
-  - **Estado Global**: Para aplicações mais complexas, considerar o uso de uma biblioteca de gerenciamento de estado como Zustand ou Redux Toolkit para compartilhar o estado do usuário entre as páginas.
-  - **Segurança**: Revisar as permissões de acesso em todas as rotas da API para garantir que apenas os usuários autorizados possam executar determinadas ações. O `middleware.ts` atual protege apenas rotas `/admin` e `/api/admin`. Outras rotas que exigem autenticação devem ser protegidas também.
+#### **Sistema de Cursos**
+- ✅ CRUD completo de cursos (create, read, update, delete)
+- ✅ Estrutura de módulos e aulas (1 curso → N módulos → N aulas)
+- ✅ Sistema de ordenação (modules e lessons têm campo `order`)
+- ✅ Integração com Vimeo para vídeos
+- ✅ API de seed para popular curso de demonstração (40 aulas em 6 módulos)
+- ✅ Script `create-all-modules.js` para criação em massa
 
-### 5.3. Melhorias de UI/UX
+#### **Player de Vídeo**
+- ✅ Componente VimeoPlayer funcional
+- ✅ Integração com API do Vimeo
+- ✅ Player responsivo
 
-  - **Responsividade**: Garantir que todas as páginas sejam totalmente responsivas para dispositivos móveis.
-  - **Feedback ao Usuário**: Adicionar toasts ou notificações para ações como "Progresso salvo com sucesso" ou "Comentário enviado".
-  - **Acessibilidade (a11y)**: Realizar uma auditoria de acessibilidade para garantir que a plataforma seja utilizável por todos.
+#### **Sistema de Progresso**
+- ✅ Model Progress com tracking por aula
+- ✅ API `/api/progress/update` para marcar aulas como concluídas
+- ✅ Tracking de data de conclusão (completedAt)
+- ✅ Verificação de curso completo para certificados
+
+#### **Sistema de Comentários**
+- ✅ CRUD de comentários por aula
+- ✅ Sistema de respostas (parentId para threads)
+- ✅ Campo para respostas de admin (answeredBy, answerContent)
+- ✅ GET `/api/lessons/[id]/comments` e POST para criar
+
+#### **Sistema de Pagamentos**
+- ✅ Integração com Mercado Pago
+- ✅ Criação de preferências de pagamento
+- ✅ Webhook para processar pagamentos aprovados
+- ✅ Criação automática de usuário após pagamento
+- ✅ Matrícula automática após pagamento aprovado
+
+#### **Geração de Certificados**
+- ✅ Componente CertificateTemplate
+- ✅ Geração de PDF com Puppeteer
+- ✅ Verificação de conclusão do curso
+- ✅ API `/api/certificates/generate`
+- ✅ API `/api/certificates/check-completion`
+
+#### **Interface do Usuário**
+- ✅ Dashboard do aluno (StudentDashboard component)
+- ✅ Página de visualização de curso com navegação entre aulas
+- ✅ Sistema de tabs (Comentários e Materiais)
+- ✅ Componentes UI com Radix UI (Avatar, Badge, Button, Card, Progress, Tabs, Textarea)
+- ✅ Design system com Tailwind CSS
+- ✅ Tema dark implementado
+- ✅ Layout responsivo básico
+- ✅ Navegação principal (Navigation component)
+- ✅ Página de login funcional
+
+#### **Logging e Monitoramento**
+- ✅ Winston configurado para logs
+- ✅ Integração com Axiom para logs em produção
+- ✅ Logs de erro e info salvos em arquivos (combined.log, error.log)
+
+#### **DevOps**
+- ✅ Dockerfile configurado
+- ✅ Scripts de setup (setup-completo.bat, setup-database.js)
+- ✅ Ambiente de desenvolvimento configurado
+
+---
+
+### 5.2. ⚠️ FUNCIONALIDADES PARCIALMENTE IMPLEMENTADAS
+
+#### **Cache com Redis**
+- ⚠️ Código implementado em `src/lib/cache.ts`
+- ❌ **FALTA**: Configuração em produção
+- ❌ **FALTA**: Uso efetivo nas rotas (comentado no código)
+- 📝 **TODO**: Ativar cache nas rotas de cursos e aulas
+
+#### **Sistema de Progresso no Frontend**
+- ⚠️ Backend completo
+- ❌ **FALTA**: Botão "Marcar como Concluída" não está conectado à API
+- ❌ **FALTA**: Barra de progresso real (atualmente com dados mockados)
+- ❌ **FALTA**: Desbloqueio progressivo de aulas
+- 📝 **TODO**: Conectar frontend com `/api/progress/update`
+
+#### **Painel Administrativo**
+- ⚠️ Estrutura criada em `/admin/dashboard`
+- ❌ **FALTA**: Implementação completa da UI
+- ❌ **FALTA**: Gerenciamento de usuários (CRUD)
+- ❌ **FALTA**: Visualização de progresso dos alunos
+- ❌ **FALTA**: Responder comentários
+- 📝 **TODO**: Desenvolver páginas de admin completas
+
+#### **Sistema de Notificações**
+- ⚠️ TODO identificado no código (webhook do Mercado Pago linha 60)
+- ❌ **FALTA**: Sistema de envio de emails
+- ❌ **FALTA**: Email com credenciais após pagamento
+- ❌ **FALTA**: Email de boas-vindas
+- ❌ **FALTA**: Notificação de novos comentários
+- 📝 **TODO**: Integrar com serviço de email (SendGrid, Resend, etc.)
+
+#### **Materiais de Apoio**
+- ⚠️ Tab "Materiais" criada na interface
+- ❌ **FALTA**: Sistema de upload de arquivos
+- ❌ **FALTA**: Storage para arquivos (S3, Cloudinary, etc.)
+- ❌ **FALTA**: API para gerenciar materiais
+- 📝 **TODO**: Implementar sistema completo de upload
+
+---
+
+### 5.3. ❌ FUNCIONALIDADES NÃO INICIADAS
+
+#### **Autenticação Avançada**
+- ❌ Recuperação de senha ("Esqueci minha senha")
+- ❌ Verificação de email
+- ❌ Login social (Google, Facebook)
+- ❌ Two-Factor Authentication (2FA)
+
+#### **Perfil de Usuário**
+- ❌ Página de edição de perfil
+- ❌ Upload de foto de perfil
+- ❌ Alteração de senha pelo usuário
+- ❌ Preferências de usuário
+
+#### **Sistema de Avaliação**
+- ❌ Avaliação de aulas com 5 estrelas (mencionado na visão do projeto)
+- ❌ Ranking de vídeos mais bem votados
+- ❌ Sistema de feedback qualitativo
+
+#### **Gamificação**
+- ❌ Sistema de pontos (há UI mockada no dashboard)
+- ❌ Sistema de conquistas/badges
+- ❌ Streak de dias seguidos (há UI mockada)
+- ❌ Ranking de alunos
+
+#### **Comunidade**
+- ❌ Fórum de discussões
+- ❌ Sistema de curtidas em comentários
+- ❌ Notificações em tempo real
+- ❌ Chat entre alunos
+
+#### **Relatórios e Analytics**
+- ❌ Dashboard de métricas para admin
+- ❌ Relatório de progresso por aluno
+- ❌ Analytics de engajamento
+- ❌ Exportação de dados
+
+#### **Landing Page e Marketing**
+- ❌ Landing page completa (existe `/page.tsx` mas está básica)
+- ❌ Página "Sobre nós"
+- ❌ Página de FAQ
+- ❌ Depoimentos de alunos
+- ❌ Carrossel de novidades (mencionado na visão do projeto)
+
+#### **Mobile e PWA**
+- ❌ Progressive Web App (PWA)
+- ❌ App mobile nativo
+- ❌ Otimizações específicas para mobile
+
+#### **Múltiplos Cursos**
+- ❌ Sistema escalável para múltiplos cursos (atualmente focado em 1 curso)
+- ❌ Página de catálogo de cursos
+- ❌ Sistema de categorias
+
+#### **Testes**
+- ❌ Testes unitários
+- ❌ Testes de integração
+- ❌ Testes E2E
+- ❌ Coverage configurado
+
+---
+
+### 5.4. 🔧 MELHORIAS TÉCNICAS NECESSÁRIAS
+
+#### **Segurança**
+- ⚠️ Middleware protege apenas `/admin/*` - outras rotas precisam de proteção
+- ❌ Validação de input com Zod ou Joi (atualmente validações básicas)
+- ❌ Rate limiting em todas as rotas sensíveis
+- ❌ CORS configurado adequadamente
+- ❌ Helmet para headers de segurança
+- ❌ Sanitização de inputs contra XSS
+
+#### **Performance**
+- ❌ Paginação na API (users, courses, comments)
+- ❌ Lazy loading de componentes
+- ❌ Otimização de imagens com next/image
+- ❌ Code splitting avançado
+- ❌ Service Worker para cache
+
+#### **Código**
+- ❌ Tratamento de erros padronizado
+- ❌ Componentização de páginas grandes (`cursos/[id]/page.tsx` tem 517 linhas)
+- ❌ Estado global (Zustand/Redux) - atualmente usa localStorage
+- ❌ Tipos TypeScript mais estritos (alguns `any` no código)
+- ❌ Documentação de código (JSDoc)
+- ❌ Variáveis de ambiente para magic numbers
+
+#### **UI/UX**
+- ❌ Sistema de feedback (toasts/notifications)
+- ❌ Loading states consistentes
+- ❌ Error states e error boundaries
+- ❌ Animações e transições
+- ❌ Auditoria de acessibilidade (a11y)
+- ❌ Suporte a temas (dark/light mode toggle)
+- ❌ Internacionalização (i18n)
+
+#### **DevOps**
+- ❌ CI/CD pipeline (GitHub Actions configurado mas não detalhado)
+- ❌ Ambiente de staging
+- ❌ Monitoramento de erros (Sentry)
+- ❌ Backups automáticos do banco
+- ❌ Health checks
+- ❌ Deploy automatizado
+
+---
+
+### 5.5. 📋 RESUMO EXECUTIVO
+
+**Estatísticas do Projeto:**
+- ✅ **Concluído**: ~60% do core (autenticação, cursos, progresso, pagamentos, certificados)
+- ⚠️ **Parcial**: ~15% (admin panel, cache, materiais, progresso no frontend)
+- ❌ **Não Iniciado**: ~25% (avaliações, gamificação, múltiplos cursos, testes)
+
+**Prioridades Sugeridas:**
+
+**Alta Prioridade (Próximas Sprints):**
+1. Conectar progresso do frontend com API
+2. Implementar sistema de emails (credenciais pós-pagamento)
+3. Completar painel administrativo básico
+4. Adicionar validação de inputs (Zod)
+5. Implementar sistema de feedback (toasts)
+
+**Média Prioridade:**
+6. Sistema de recuperação de senha
+7. Edição de perfil
+8. Sistema de materiais de apoio
+9. Paginação na API
+10. Testes unitários básicos
+
+**Baixa Prioridade (Futuro):**
+11. Sistema de avaliação com estrelas
+12. Gamificação completa
+13. Múltiplos cursos
+14. PWA e mobile
+15. Internacionalização
+
+---
+
+## 6\. Observações Importantes
+
+### 6.1. Mudanças Técnicas Importantes
+- **Migração de Banco de Dados**: O projeto foi migrado de MongoDB/Mongoose para PostgreSQL/Prisma. Isso afeta toda a camada de dados.
+- **Pasta `src/models`**: Está vazia pois o projeto não usa mais Mongoose. Os schemas agora estão em `prisma/schema.prisma`.
+- **Cache Redis**: Implementado mas não ativado em produção. Código está comentado nas rotas.
+
+### 6.2. Arquivos de Configuração
+- **`.env.local`**: Necessário criar manualmente (não está versionado por segurança)
+- **`combined.log` e `error.log`**: Arquivos de log gerados automaticamente pelo Winston
+- **Scripts .bat**: Scripts auxiliares para Windows (setup, seed, fix-videos, etc.)
+
+### 6.3. Segurança
+- Nunca commite o arquivo `.env.local` com credenciais reais
+- A `JWT_SECRET` deve ser uma string longa e aleatória em produção
+- As chaves do Mercado Pago devem ser configuradas para produção antes do deploy
+- Redis não está sendo usado atualmente - pode ser removido das dependências se não for necessário
+
+### 6.4. Desenvolvimento
+- Use as rotas de desenvolvimento (`/api/dev/*`) apenas em ambiente local
+- O endpoint de seed é protegido e requer autenticação de admin
+- Há vários scripts JavaScript na raiz para tarefas específicas (cleanup, create modules, etc.)
+
+---
+
+## 7\. Contribuindo para o Projeto
+
+### 7.1. Workflow de Desenvolvimento
+1. Crie uma branch feature: `git checkout -b feature/nome-da-feature`
+2. Faça suas alterações
+3. Execute os testes (quando implementados)
+4. Commit suas mudanças: `git commit -m "feat: descrição da feature"`
+5. Push para o repositório: `git push origin feature/nome-da-feature`
+6. Abra um Pull Request
+
+### 7.2. Padrões de Código
+- Use TypeScript para todos os novos arquivos
+- Siga o padrão de nomenclatura do Next.js (App Router)
+- Mantenha os componentes pequenos e reutilizáveis
+- Documente funções complexas com JSDoc
+- Use Prettier para formatação (configurar no futuro)
+
+### 7.3. Commits
+Siga o padrão Conventional Commits:
+- `feat`: Nova funcionalidade
+- `fix`: Correção de bug
+- `docs`: Apenas documentação
+- `style`: Formatação (sem mudança de código)
+- `refactor`: Refatoração de código
+- `test`: Adicionar ou modificar testes
+- `chore`: Tarefas de manutenção
+
+---
+
+## 8\. Contato e Suporte
+
+Para dúvidas sobre o projeto, entre em contato com a equipe AURUM.
+
+**Última atualização do README:** 30 de Setembro de 2025
