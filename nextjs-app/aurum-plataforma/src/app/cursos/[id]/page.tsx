@@ -21,7 +21,9 @@ import {
   ChevronRight,
   Award,
   FileText,
-  Users
+  Users,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 
 interface Course {
@@ -61,6 +63,14 @@ interface Comment {
   replies?: Comment[];
 }
 
+interface ProgressItem {
+  id: string;
+  moduleIndex: number;
+  lessonIndex: number;
+  completed: boolean;
+  completedAt: string | null;
+}
+
 export default function CoursePage() {
   const [course, setCourse] = useState<Course | null>(null)
   const [currentModule, setCurrentModule] = useState(0)
@@ -69,6 +79,9 @@ export default function CoursePage() {
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState('')
   const [user, setUser] = useState<any>(null)
+  const [progress, setProgress] = useState<ProgressItem[]>([])
+  const [markingComplete, setMarkingComplete] = useState(false)
+  const [expandedModules, setExpandedModules] = useState<Set<number>>(new Set([0])) // Primeiro módulo expandido por padrão
   const router = useRouter()
   const params = useParams()
 
@@ -101,6 +114,9 @@ export default function CoursePage() {
       if (courseResponse.ok) {
         const courseData = await courseResponse.json()
         setCourse(courseData.course)
+        
+        // Buscar progresso do usuário
+        await fetchProgress(token, params.id as string)
       } else {
         router.push('/cursos')
       }
@@ -110,6 +126,21 @@ export default function CoursePage() {
       router.push('/login')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchProgress = async (token: string, courseId: string) => {
+    try {
+      const response = await fetch(`/api/progress/${courseId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setProgress(data.progress || [])
+      }
+    } catch (error) {
+      console.error('Error fetching progress:', error)
     }
   }
 
@@ -156,9 +187,24 @@ export default function CoursePage() {
     }
   }
 
+  const toggleModule = (moduleIndex: number) => {
+    setExpandedModules(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(moduleIndex)) {
+        newSet.delete(moduleIndex)
+      } else {
+        newSet.add(moduleIndex)
+      }
+      return newSet
+    })
+  }
+
   const selectLesson = (moduleIndex: number, lessonIndex: number) => {
     setCurrentModule(moduleIndex)
     setCurrentLesson(lessonIndex)
+    
+    // Expandir automaticamente o módulo ao selecionar uma aula
+    setExpandedModules(prev => new Set(prev).add(moduleIndex))
     
     const lesson = course?.modules[moduleIndex]?.lessons[lessonIndex]
     if (lesson) {
@@ -167,8 +213,81 @@ export default function CoursePage() {
   }
 
   const isLessonUnlocked = (moduleIndex: number, lessonIndex: number) => {
-    // Para teste, todos os módulos e aulas estão desbloqueados
-    return true
+    // Primeira aula do primeiro módulo sempre está desbloqueada
+    if (moduleIndex === 0 && lessonIndex === 0) {
+      return true
+    }
+
+    // Verificar se a aula anterior foi concluída
+    let previousModuleIndex = moduleIndex
+    let previousLessonIndex = lessonIndex - 1
+
+    // Se é a primeira aula de um módulo, verificar a última aula do módulo anterior
+    if (previousLessonIndex < 0 && moduleIndex > 0) {
+      previousModuleIndex = moduleIndex - 1
+      const previousModule = course?.modules[previousModuleIndex]
+      if (previousModule) {
+        previousLessonIndex = previousModule.lessons.length - 1
+      }
+    }
+
+    // Se é a primeira aula de um módulo mas não é o primeiro módulo
+    if (previousLessonIndex < 0 && moduleIndex === 0) {
+      return false
+    }
+
+    // Verificar se a aula anterior está concluída
+    const previousLesson = progress.find(
+      p => p.moduleIndex === previousModuleIndex && p.lessonIndex === previousLessonIndex
+    )
+
+    return previousLesson?.completed || false
+  }
+
+  const isLessonCompleted = (moduleIndex: number, lessonIndex: number) => {
+    const lessonProgress = progress.find(
+      p => p.moduleIndex === moduleIndex && p.lessonIndex === lessonIndex
+    )
+    return lessonProgress?.completed || false
+  }
+
+  const handleMarkAsComplete = async () => {
+    if (!course || markingComplete) return
+
+    setMarkingComplete(true)
+    
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const response = await fetch('/api/progress/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          courseId: course.id,
+          moduleIndex: currentModule,
+          lessonIndex: currentLesson,
+          completed: true
+        })
+      })
+
+      if (response.ok) {
+        // Atualizar progresso local
+        await fetchProgress(token, course.id)
+        
+        // Avançar automaticamente para a próxima aula
+        setTimeout(() => {
+          nextLesson()
+        }, 500)
+      }
+    } catch (error) {
+      console.error('Error marking lesson as complete:', error)
+    } finally {
+      setMarkingComplete(false)
+    }
   }
 
   const nextLesson = () => {
@@ -278,52 +397,91 @@ export default function CoursePage() {
                   {course.modules.length} módulos disponíveis
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {course.modules.map((module, moduleIndex) => (
-                  <div key={module.id} className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-3 h-3 rounded-full ${
-                        moduleIndex === 0 ? 'bg-yellow-500' : 'bg-gray-600'
-                      }`} />
-                      <h4 className="font-medium text-white text-sm">
-                        {module.title}
-                      </h4>
+              <CardContent className="space-y-2">
+                {course.modules.map((module, moduleIndex) => {
+                  const isExpanded = expandedModules.has(moduleIndex)
+                  const moduleProgress = module.lessons.filter((_, lessonIndex) => 
+                    isLessonCompleted(moduleIndex, lessonIndex)
+                  ).length
+                  const totalLessons = module.lessons.length
+                  
+                  return (
+                    <div key={module.id} className="border border-gray-800 rounded-lg overflow-hidden bg-gray-800/50">
+                      {/* Cabeçalho do Módulo - Clicável */}
+                      <button
+                        onClick={() => toggleModule(moduleIndex)}
+                        className="w-full p-3 flex items-center justify-between hover:bg-gray-800 transition-colors"
+                      >
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                            moduleIndex === 0 ? 'bg-yellow-500' : 'bg-gray-600'
+                          }`} />
+                          <div className="flex-1 min-w-0 text-left">
+                            <h4 className="font-medium text-white text-sm truncate">
+                              Módulo {moduleIndex + 1} - {module.title}
+                            </h4>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {moduleProgress} de {totalLessons} aulas concluídas
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0 ml-2">
+                          {isExpanded ? (
+                            <ChevronUp className="w-4 h-4 text-gray-400" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                          )}
+                        </div>
+                      </button>
+                      
+                      {/* Lista de Aulas - Mostra apenas quando expandido */}
+                      {isExpanded && (
+                        <div className="px-3 pb-3 space-y-1 border-t border-gray-700/50">
+                          {module.lessons.map((lesson, lessonIndex) => {
+                            const isUnlocked = isLessonUnlocked(moduleIndex, lessonIndex)
+                            const isCompleted = isLessonCompleted(moduleIndex, lessonIndex)
+                            const isActive = currentModule === moduleIndex && currentLesson === lessonIndex
+                            
+                            return (
+                              <button
+                                key={lesson.id}
+                                onClick={() => isUnlocked && selectLesson(moduleIndex, lessonIndex)}
+                                disabled={!isUnlocked}
+                                className={`w-full text-left p-2 rounded text-xs transition-colors mt-1 ${
+                                  isActive
+                                    ? 'bg-yellow-500 text-black'
+                                    : isCompleted
+                                    ? 'bg-green-900 hover:bg-green-800 text-green-200 border border-green-700'
+                                    : isUnlocked
+                                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                                    : 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50'
+                                }`}
+                              >
+                                <div className="flex items-center space-x-2 min-w-0">
+                                  <div className="flex-shrink-0">
+                                    {!isUnlocked ? (
+                                      <Lock className="w-3 h-3" />
+                                    ) : isCompleted ? (
+                                      <CheckCircle className="w-3 h-3" />
+                                    ) : isActive ? (
+                                      <Play className="w-3 h-3" />
+                                    ) : (
+                                      <div className="w-3 h-3 rounded-full border border-current" />
+                                    )}
+                                  </div>
+                                  <span className="truncate flex-1">AULA {String(lessonIndex + 1).padStart(2, '0')} {lesson.title}</span>
+                                  {!isUnlocked && (
+                                    <Lock className="w-3 h-3 text-gray-600 flex-shrink-0" />
+                                  )}
+                                </div>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )}
                     </div>
-                    
-                    <div className="ml-5 space-y-1">
-                      {module.lessons.map((lesson, lessonIndex) => {
-                        const isUnlocked = isLessonUnlocked(moduleIndex, lessonIndex)
-                        const isActive = currentModule === moduleIndex && currentLesson === lessonIndex
-                        
-                        return (
-                          <button
-                            key={lesson.id}
-                            onClick={() => isUnlocked && selectLesson(moduleIndex, lessonIndex)}
-                            disabled={!isUnlocked}
-                            className={`w-full text-left p-2 rounded text-xs transition-colors ${
-                              isActive
-                                ? 'bg-yellow-500 text-black'
-                                : isUnlocked
-                                ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-                                : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                            }`}
-                          >
-                            <div className="flex items-center space-x-2">
-                              {!isUnlocked ? (
-                                <Lock className="w-3 h-3" />
-                              ) : isActive ? (
-                                <Play className="w-3 h-3" />
-                              ) : (
-                                <div className="w-3 h-3 rounded-full border border-gray-500" />
-                              )}
-                              <span className="truncate">{lesson.title}</span>
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </CardContent>
             </Card>
           </div>
@@ -372,10 +530,24 @@ export default function CoursePage() {
                   </Button>
 
                   <div className="flex items-center space-x-4">
-                    <Button className="bg-green-600 hover:bg-green-700">
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Marcar como Concluída
-                    </Button>
+                    {isLessonCompleted(currentModule, currentLesson) ? (
+                      <Button 
+                        disabled
+                        className="bg-green-600 opacity-60 cursor-not-allowed"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Aula Concluída
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={handleMarkAsComplete}
+                        disabled={markingComplete}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        {markingComplete ? 'Salvando...' : 'Marcar como Concluída'}
+                      </Button>
+                    )}
                   </div>
 
                   <Button
