@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/database';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const prisma = dbConnect();
   try {
-    const { id } = params;
+    const { id } = await params;
     const lesson = await prisma.lesson.findUnique({
       where: { id },
       include: {
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const prisma = dbConnect();
   try {
     const token = extractTokenFromRequest(req);
@@ -45,7 +45,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (!payload || payload.role !== 'ADMIN') {
       return NextResponse.json({ success: false, message: 'Admin access required' }, { status: 403 });
     }
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const lesson = await prisma.lesson.update({
       where: { id },
@@ -60,7 +60,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const prisma = dbConnect();
   try {
     const token = extractTokenFromRequest(req);
@@ -71,7 +71,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     if (!payload || payload.role !== 'ADMIN') {
       return NextResponse.json({ success: false, message: 'Admin access required' }, { status: 403 });
     }
-    const { id } = params;
+    const { id } = await params;
     
     // Deletar a lesson (Prisma deletará automaticamente comentários devido ao cascade)
     const lesson = await prisma.lesson.delete({

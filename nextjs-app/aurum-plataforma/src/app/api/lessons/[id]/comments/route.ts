@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/database';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const prisma = dbConnect();
   try {
-    const { id: lessonId } = params;
+    const { id: lessonId } = await params;
     
     // Buscar comentários principais (sem parentId)
     const comments = await prisma.comment.findMany({
@@ -62,10 +62,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const prisma = dbConnect();
   try {
-    const { id: lessonId } = params;
+    const { id: lessonId } = await params;
     const { content, parentId } = await req.json();
 
     const token = extractTokenFromRequest(req);

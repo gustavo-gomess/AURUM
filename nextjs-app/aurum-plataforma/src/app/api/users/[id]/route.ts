@@ -4,11 +4,11 @@ import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const prisma = dbConnect();
-    const { id } = params;
+    const { id } = await params;
 
     // Extrair token do header Authorization
     const token = extractTokenFromRequest(request);
@@ -86,11 +86,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const prisma = dbConnect();
-    const { id } = params;
+    const { id } = await params;
 
     // Extrair token do header Authorization
     const token = extractTokenFromRequest(request);

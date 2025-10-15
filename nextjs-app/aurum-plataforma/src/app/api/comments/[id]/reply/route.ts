@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/database';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const prisma = dbConnect();
   try {
-    const { id: commentId } = params;
+    const { id: commentId } = await params;
     const { answerContent } = await req.json();
 
     const token = extractTokenFromRequest(req);
