@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { Navigation } from '@/components/navigation'
 import { VimeoPlayer } from '@/components/VimeoPlayer'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -86,6 +86,7 @@ export default function CoursePage() {
   const [expandedModules, setExpandedModules] = useState<Set<number>>(new Set([0])) // Primeiro módulo expandido por padrão
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -96,6 +97,30 @@ export default function CoursePage() {
 
     fetchUserAndCourse(token)
   }, [params.id, router])
+
+  // Atualizar módulo e aula quando os parâmetros de URL mudarem
+  useEffect(() => {
+    if (course) {
+      const moduleParam = searchParams.get('module')
+      const lessonParam = searchParams.get('lesson')
+      
+      if (moduleParam !== null && lessonParam !== null) {
+        const moduleIndex = parseInt(moduleParam, 10)
+        const lessonIndex = parseInt(lessonParam, 10)
+        
+        if (!isNaN(moduleIndex) && !isNaN(lessonIndex)) {
+          if (moduleIndex >= 0 && moduleIndex < course.modules.length) {
+            if (lessonIndex >= 0 && lessonIndex < course.modules[moduleIndex].lessons.length) {
+              setCurrentModule(moduleIndex)
+              setCurrentLesson(lessonIndex)
+              // Expandir o módulo atual
+              setExpandedModules(prev => new Set(prev).add(moduleIndex))
+            }
+          }
+        }
+      }
+    }
+  }, [course, searchParams])
 
   // Log quando módulo ou aula mudam e carregar comentários
   useEffect(() => {
@@ -317,6 +342,17 @@ export default function CoursePage() {
     return lessonProgress?.completed || false
   }
 
+  const isModuleCompleted = (moduleIndex: number) => {
+    if (!course) return false
+    const module = course.modules[moduleIndex]
+    if (!module || !module.lessons) return false
+    
+    // Verifica se todas as aulas do módulo estão concluídas
+    return module.lessons.every((_, lessonIndex) => 
+      isLessonCompleted(moduleIndex, lessonIndex)
+    )
+  }
+
   const handleMarkAsComplete = async () => {
     if (!course || markingComplete) return
 
@@ -487,32 +523,62 @@ export default function CoursePage() {
                     isLessonCompleted(moduleIndex, lessonIndex)
                   ).length
                   const totalLessons = module.lessons.length
+                  const isCompleted = isModuleCompleted(moduleIndex)
                   
                   return (
-                    <div key={module.id} className="border border-gray-800 rounded-lg overflow-hidden bg-gray-800/50">
+                    <div key={module.id} className={`border rounded-lg overflow-hidden transition-all ${
+                      isCompleted 
+                        ? 'border-green-500 bg-green-900/30' 
+                        : 'border-gray-800 bg-gray-800/50'
+                    }`}>
                       {/* Cabeçalho do Módulo - Clicável */}
                       <button
                         onClick={() => toggleModule(moduleIndex)}
-                        className="w-full p-3 flex items-start justify-between hover:bg-gray-800 transition-colors group"
+                        className={`w-full p-3 flex items-start justify-between transition-colors group ${
+                          isCompleted 
+                            ? 'hover:bg-green-900/50' 
+                            : 'hover:bg-gray-800'
+                        }`}
                       >
                         <div className="flex items-start space-x-2 flex-1 min-w-0">
                           <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${
-                            moduleIndex === 0 ? 'bg-yellow-500' : 'bg-gray-600'
+                            isCompleted 
+                              ? 'bg-green-500' 
+                              : moduleIndex === 0 
+                              ? 'bg-yellow-500' 
+                              : 'bg-gray-600'
                           }`} />
                           <div className="flex-1 min-w-0 text-left">
-                            <h4 className="font-semibold text-white text-xs leading-tight line-clamp-2 group-hover:text-yellow-500 transition-colors">
+                            <h4 className={`font-semibold text-xs leading-tight line-clamp-2 transition-colors ${
+                              isCompleted 
+                                ? 'text-green-400 group-hover:text-green-300' 
+                                : 'text-white group-hover:text-yellow-500'
+                            }`}>
                               {module.title}
                             </h4>
-                            <p className="text-xs text-gray-400 mt-1">
+                            <p className={`text-xs mt-1 ${
+                              isCompleted ? 'text-green-500' : 'text-gray-400'
+                            }`}>
                               {moduleProgress} de {totalLessons} aulas concluídas
                             </p>
                           </div>
                         </div>
                         <div className="flex-shrink-0 ml-2">
+                          {isCompleted && (
+                            <CheckCircle className="w-4 h-4 text-green-500 mr-1" />
+                          )}
                           {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-yellow-500 transition-colors" />
+                            <ChevronUp className={`w-4 h-4 transition-colors ${
+                              isCompleted 
+                                ? 'text-green-400 group-hover:text-green-300' 
+                                : 'text-gray-400 group-hover:text-yellow-500'
+                            }`} />
                           ) : (
-                            <ChevronDown className="w-4 mt-1 mb-4.5 h-4 text-gray-400 group-hover:text-yellow-500 transition-colors" />
+                            <ChevronDown className={`w-4 mt-1 mb-4.5 h-4 transition-colors ${
+                              isCompleted 
+                                ? 'text-green-400 group-hover:text-green-300' 
+                                : 'text-gray-400 group-hover:text-yellow-500'
+                            }`} />
                           )}
                         </div>
                       </button>

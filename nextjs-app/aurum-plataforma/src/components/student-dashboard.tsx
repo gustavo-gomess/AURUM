@@ -55,6 +55,14 @@ interface DashboardData {
     completedLessons: number;
     totalLessons: number;
   };
+  lastWatchedLesson?: {
+    moduleIndex: number;
+    lessonIndex: number;
+    moduleTitle: string;
+    lessonTitle: string;
+    lessonDescription: string;
+    completed: boolean;
+  } | null;
 }
 
 export function StudentDashboard() {
@@ -90,8 +98,10 @@ export function StudentDashboard() {
       const coursesResponse = await fetch('/api/courses')
       const coursesData = await coursesResponse.json()
 
-      // Buscar curso AURUM (único curso da plataforma)
-      const aurumCourse = coursesData.courses?.find((c: any) => c.id === 'aurum-course-id')
+      // Buscar curso AURUM completo com módulos e aulas
+      const aurumCourseResponse = await fetch('/api/courses/aurum-course-id')
+      const aurumCourseData = await aurumCourseResponse.json()
+      const aurumCourse = aurumCourseData.course
       
       // Calcular progresso REAL do usuário
       let progress = {
@@ -101,6 +111,8 @@ export function StudentDashboard() {
         completedLessons: 0,
         totalLessons: 47 // Total de aulas
       }
+
+      let lastWatchedLesson = null
 
       if (aurumCourse) {
         // Buscar progresso real do banco
@@ -145,13 +157,77 @@ export function StudentDashboard() {
 
           // Calcular progresso geral (porcentagem)
           progress.overallProgress = Math.round((completedLessons / progress.totalLessons) * 100)
+
+          // Encontrar a última aula NÃO concluída (aula que o usuário parou)
+          let lastProgress = null
+
+          // Primeiro, tentar encontrar aulas NÃO concluídas ordenadas por última atualização
+          const incompleteLessons = userProgress.filter((p: any) => !p.completed)
+          
+          if (incompleteLessons.length > 0) {
+            // Ordenar por updatedAt (mais recente primeiro)
+            const sortedIncomplete = [...incompleteLessons].sort((a: any, b: any) => {
+              const dateA = new Date(a.updatedAt || a.createdAt).getTime()
+              const dateB = new Date(b.updatedAt || b.createdAt).getTime()
+              return dateB - dateA
+            })
+            lastProgress = sortedIncomplete[0] // Última aula NÃO concluída
+          } else {
+            // Se todas as aulas foram concluídas, pegar a próxima aula disponível
+            // Procurar a primeira aula que não tem progresso registrado
+            let foundNextLesson = false
+            for (let modIndex = 0; modIndex < aurumCourse.modules.length && !foundNextLesson; modIndex++) {
+              const module = aurumCourse.modules[modIndex]
+              for (let lesIndex = 0; lesIndex < module.lessons.length && !foundNextLesson; lesIndex++) {
+                const hasProgress = userProgress.some((p: any) => 
+                  p.moduleIndex === modIndex && p.lessonIndex === lesIndex
+                )
+                if (!hasProgress) {
+                  lastProgress = {
+                    moduleIndex: modIndex,
+                    lessonIndex: lesIndex,
+                    completed: false
+                  }
+                  foundNextLesson = true
+                }
+              }
+            }
+          }
+
+          // Se não há progresso algum, pega a primeira aula do primeiro módulo
+          if (!lastProgress && aurumCourse.modules?.length > 0) {
+            lastProgress = {
+              moduleIndex: 0,
+              lessonIndex: 0,
+              completed: false
+            }
+          }
+
+          // Buscar informações da aula
+          if (lastProgress && aurumCourse.modules) {
+            const module = aurumCourse.modules[lastProgress.moduleIndex]
+            if (module && module.lessons) {
+              const lesson = module.lessons[lastProgress.lessonIndex]
+              if (lesson) {
+                lastWatchedLesson = {
+                  moduleIndex: lastProgress.moduleIndex,
+                  lessonIndex: lastProgress.lessonIndex,
+                  moduleTitle: module.title,
+                  lessonTitle: lesson.title,
+                  lessonDescription: lesson.description || 'Continue sua jornada de aprendizado',
+                  completed: lastProgress.completed || false
+                }
+              }
+            }
+          }
         }
       }
 
       setData({
         user: userData.user,
         courses: coursesData.courses || [],
-        progress
+        progress,
+        lastWatchedLesson
       })
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -187,7 +263,15 @@ export function StudentDashboard() {
     )
   }
 
-  const { user, courses, progress } = data
+  const { user, courses, progress, lastWatchedLesson } = data
+
+  const handleContinueWatching = () => {
+    if (lastWatchedLesson) {
+      // Navegar para o curso com os parâmetros da última aula
+      const url = `/cursos/aurum-course-id?module=${lastWatchedLesson.moduleIndex}&lesson=${lastWatchedLesson.lessonIndex}`
+      router.push(url)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -201,7 +285,7 @@ export function StudentDashboard() {
               <h1 className="text-3xl font-bold text-white mb-2">
                 Olá, {user.name}! 👋
               </h1>
-              <p className="text-gray-400">
+              <p className="text-yellow-500">
                 Continue sua jornada em educação financeira na plataforma AURUM
               </p>
             </div>
@@ -354,91 +438,65 @@ export function StudentDashboard() {
             </Card>
 
             {/* Próxima Aula */}
-            <Card className="bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-white">
-                  <Play className="w-5 h-5 text-yellow-500" />
-                  <span>Continue Assistindo</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col md:flex-row gap-6">
-                  <div className="md:w-1/3">
-                    <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden">
-                      <div className="w-full h-full flex items-center justify-center text-gray-500">
-                        <Play className="w-12 h-12" />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="md:w-2/3">
-                    <Badge variant="outline" className="mb-2">
-                      Módulo 4: Investimentos
-                    </Badge>
-                    <h3 className="text-xl font-semibold mb-2">
-                      Fundamentos de Investimentos
-                    </h3>
-                    <p className="text-gray-400 mb-4">
-                      Aprenda os conceitos básicos de investimentos e como fazer seu dinheiro trabalhar para você
-                    </p>
-                    
-                    <div className="flex items-center space-x-4 text-sm text-gray-400 mb-4">
-                      <div className="flex items-center space-x-1">
-                        <Clock className="w-4 h-4" />
-                        <span>25:30</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <BookOpen className="w-4 h-4" />
-                        <span>Educação Financeira</span>
+            {lastWatchedLesson && (
+              <Card className="bg-gradient-to-r from-gray-900 to-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-white">
+                    <Play className="w-5 h-5 text-yellow-500" />
+                    <span>Continue Assistindo</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <div className="md:w-1/3">
+                      <div className="aspect-video bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-lg overflow-hidden border border-yellow-500/30">
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Play className="w-16 h-16 text-yellow-500" />
+                        </div>
                       </div>
                     </div>
                     
-                    <Button className="bg-yellow-500 hover:bg-yellow-400 text-black">
-                      <Play className="w-4 h-4 mr-2" />
-                      Continuar Assistindo
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Cursos Disponíveis */}
-            <Card className="bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-white">
-                  <Calendar className="w-5 h-5 text-yellow-500" />
-                  <span>Cursos Disponíveis</span>
-                </CardTitle>
-                <CardDescription className="text-gray-400">
-                  Explore e se matricule em novos cursos
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {courses.map((course) => (
-                    <div key={course.id} className="border border-gray-700 rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-gray-800">
-                      <div className="aspect-video bg-gray-700 flex items-center justify-center">
-                        <BookOpen className="w-8 h-8 text-gray-500" />
+                    <div className="md:w-2/3">
+                      <Badge variant="outline" className="mb-2 border-yellow-500/50 text-yellow-500">
+                        {lastWatchedLesson.moduleTitle}
+                      </Badge>
+                      <h3 className="text-xl font-semibold mb-2 text-white">
+                        {lastWatchedLesson.lessonTitle}
+                      </h3>
+                      <p className="text-gray-400 mb-4">
+                        {lastWatchedLesson.lessonDescription}
+                      </p>
+                      
+                      <div className="flex items-center space-x-4 text-sm text-gray-400 mb-4">
+                        <div className="flex items-center space-x-1">
+                          <BookOpen className="w-4 h-4" />
+                          <span>Educação Financeira</span>
+                        </div>
+                        {lastWatchedLesson.completed ? (
+                          <div className="flex items-center space-x-1 text-green-500">
+                            <CheckCircle className="w-4 h-4" />
+                            <span>Concluída</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-1 text-yellow-500">
+                            <Clock className="w-4 h-4" />
+                            <span>Em andamento</span>
+                          </div>
+                        )}
                       </div>
-                      <div className="p-4">
-                        <Badge variant="outline" className="mb-2 text-xs">
-                          Curso
-                        </Badge>
-                        <h4 className="font-semibold text-sm mb-2 text-white">{course.title}</h4>
-                        <p className="text-xs text-gray-400 mb-3">{course.description}</p>
-                        <Button 
-                          size="sm" 
-                          className="w-full bg-yellow-500 hover:bg-yellow-400 text-black"
-                          onClick={() => router.push(`/cursos/${course.id}`)}
-                        >
-                          Acessar Curso
-                        </Button>
-                      </div>
+                      
+                      <Button 
+                        className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold"
+                        onClick={handleContinueWatching}
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        Continuar Assistindo
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Seção de Comunidade */}
             <Card className="bg-gray-900 border-gray-800">
