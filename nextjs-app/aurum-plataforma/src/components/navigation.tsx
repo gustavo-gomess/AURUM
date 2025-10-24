@@ -67,7 +67,7 @@ export function Navigation() {
   if (user?.role === 'ADMIN') {
     navigationItems.push({
       name: 'Administração',
-      href: '/admin',
+      href: '/admin/usuarios',
       icon: Shield,
       active: pathname.startsWith('/admin')
     })

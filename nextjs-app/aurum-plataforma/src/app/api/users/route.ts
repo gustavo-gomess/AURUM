@@ -1,38 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/database';
-import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
     const prisma = dbConnect();
-
-    // Extrair token do header Authorization
-    const token = extractTokenFromRequest(request);
-    if (!token) {
+    
+    // Verificar token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
-        { error: 'Authorization token required' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Verificar token
-    const payload = verifyToken(token);
-    if (!payload) {
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
       return NextResponse.json(
-        { error: 'Invalid or expired token' },
+        { error: 'Invalid token' },
         { status: 401 }
       );
     }
 
     // Verificar se é admin
-    if (payload.role !== 'ADMIN') {
+    if (decoded.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Admin access required' },
+        { error: 'Forbidden - Admin access required' },
         { status: 403 }
       );
     }
 
-    // Buscar todos os usuários (sem senhas)
+    // Buscar todos os usuários
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -41,22 +42,28 @@ export async function GET(request: NextRequest) {
         role: true,
         createdAt: true,
         updatedAt: true,
-        enrollments: {
-          include: {
-            course: true
+        _count: {
+          select: {
+            enrollments: true,
+            comments: true
           }
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
 
-    return NextResponse.json({ data: users });
+    return NextResponse.json({
+      users,
+      total: users.length
+    });
 
-  } catch (error) {
-    console.error('Get users error:', error);
+  } catch (error: any) {
+    console.error('Error fetching users:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
-
