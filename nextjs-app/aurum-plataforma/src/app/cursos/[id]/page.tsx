@@ -53,7 +53,8 @@ interface Lesson {
 interface Comment {
   id: string;
   content: string;
-  createdAt: string;
+  timestamp: string; // Nome correto do campo no banco de dados
+  createdAt?: string; // Alias para compatibilidade
   user: {
     id: string;
     name: string;
@@ -77,6 +78,8 @@ export default function CoursePage() {
   const [loading, setLoading] = useState(true)
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState('')
+  const [replyingTo, setReplyingTo] = useState<string | null>(null) // ID do comentário sendo respondido
+  const [replyContent, setReplyContent] = useState('') // Conteúdo da resposta
   const [user, setUser] = useState<any>(null)
   const [progress, setProgress] = useState<ProgressItem[]>([])
   const [markingComplete, setMarkingComplete] = useState(false)
@@ -94,13 +97,15 @@ export default function CoursePage() {
     fetchUserAndCourse(token)
   }, [params.id, router])
 
-  // Log quando módulo ou aula mudam
+  // Log quando módulo ou aula mudam e carregar comentários
   useEffect(() => {
     if (course) {
       const lesson = course.modules[currentModule]?.lessons[currentLesson]
       if (lesson) {
         console.log(`📺 Aula mudou: Módulo ${currentModule + 1}, Aula ${currentLesson + 1} - ${lesson.title}`)
         console.log(`🎬 Video ID: ${lesson.vimeoVideoId}`)
+        // Carregar comentários da aula atual
+        fetchComments(lesson.id)
       }
     }
   }, [currentModule, currentLesson, course])
@@ -164,8 +169,10 @@ export default function CoursePage() {
       })
       
       if (response.ok) {
-        const data = await response.json()
-        setComments(data.comments || [])
+        const result = await response.json()
+        console.log('📩 Comentários recebidos:', result)
+        // API retorna { success: true, data: comments }
+        setComments(result.data || result.comments || [])
       }
     } catch (error) {
       console.error('Error fetching comments:', error)
@@ -179,6 +186,8 @@ export default function CoursePage() {
       const token = localStorage.getItem('token')
       if (!token || !currentLessonData) return
 
+      console.log('📤 Enviando comentário:', { content: newComment, lessonId: currentLessonData.id })
+
       const response = await fetch(`/api/lessons/${currentLessonData.id}/comments`, {
         method: 'POST',
         headers: {
@@ -188,12 +197,57 @@ export default function CoursePage() {
         body: JSON.stringify({ content: newComment })
       })
 
-      if (response.ok) {
+      const result = await response.json()
+      console.log('📥 Resposta do servidor:', result)
+
+      if (response.ok && result.success) {
         setNewComment('')
         fetchComments(currentLessonData.id)
+      } else {
+        console.error('❌ Erro ao postar comentário:', result.message)
+        alert(`Erro ao postar comentário: ${result.message || 'Erro desconhecido'}`)
       }
     } catch (error) {
       console.error('Error posting comment:', error)
+      alert('Erro ao conectar com o servidor. Verifique sua conexão.')
+    }
+  }
+
+  const handlePostReply = async (commentId: string) => {
+    if (!replyContent.trim()) return
+
+    try {
+      const token = localStorage.getItem('token')
+      if (!token || !currentLessonData) return
+
+      console.log('📤 Enviando resposta:', { content: replyContent, parentId: commentId })
+
+      const response = await fetch(`/api/lessons/${currentLessonData.id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          content: replyContent,
+          parentId: commentId 
+        })
+      })
+
+      const result = await response.json()
+      console.log('📥 Resposta do servidor (reply):', result)
+
+      if (response.ok && result.success) {
+        setReplyContent('')
+        setReplyingTo(null)
+        fetchComments(currentLessonData.id)
+      } else {
+        console.error('❌ Erro ao postar resposta:', result.message)
+        alert(`Erro ao postar resposta: ${result.message || 'Erro desconhecido'}`)
+      }
+    } catch (error) {
+      console.error('Error posting reply:', error)
+      alert('Erro ao conectar com o servidor.')
     }
   }
 
@@ -216,8 +270,10 @@ export default function CoursePage() {
     // Expandir automaticamente o módulo ao selecionar uma aula
     setExpandedModules(prev => new Set(prev).add(moduleIndex))
     
+    // Buscar comentários da aula selecionada
     const lesson = course?.modules[moduleIndex]?.lessons[lessonIndex]
     if (lesson) {
+      console.log('🔄 Carregando comentários da aula:', lesson.title)
       fetchComments(lesson.id)
     }
   }
@@ -553,60 +609,6 @@ export default function CoursePage() {
                   </div>
                 )}
 
-                {/* PAINEL DE TESTE - Remover em produção */}
-                <Card className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 border-purple-700">
-                  <CardHeader>
-                    <CardTitle className="text-purple-400 text-sm flex items-center">
-                      🧪 Painel de Testes - Alternância de Aulas
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="text-sm text-gray-400">
-                        <strong>Aula Atual:</strong> Módulo {currentModule + 1}, Aula {currentLesson + 1}
-                        <br />
-                        <strong>Video ID:</strong> {currentLessonData.vimeoVideoId}
-                        <br />
-                        <strong>Título:</strong> {currentLessonData.title}
-                      </div>
-                      <div className="flex gap-3">
-                        <Button
-                          onClick={() => {
-                            console.log('🧪 TESTE: Alternando para Aula 2')
-                            setCurrentModule(0)
-                            setCurrentLesson(1) // Aula 2 (index 1)
-                          }}
-                          className="flex-1 bg-purple-600 hover:bg-purple-500"
-                        >
-                          📺 Ir para Aula 2
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            console.log('🧪 TESTE: Alternando para Aula 3')
-                            setCurrentModule(0)
-                            setCurrentLesson(2) // Aula 3 (index 2)
-                          }}
-                          className="flex-1 bg-pink-600 hover:bg-pink-500"
-                        >
-                          📺 Ir para Aula 3
-                        </Button>
-                      </div>
-                      <Button
-                        onClick={() => {
-                          console.log('🧪 TESTE: Forçando próxima aula')
-                          nextLesson()
-                        }}
-                        className="w-full bg-yellow-600 hover:bg-yellow-500"
-                      >
-                        ⏭️ Forçar Próxima Aula (Teste)
-                      </Button>
-                      <div className="text-xs text-gray-500 text-center">
-                        Use os botões acima para testar a troca de vídeos. Verifique o console (F12) para ver os logs.
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
                 {/* Tabs para Comentários e Materiais */}
                 <Tabs defaultValue="comments" className="w-full">
                   <TabsList className="grid w-full grid-cols-2 bg-gray-900">
@@ -623,26 +625,51 @@ export default function CoursePage() {
                   <TabsContent value="comments" className="mt-6">
                     <Card className="bg-gray-900 border-gray-800">
                       <CardHeader>
-                        <CardTitle className="text-white">Dúvidas e Comentários</CardTitle>
+                        <CardTitle className="text-white flex items-center space-x-2">
+                          <MessageSquare className="w-5 h-5" />
+                          <span>Dúvidas e Comentários</span>
+                        </CardTitle>
                         <CardDescription className="text-gray-400">
                           Faça perguntas e interaja com outros estudantes
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-4">
+                      <CardContent className="space-y-6">
                         {/* Formulário para novo comentário */}
-                        <div className="space-y-3">
+                        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                          <div className="flex items-start space-x-3 mb-3">
+                            <Avatar className="flex-shrink-0">
+                              <AvatarFallback className="bg-yellow-500 text-black font-semibold">
+                                {user?.name?.charAt(0) || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <span className="font-medium text-white text-sm">
+                                  {user?.name || 'Usuário'}
+                                </span>
+                                <Badge 
+                                  variant="secondary" 
+                                  className={user?.role === 'ADMIN' ? 'bg-yellow-500 text-black text-xs' : 'bg-gray-700 text-gray-200 text-xs'}
+                                >
+                                  {user?.role === 'ADMIN' ? 'Instrutor' : 'Estudante'}
+                                </Badge>
+                              </div>
                           <textarea
-                            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500"
+                                className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all"
                             rows={3}
-                            placeholder="Escreva sua dúvida ou comentário..."
+                                placeholder="Escreva sua dúvida ou comentário sobre esta aula..."
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
                           />
+                            </div>
+                          </div>
                           <div className="flex justify-end">
                             <Button 
                               onClick={handlePostComment}
-                              className="bg-yellow-500 hover:bg-yellow-400 text-black"
+                              disabled={!newComment.trim()}
+                              className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                             >
+                              <MessageSquare className="w-4 h-4 mr-2" />
                               Postar Comentário
                             </Button>
                           </div>
@@ -651,37 +678,146 @@ export default function CoursePage() {
                         {/* Lista de comentários */}
                         <div className="space-y-4">
                           {comments.length === 0 ? (
-                            <div className="text-center py-8">
-                              <MessageSquare className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                              <p className="text-gray-400">
-                                Nenhum comentário ainda. Seja o primeiro a perguntar!
+                            <div className="text-center py-12 bg-gray-800/30 rounded-lg border border-gray-800">
+                              <MessageSquare className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                              <p className="text-gray-400 text-lg font-medium mb-2">
+                                Nenhum comentário ainda
+                              </p>
+                              <p className="text-gray-500 text-sm">
+                                Seja o primeiro a fazer uma pergunta sobre esta aula!
                               </p>
                             </div>
                           ) : (
                             comments.map((comment) => (
-                              <div key={comment.id} className="bg-gray-800 p-4 rounded-lg">
+                              <div key={comment.id} className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-colors">
+                                {/* Comentário Principal */}
                                 <div className="flex items-start space-x-3">
-                                  <Avatar>
-                                    <AvatarFallback className="bg-yellow-500 text-black">
-                                      {comment.user.name.charAt(0)}
+                                  <Avatar className="flex-shrink-0">
+                                    <AvatarFallback className={comment.user.role === 'ADMIN' ? 'bg-yellow-500 text-black font-semibold' : 'bg-gray-600 text-white font-semibold'}>
+                                      {comment.user.name.charAt(0).toUpperCase()}
                                     </AvatarFallback>
                                   </Avatar>
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-2 mb-2">
-                                      <span className="font-medium text-white">
+                                  <div className="flex-1 min-w-0">
+                                    {/* Header do Comentário */}
+                                    <div className="flex items-center space-x-2 mb-2 flex-wrap">
+                                      <span className="font-semibold text-white">
                                         {comment.user.name}
                                       </span>
                                       <Badge 
                                         variant="secondary" 
-                                        className={comment.user.role === 'ADMIN' ? 'bg-yellow-500 text-black' : 'bg-gray-700 text-gray-200'}
+                                        className={comment.user.role === 'ADMIN' ? 'bg-yellow-500 text-black text-xs font-semibold' : 'bg-blue-600 text-white text-xs font-semibold'}
                                       >
-                                        {comment.user.role === 'ADMIN' ? 'Instrutor' : 'Estudante'}
+                                        {comment.user.role === 'ADMIN' ? '👨‍🏫 Instrutor' : '👨‍🎓 Estudante'}
                                       </Badge>
                                       <span className="text-xs text-gray-500">
-                                        {new Date(comment.createdAt).toLocaleDateString('pt-BR')}
+                                        {new Date(comment.timestamp || comment.createdAt || Date.now()).toLocaleDateString('pt-BR', {
+                                          day: '2-digit',
+                                          month: 'short',
+                                          year: 'numeric',
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        })}
                                       </span>
                                     </div>
-                                    <p className="text-gray-300">{comment.content}</p>
+                                    
+                                    {/* Conteúdo do Comentário */}
+                                    <p className="text-gray-300 leading-relaxed mb-3 whitespace-pre-wrap">
+                                      {comment.content}
+                                    </p>
+                                    
+                                    {/* Botão de Responder */}
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                                      className="text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10 text-xs font-medium -ml-2"
+                                    >
+                                      <MessageSquare className="w-3 h-3 mr-1" />
+                                      {replyingTo === comment.id ? 'Cancelar' : 'Responder'}
+                                    </Button>
+                                    
+                                    {/* Formulário de Resposta */}
+                                    {replyingTo === comment.id && (
+                                      <div className="mt-3 pl-4 border-l-2 border-yellow-500/30">
+                                        <div className="flex items-start space-x-2">
+                                          <Avatar className="flex-shrink-0 w-8 h-8">
+                                            <AvatarFallback className="bg-yellow-500 text-black font-semibold text-xs">
+                                              {user?.name?.charAt(0) || 'U'}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          <div className="flex-1">
+                                            <textarea
+                                              className="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
+                                              rows={2}
+                                              placeholder={`Respondendo para ${comment.user.name}...`}
+                                              value={replyContent}
+                                              onChange={(e) => setReplyContent(e.target.value)}
+                                              autoFocus
+                                            />
+                                            <div className="flex justify-end space-x-2 mt-2">
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                  setReplyingTo(null)
+                                                  setReplyContent('')
+                                                }}
+                                                className="text-gray-400 hover:text-white text-xs"
+                                              >
+                                                Cancelar
+                                              </Button>
+                                              <Button
+                                                size="sm"
+                                                onClick={() => handlePostReply(comment.id)}
+                                                disabled={!replyContent.trim()}
+                                                className="bg-yellow-500 hover:bg-yellow-400 text-black text-xs font-semibold disabled:opacity-50"
+                                              >
+                                                Enviar Resposta
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Respostas (se houver) */}
+                                    {comment.replies && comment.replies.length > 0 && (
+                                      <div className="mt-4 space-y-3 pl-4 border-l-2 border-gray-700">
+                                        {comment.replies.map((reply) => (
+                                          <div key={reply.id} className="flex items-start space-x-2">
+                                            <Avatar className="flex-shrink-0 w-8 h-8">
+                                              <AvatarFallback className={reply.user.role === 'ADMIN' ? 'bg-yellow-500 text-black font-semibold text-xs' : 'bg-gray-600 text-white font-semibold text-xs'}>
+                                                {reply.user.name.charAt(0).toUpperCase()}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1 min-w-0">
+                                              <div className="flex items-center space-x-2 mb-1 flex-wrap">
+                                                <span className="font-semibold text-white text-sm">
+                                                  {reply.user.name}
+                                                </span>
+                                                <Badge 
+                                                  variant="secondary" 
+                                                  className={reply.user.role === 'ADMIN' ? 'bg-yellow-500 text-black text-xs font-semibold' : 'bg-blue-600 text-white text-xs font-semibold'}
+                                                >
+                                                  {reply.user.role === 'ADMIN' ? '👨‍🏫 Instrutor' : '👨‍🎓 Estudante'}
+                                                </Badge>
+                                                <span className="text-xs text-gray-500">
+                                                  {new Date(reply.timestamp || reply.createdAt || Date.now()).toLocaleDateString('pt-BR', {
+                                                    day: '2-digit',
+                                                    month: 'short',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                  })}
+                                                </span>
+                                              </div>
+                                              <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+                                                {reply.content}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>
