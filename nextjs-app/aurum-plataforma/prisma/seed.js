@@ -206,11 +206,64 @@ async function main() {
   }
   console.log(`   ✓ ${lessons04.length} aulas criadas no Módulo 04\n`);
 
+  // Módulo 05 - RENDA VARIÁVEL
+  const module05 = await prisma.module.upsert({
+    where: { id: 'module-05-renda-variavel' },
+    update: {},
+    create: {
+      id: 'module-05-renda-variavel',
+      courseId: course.id,
+      title: '05 RENDA VARIÁVEL',
+      description: 'Investimentos em ações, análise fundamentalista e estratégias de trading',
+      order: 5,
+    },
+  });
+  console.log('📚 Módulo 05 criado:', module05.title);
+
+  const lessons05 = [
+    { title: 'RENDA VARIÁVEL E ESCOLAS DE ANÁLISE FUNDAMENTALISTA X GRÁFICA', videoId: '1129933679', order: 1 },
+    { title: 'AÇÕES O QUE SÃO E PORQUE INVESTIR', videoId: '1129932850', order: 2 },
+    { title: 'TIPOS DE AÇÕES E NOMENCLATURAS (ON, PN, Units e Tag Along)', videoId: '1129933679', order: 3 },
+    { title: 'INDICADORES FUNDAMENTAIS QUE TODO INVESTIDOR DEVE CONHECER', videoId: '1129932850', order: 4 },
+    { title: 'FERRAMENTAS E SITES PARA CONSULTAR INDICADORES', videoId: '1129933679', order: 5 },
+    { title: 'COMO COMPRAR AÇÕES PELO HOME BROKER (na prática)', videoId: '1129932850', order: 6 },
+    { title: 'ORDENS START E STOP COMO SE PROTEGER E LUCRAR COM ESTRATÉGIA', videoId: '1129933679', order: 7 },
+    { title: 'PROVENTOS DIVIDENDOS; JCP; BONIFICAÇÕES E SUBSCRIÇÕES', videoId: '1129932850', order: 8 },
+    { title: 'DESDOBRAMENTOS E GRUPAMENTOS POR QUE AS EMPRESAS FAZEM ISSO', videoId: '1129933679', order: 9 },
+    { title: 'LEITURA DE GRÁFICOS CANDLESTICKS; SUPORTES E RESISTÊNCIAS', videoId: '1129932850', order: 10 },
+    { title: 'ALUGUEL DE AÇÕES E OUTRAS FORMAS DE RENTABILIZAR SUA CARTEIRA', videoId: '1129933679', order: 11 },
+    { title: 'FUNDOS DE AÇÕES E MULTIMERCADOS COMO FUNCIONAM E QUANDO USAR', videoId: '1129932850', order: 12 },
+    { title: 'ETFs e BDRs DIVERSIFICAÇÃO NACIONAL E INTERNACIONAL', videoId: '1129933679', order: 13 },
+    { title: 'FUNDOS IMOBILIÁRIOS (FIIs) COMO GERAM RENDA PASSIVA', videoId: '1129932850', order: 14 },
+    { title: 'PREVIDÊNCIA PRIVADA (PGBL e VGBL) QUANDO VALE A PENA', videoId: '1129933679', order: 15 },
+    { title: 'CARTEIRA DE INVESTIMENTOS E DIVERSIFICAÇÃO INTELIGENTE', videoId: '1129932850', order: 16 },
+    { title: 'APORTES MENSAIS; DISCIPLINA E JUROS COMPOSTOS', videoId: '1129933679', order: 17 },
+    { title: 'QUANDO VENDER UM ATIVO (e Quando Não Fazer Nada)', videoId: '1129932850', order: 18 },
+    { title: 'CONSOLIDANDO SUA CARTEIRA EM UMA PLATAFORMA', videoId: '1129933679', order: 19 },
+  ];
+
+  for (const lesson of lessons05) {
+    await prisma.lesson.upsert({
+      where: { id: `lesson-05-${lesson.order}` },
+      update: {},
+      create: {
+        id: `lesson-05-${lesson.order}`,
+        moduleId: module05.id,
+        courseId: course.id,
+        title: lesson.title,
+        vimeoVideoId: lesson.videoId,
+        order: lesson.order,
+        tasks: [],
+      },
+    });
+  }
+  console.log(`   ✓ ${lessons05.length} aulas criadas no Módulo 05\n`);
+
   console.log('✨ Seed concluído com sucesso!');
   console.log('\n📊 Resumo:');
   console.log(`   - 1 curso criado`);
-  console.log(`   - 4 módulos criados`);
-  console.log(`   - ${lessons01.length + lessons02.length + lessons03.length + lessons04.length} aulas criadas`);
+  console.log(`   - 5 módulos criados`);
+  console.log(`   - ${lessons01.length + lessons02.length + lessons03.length + lessons04.length + lessons05.length} aulas criadas`);
 }
 
 main()

@@ -304,6 +304,11 @@ export default function CoursePage() {
   }
 
   const isLessonUnlocked = (moduleIndex: number, lessonIndex: number) => {
+    // Administradores têm acesso a todas as aulas
+    if (user?.role === 'ADMIN') {
+      return true
+    }
+
     // Primeira aula do primeiro módulo sempre está desbloqueada
     if (moduleIndex === 0 && lessonIndex === 0) {
       return true
