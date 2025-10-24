@@ -37,6 +37,7 @@ export function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: Vime
     const initPlayer = () => {
       if (!iframeRef.current) return
       
+      
       // Aguardar um pouco para garantir que o iframe está totalmente carregado
       timeoutId = setTimeout(() => {
         try {

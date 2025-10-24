@@ -414,17 +414,17 @@ export default function CoursePage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar - Lista de Módulos */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-20 bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-white">
+            <Card className="sticky top-20 bg-gray-900 border-gray-800 max-h-[calc(100vh-6rem)] flex flex-col">
+              <CardHeader className="flex-shrink-0">
+                <CardTitle className="flex items-center space-x-2 text-white text-base">
                   <BookOpen className="w-5 h-5 text-yellow-500" />
                   <span>Módulos</span>
                 </CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardDescription className="text-gray-400 text-sm">
                   {course.modules.length} módulos disponíveis
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-2 overflow-y-auto flex-1 pr-2">
                 {course.modules.map((module, moduleIndex) => {
                   const isExpanded = expandedModules.has(moduleIndex)
                   const moduleProgress = module.lessons.filter((_, lessonIndex) => 
@@ -437,33 +437,33 @@ export default function CoursePage() {
                       {/* Cabeçalho do Módulo - Clicável */}
                       <button
                         onClick={() => toggleModule(moduleIndex)}
-                        className="w-full p-3 flex items-center justify-between hover:bg-gray-800 transition-colors"
+                        className="w-full p-3 flex items-start justify-between hover:bg-gray-800 transition-colors group"
                       >
-                        <div className="flex items-center space-x-3 flex-1 min-w-0">
-                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                        <div className="flex items-start space-x-2 flex-1 min-w-0">
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${
                             moduleIndex === 0 ? 'bg-yellow-500' : 'bg-gray-600'
                           }`} />
                           <div className="flex-1 min-w-0 text-left">
-                            <h4 className="font-medium text-white text-sm truncate">
-                              Módulo {moduleIndex + 1} - {module.title}
+                            <h4 className="font-semibold text-white text-xs leading-tight line-clamp-2 group-hover:text-yellow-500 transition-colors">
+                              {module.title}
                             </h4>
-                            <p className="text-xs text-gray-400 mt-0.5">
+                            <p className="text-xs text-gray-400 mt-1">
                               {moduleProgress} de {totalLessons} aulas concluídas
                             </p>
                           </div>
                         </div>
                         <div className="flex-shrink-0 ml-2">
                           {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-gray-400" />
+                            <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-yellow-500 transition-colors" />
                           ) : (
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                            <ChevronDown className="w-4 mt-1 mb-4.5 h-4 text-gray-400 group-hover:text-yellow-500 transition-colors" />
                           )}
                         </div>
                       </button>
                       
                       {/* Lista de Aulas - Mostra apenas quando expandido */}
                       {isExpanded && (
-                        <div className="px-3 pb-3 space-y-1 border-t border-gray-700/50">
+                        <div className="px-2 pb-2 space-y-1 border-t border-gray-700/50 pt-2">
                           {module.lessons.map((lesson, lessonIndex) => {
                             const isUnlocked = isLessonUnlocked(moduleIndex, lessonIndex)
                             const isCompleted = isLessonCompleted(moduleIndex, lessonIndex)
@@ -474,32 +474,31 @@ export default function CoursePage() {
                                 key={lesson.id}
                                 onClick={() => isUnlocked && selectLesson(moduleIndex, lessonIndex)}
                                 disabled={!isUnlocked}
-                                className={`w-full text-left p-2 rounded text-xs transition-colors mt-1 ${
+                                className={`w-full text-left p-2 rounded-md text-xs transition-all duration-200 group ${
                                   isActive
-                                    ? 'bg-yellow-500 text-black'
+                                    ? 'bg-yellow-500 text-black font-semibold shadow-md'
                                     : isCompleted
-                                    ? 'bg-green-900 hover:bg-green-800 text-green-200 border border-green-700'
+                                    ? 'bg-green-900/50 hover:bg-green-800/60 text-green-200 border border-green-700/30'
                                     : isUnlocked
-                                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-                                    : 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50'
+                                    ? 'bg-gray-800/50 hover:bg-gray-700/70 text-gray-300 hover:text-white'
+                                    : 'bg-gray-800/30 text-gray-500 cursor-not-allowed opacity-40'
                                 }`}
                               >
-                                <div className="flex items-center space-x-2 min-w-0">
-                                  <div className="flex-shrink-0">
+                                <div className="flex items-start space-x-2 min-w-0">
+                                  <div className="flex-shrink-0 mt-0.5">
                                     {!isUnlocked ? (
                                       <Lock className="w-3 h-3" />
                                     ) : isCompleted ? (
                                       <CheckCircle className="w-3 h-3" />
                                     ) : isActive ? (
-                                      <Play className="w-3 h-3" />
+                                      <Play className="w-3 h-3 fill-current" />
                                     ) : (
-                                      <div className="w-3 h-3 rounded-full border border-current" />
+                                      <div className="w-3 h-3 rounded-full border border-current group-hover:bg-current group-hover:border-current transition-all" />
                                     )}
                                   </div>
-                                  <span className="truncate flex-1">AULA {String(lessonIndex + 1).padStart(2, '0')} {lesson.title}</span>
-                                  {!isUnlocked && (
-                                    <Lock className="w-3 h-3 text-gray-600 flex-shrink-0" />
-                                  )}
+                                  <span className="flex-1 min-w-0 leading-tight line-clamp-2">
+                                    {lesson.title}
+                                  </span>
                                 </div>
                               </button>
                             )

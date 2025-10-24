@@ -27,8 +27,15 @@ export async function GET(
       where: { id },
       include: {
         modules: {
+          orderBy: {
+            order: 'asc'
+          },
           include: {
-            lessons: true
+            lessons: {
+              orderBy: {
+                order: 'asc'
+              }
+            }
           }
         }
       }
@@ -104,8 +111,15 @@ export async function PUT(
       data: updateData,
       include: {
         modules: {
+          orderBy: {
+            order: 'asc'
+          },
           include: {
-            lessons: true
+            lessons: {
+              orderBy: {
+                order: 'asc'
+              }
+            }
           }
         }
       }
