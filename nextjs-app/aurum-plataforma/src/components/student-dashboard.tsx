@@ -90,13 +90,62 @@ export function StudentDashboard() {
       const coursesResponse = await fetch('/api/courses')
       const coursesData = await coursesResponse.json()
 
-      // Calcular progresso (simulado por enquanto)
-      const progress = {
-        overallProgress: 35,
-        completedModules: 3,
-        totalModules: 10,
-        completedLessons: 12,
-        totalLessons: 30
+      // Buscar curso AURUM (único curso da plataforma)
+      const aurumCourse = coursesData.courses?.find((c: any) => c.id === 'aurum-course-id')
+      
+      // Calcular progresso REAL do usuário
+      let progress = {
+        overallProgress: 0,
+        completedModules: 0,
+        totalModules: 4, // 4 módulos fixos
+        completedLessons: 0,
+        totalLessons: 47 // Total de aulas
+      }
+
+      if (aurumCourse) {
+        // Buscar progresso real do banco
+        const progressResponse = await fetch('/api/progress/aurum-course-id', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+
+        if (progressResponse.ok) {
+          const progressData = await progressResponse.json()
+          const userProgress = progressData.progress || []
+
+          // Contar aulas concluídas
+          const completedLessons = userProgress.filter((p: any) => p.completed).length
+          progress.completedLessons = completedLessons
+
+          // Calcular módulos concluídos
+          // Módulo é considerado concluído quando todas as suas aulas estão concluídas
+          const lessonsByModule = [
+            15, // Módulo 1: 15 aulas
+            10, // Módulo 2: 10 aulas
+            10, // Módulo 3: 10 aulas
+            12  // Módulo 4: 12 aulas
+          ]
+
+          let completedModules = 0
+          let totalLessonsChecked = 0
+
+          for (let moduleIndex = 0; moduleIndex < lessonsByModule.length; moduleIndex++) {
+            const moduleLessonsCount = lessonsByModule[moduleIndex]
+            const moduleLessonsCompleted = userProgress.filter((p: any) => 
+              p.moduleIndex === moduleIndex && p.completed
+            ).length
+
+            if (moduleLessonsCompleted === moduleLessonsCount) {
+              completedModules++
+            }
+
+            totalLessonsChecked += moduleLessonsCount
+          }
+
+          progress.completedModules = completedModules
+
+          // Calcular progresso geral (porcentagem)
+          progress.overallProgress = Math.round((completedLessons / progress.totalLessons) * 100)
+        }
       }
 
       setData({
