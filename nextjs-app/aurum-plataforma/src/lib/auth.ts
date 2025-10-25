@@ -15,8 +15,15 @@ export function generateToken(payload: JWTPayload): string {
 
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
-  } catch (error) {
+    console.log('🔐 [Auth] Verifying token...');
+    console.log('🔐 [Auth] Token length:', token?.length || 0);
+    console.log('🔐 [Auth] JWT_SECRET:', JWT_SECRET?.substring(0, 20) + '...');
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    console.log('✅ [Auth] Token valid! User:', decoded.userId, 'Role:', decoded.role);
+    return decoded;
+  } catch (error: any) {
+    console.error('❌ [Auth] Token verification failed:', error.message);
+    console.error('❌ [Auth] Error name:', error.name);
     return null;
   }
 }

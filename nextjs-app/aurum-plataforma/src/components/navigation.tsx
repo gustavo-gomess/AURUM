@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Menu, X, BookOpen, LayoutDashboard, Bell, Settings, Users, Shield } from 'lucide-react'
+import { Menu, X, BookOpen, LayoutDashboard, Bell, Settings, Users, Shield, ChevronDown, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface User {
@@ -17,6 +17,7 @@ interface User {
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const pathname = usePathname()
   const router = useRouter()
@@ -63,15 +64,18 @@ export function Navigation() {
     }
   ]
 
-  // Adicionar item admin se o usuário for administrador
-  if (user?.role === 'ADMIN') {
-    navigationItems.push({
-      name: 'Administração',
+  const adminMenuItems = [
+    {
+      name: 'Gerenciamento de Usuários',
       href: '/admin/usuarios',
-      icon: Shield,
-      active: pathname.startsWith('/admin')
-    })
-  }
+      icon: Users
+    },
+    {
+      name: 'Perguntas dos Usuários',
+      href: '/admin/perguntas',
+      icon: MessageSquare
+    }
+  ]
 
   return (
     <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
@@ -105,6 +109,55 @@ export function Navigation() {
                 </button>
               )
             })}
+            
+            {/* Menu Admin Dropdown */}
+            {user?.role === 'ADMIN' && (
+              <div className="relative">
+                <button
+                  onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
+                  className={cn(
+                    "flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                    pathname.startsWith('/admin')
+                      ? "bg-yellow-500 text-black"
+                      : "text-gray-300 hover:text-yellow-500 hover:bg-gray-800"
+                  )}
+                >
+                  <Shield className="w-4 h-4" />
+                  <span>Administração</span>
+                  <ChevronDown className={cn(
+                    "w-4 h-4 transition-transform",
+                    isAdminMenuOpen && "rotate-180"
+                  )} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isAdminMenuOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50">
+                    {adminMenuItems.map((item) => {
+                      const Icon = item.icon
+                      return (
+                        <button
+                          key={item.name}
+                          onClick={() => {
+                            router.push(item.href)
+                            setIsAdminMenuOpen(false)
+                          }}
+                          className={cn(
+                            "w-full flex items-center space-x-3 px-4 py-3 text-sm transition-colors border-b border-gray-700 last:border-b-0",
+                            pathname === item.href
+                              ? "bg-yellow-500 text-black"
+                              : "text-gray-300 hover:bg-gray-700 hover:text-yellow-500"
+                          )}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span>{item.name}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </nav>
 
           {/* User Menu */}
@@ -189,6 +242,37 @@ export function Navigation() {
                   </button>
                 )
               })}
+              
+              {/* Admin Menu Mobile */}
+              {user?.role === 'ADMIN' && (
+                <div className="mt-2">
+                  <div className="flex items-center space-x-2 px-3 py-2 text-yellow-500 font-semibold text-sm">
+                    <Shield className="w-4 h-4" />
+                    <span>Administração</span>
+                  </div>
+                  {adminMenuItems.map((item) => {
+                    const Icon = item.icon
+                    return (
+                      <button
+                        key={item.name}
+                        onClick={() => {
+                          router.push(item.href)
+                          setIsMenuOpen(false)
+                        }}
+                        className={cn(
+                          "flex items-center space-x-3 w-full px-6 py-2 text-sm transition-colors",
+                          pathname === item.href
+                            ? "bg-yellow-500 text-black"
+                            : "text-gray-400 hover:text-yellow-500 hover:bg-gray-800"
+                        )}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span>{item.name}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Mobile User Actions */}
