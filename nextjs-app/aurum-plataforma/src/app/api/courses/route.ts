@@ -2,8 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/database';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
 
+// Cache simples em memória (válido por 5 minutos)
+let coursesCache: any = null;
+let cacheTime: number = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
 export async function GET(request: NextRequest) {
   try {
+    // Verificar cache
+    const now = Date.now();
+    if (coursesCache && (now - cacheTime) < CACHE_DURATION) {
+      return NextResponse.json({ courses: coursesCache }, {
+        headers: { 'X-Cache': 'HIT' }
+      });
+    }
+
     const prisma = dbConnect();
 
     // Buscar todos os cursos
@@ -17,7 +30,13 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({ courses });
+    // Atualizar cache
+    coursesCache = courses;
+    cacheTime = now;
+
+    return NextResponse.json({ courses }, {
+      headers: { 'X-Cache': 'MISS' }
+    });
 
   } catch (error) {
     console.error('Get courses error:', error);

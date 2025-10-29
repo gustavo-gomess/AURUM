@@ -126,6 +126,9 @@ model Comment {
   replies      Comment[] @relation("CommentReplies")
   answeredByUser User?   @relation("AnsweredBy", fields: [answeredBy], references: [id])
 
+  @@index([lessonId])
+  @@index([parentId])
+  @@index([lessonId, parentId])
   @@map("comments")
 }
 

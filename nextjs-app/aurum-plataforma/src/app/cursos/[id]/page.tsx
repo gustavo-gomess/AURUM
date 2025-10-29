@@ -84,6 +84,8 @@ export default function CoursePage() {
   const [progress, setProgress] = useState<ProgressItem[]>([])
   const [markingComplete, setMarkingComplete] = useState(false)
   const [expandedModules, setExpandedModules] = useState<Set<number>>(new Set([0])) // Primeiro módulo expandido por padrão
+  const [loadingComments, setLoadingComments] = useState(false)
+  const [postingComment, setPostingComment] = useState(false)
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
@@ -122,14 +124,11 @@ export default function CoursePage() {
     }
   }, [course, searchParams])
 
-  // Log quando módulo ou aula mudam e carregar comentários
+  // Carregar comentários quando aula muda
   useEffect(() => {
     if (course) {
       const lesson = course.modules[currentModule]?.lessons[currentLesson]
       if (lesson) {
-        console.log(`📺 Aula mudou: Módulo ${currentModule + 1}, Aula ${currentLesson + 1} - ${lesson.title}`)
-        console.log(`🎬 Video ID: ${lesson.vimeoVideoId}`)
-        // Carregar comentários da aula atual
         fetchComments(lesson.id)
       }
     }
@@ -184,34 +183,57 @@ export default function CoursePage() {
     }
   }
 
-  const fetchComments = async (lessonId: string) => {
+  const fetchComments = async (lessonId: string, showLoading = true) => {
     try {
+      if (showLoading) setLoadingComments(true)
+      
       const token = localStorage.getItem('token')
       if (!token) return
 
       const response = await fetch(`/api/lessons/${lessonId}/comments`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache' // Força recarregamento dos comentários
+        }
       })
       
       if (response.ok) {
         const result = await response.json()
-        console.log('📩 Comentários recebidos:', result)
         // API retorna { success: true, data: comments }
         setComments(result.data || result.comments || [])
       }
     } catch (error) {
       console.error('Error fetching comments:', error)
+    } finally {
+      if (showLoading) setLoadingComments(false)
     }
   }
 
   const handlePostComment = async () => {
-    if (!newComment.trim()) return
+    if (!newComment.trim() || postingComment) return
 
+    const commentContent = newComment.trim()
+    
     try {
+      setPostingComment(true)
       const token = localStorage.getItem('token')
       if (!token || !currentLessonData) return
 
-      console.log('📤 Enviando comentário:', { content: newComment, lessonId: currentLessonData.id })
+      // Atualização otimista - adiciona comentário temporário
+      const tempComment: Comment = {
+        id: `temp-${Date.now()}`,
+        content: commentContent,
+        timestamp: new Date().toISOString(),
+        user: {
+          id: user?.id || '',
+          name: user?.name || 'Você',
+          role: user?.role || 'STUDENT'
+        },
+        replies: []
+      }
+      
+      setComments(prev => [...prev, tempComment])
+      setNewComment('')
 
       const response = await fetch(`/api/lessons/${currentLessonData.id}/comments`, {
         method: 'POST',
@@ -219,33 +241,68 @@ export default function CoursePage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ content: newComment })
+        body: JSON.stringify({ content: commentContent })
       })
 
       const result = await response.json()
-      console.log('📥 Resposta do servidor:', result)
 
       if (response.ok && result.success) {
-        setNewComment('')
-        fetchComments(currentLessonData.id)
+        // Recarrega comentários para obter dados corretos do servidor
+        await fetchComments(currentLessonData.id, false)
       } else {
-        console.error('❌ Erro ao postar comentário:', result.message)
+        // Remove comentário temporário em caso de erro
+        setComments(prev => prev.filter(c => c.id !== tempComment.id))
+        setNewComment(commentContent)
         alert(`Erro ao postar comentário: ${result.message || 'Erro desconhecido'}`)
       }
     } catch (error) {
       console.error('Error posting comment:', error)
-      alert('Erro ao conectar com o servidor. Verifique sua conexão.')
+      setNewComment(commentContent)
+      alert('Erro ao conectar com o servidor.')
+      // Recarrega comentários em caso de erro
+      if (currentLessonData) {
+        await fetchComments(currentLessonData.id, false)
+      }
+    } finally {
+      setPostingComment(false)
     }
   }
 
   const handlePostReply = async (commentId: string) => {
-    if (!replyContent.trim()) return
+    if (!replyContent.trim() || postingComment) return
 
+    const replyContentText = replyContent.trim()
+    
     try {
+      setPostingComment(true)
       const token = localStorage.getItem('token')
       if (!token || !currentLessonData) return
 
-      console.log('📤 Enviando resposta:', { content: replyContent, parentId: commentId })
+      // Atualização otimista - adiciona resposta temporária
+      const tempReply: Comment = {
+        id: `temp-reply-${Date.now()}`,
+        content: replyContentText,
+        timestamp: new Date().toISOString(),
+        user: {
+          id: user?.id || '',
+          name: user?.name || 'Você',
+          role: user?.role || 'STUDENT'
+        }
+      }
+
+      // Atualiza o estado local otimisticamente
+      setComments(prev => prev.map(comment => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            replies: [...(comment.replies || []), tempReply]
+          }
+        }
+        return comment
+      }))
+      
+      setReplyContent('')
+      setReplyingTo(null)
 
       const response = await fetch(`/api/lessons/${currentLessonData.id}/comments`, {
         method: 'POST',
@@ -254,25 +311,43 @@ export default function CoursePage() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ 
-          content: replyContent,
+          content: replyContentText,
           parentId: commentId 
         })
       })
 
       const result = await response.json()
-      console.log('📥 Resposta do servidor (reply):', result)
 
       if (response.ok && result.success) {
-        setReplyContent('')
-        setReplyingTo(null)
-        fetchComments(currentLessonData.id)
+        // Recarrega comentários para obter dados corretos do servidor
+        await fetchComments(currentLessonData.id, false)
       } else {
         console.error('❌ Erro ao postar resposta:', result.message)
+        // Remove resposta temporária em caso de erro
+        setComments(prev => prev.map(comment => {
+          if (comment.id === commentId) {
+            return {
+              ...comment,
+              replies: (comment.replies || []).filter(r => r.id !== tempReply.id)
+            }
+          }
+          return comment
+        }))
+        setReplyContent(replyContentText)
+        setReplyingTo(commentId)
         alert(`Erro ao postar resposta: ${result.message || 'Erro desconhecido'}`)
       }
     } catch (error) {
       console.error('Error posting reply:', error)
+      setReplyContent(replyContentText)
+      setReplyingTo(commentId)
       alert('Erro ao conectar com o servidor.')
+      // Recarrega comentários em caso de erro
+      if (currentLessonData) {
+        await fetchComments(currentLessonData.id, false)
+      }
+    } finally {
+      setPostingComment(false)
     }
   }
 
@@ -737,18 +812,34 @@ export default function CoursePage() {
                           <div className="flex justify-end">
                             <Button 
                               onClick={handlePostComment}
-                              disabled={!newComment.trim()}
+                              disabled={!newComment.trim() || postingComment}
                               className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              <MessageSquare className="w-4 h-4 mr-2" />
-                              Postar Comentário
+                              {postingComment ? (
+                                <>
+                                  <div className="w-4 h-4 mr-2 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                                  Postando...
+                                </>
+                              ) : (
+                                <>
+                                  <MessageSquare className="w-4 h-4 mr-2" />
+                                  Postar Comentário
+                                </>
+                              )}
                             </Button>
                           </div>
                         </div>
 
                         {/* Lista de comentários */}
                         <div className="space-y-4">
-                          {comments.length === 0 ? (
+                          {loadingComments ? (
+                            <div className="text-center py-12 bg-gray-800/30 rounded-lg border border-gray-800">
+                              <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                              <p className="text-gray-400 text-lg font-medium">
+                                Carregando comentários...
+                              </p>
+                            </div>
+                          ) : comments.length === 0 ? (
                             <div className="text-center py-12 bg-gray-800/30 rounded-lg border border-gray-800">
                               <MessageSquare className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                               <p className="text-gray-400 text-lg font-medium mb-2">
@@ -840,10 +931,17 @@ export default function CoursePage() {
                                               <Button
                                                 size="sm"
                                                 onClick={() => handlePostReply(comment.id)}
-                                                disabled={!replyContent.trim()}
+                                                disabled={!replyContent.trim() || postingComment}
                                                 className="bg-yellow-500 hover:bg-yellow-400 text-black text-xs font-semibold disabled:opacity-50"
                                               >
-                                                Enviar Resposta
+                                                {postingComment ? (
+                                                  <>
+                                                    <div className="w-3 h-3 mr-1 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                                                    Enviando...
+                                                  </>
+                                                ) : (
+                                                  'Enviar Resposta'
+                                                )}
                                               </Button>
                                             </div>
                                           </div>

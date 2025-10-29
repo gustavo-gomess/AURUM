@@ -66,10 +66,40 @@ interface DashboardData {
   } | null;
 }
 
+interface UserQuestion {
+  id: string;
+  content: string;
+  timestamp: string;
+  lesson: {
+    id: string;
+    title: string;
+    module: {
+      courseId: string;
+    };
+  };
+  user: {
+    id: string;
+    name: string;
+    role: string;
+  };
+  replies: Array<{
+    id: string;
+    content: string;
+    timestamp: string;
+    user: {
+      id: string;
+      name: string;
+      role: string;
+    };
+  }>;
+}
+
 export function StudentDashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [selectedModule, setSelectedModule] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [userQuestions, setUserQuestions] = useState<UserQuestion[]>([])
+  const [loadingQuestions, setLoadingQuestions] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
@@ -80,6 +110,7 @@ export function StudentDashboard() {
     }
 
     fetchDashboardData(token)
+    fetchUserQuestions(token)
   }, [router])
 
   const fetchDashboardData = async (token: string) => {
@@ -240,6 +271,27 @@ export function StudentDashboard() {
       router.push('/login')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchUserQuestions = async (token: string) => {
+    try {
+      setLoadingQuestions(true)
+      const response = await fetch('/api/comments/my-questions', {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache'
+        }
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setUserQuestions(result.questions || [])
+      }
+    } catch (error) {
+      console.error('Error fetching user questions:', error)
+    } finally {
+      setLoadingQuestions(false)
     }
   }
 
@@ -524,54 +576,101 @@ export function StudentDashboard() {
               </Card>
             )}
 
-            {/* Seção de Comunidade */}
+            {/* Seção de Perguntas e Respostas */}
             <Card className="bg-gray-900 border-gray-800">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-white">
                   <MessageSquare className="w-5 h-5 text-yellow-500" />
-                  <span>Comunidade</span>
+                  <span>Perguntas realizadas</span>
                 </CardTitle>
                 <CardDescription className="text-gray-400">
-                  Interaja com outros estudantes e instrutores
+                  Veja as dúvidas enviadas pelos alunos e as respostas do professor.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
-                    <Avatar>
-                      <AvatarFallback>Prof</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-semibold text-sm">Prof. João Silva</span>
-                        <Badge variant="secondary" className="text-xs">Instrutor</Badge>
-                      </div>
-                      <p className="text-sm text-gray-400">
-                        Parabéns pelo progresso! Continue assim que logo você dominará as finanças pessoais! 💰
-                      </p>
-                    </div>
+                {loadingQuestions ? (
+                  <div className="text-center py-8">
+                    <div className="w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                    <p className="text-gray-400 text-sm">Carregando suas perguntas...</p>
                   </div>
-                  
-                  <div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
-                    <Avatar>
-                      <AvatarFallback>AS</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-semibold text-sm">Ana Santos</span>
-                        <Badge variant="outline" className="text-xs">Estudante</Badge>
-                      </div>
-                      <p className="text-sm text-gray-400">
-                        Alguém mais teve dificuldade com planejamento financeiro? Consegui organizar meu orçamento seguindo o exemplo do vídeo!
-                      </p>
-                    </div>
+                ) : userQuestions.length === 0 ? (
+                  <div className="text-center py-8 bg-gray-800/30 rounded-lg border border-gray-700">
+                    <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                    <p className="text-gray-300 text-sm mb-2 font-medium">
+                      Nenhuma pergunta realizada
+                    </p>
+                    <p className="text-gray-500 text-xs px-4">
+                      Informe suas dúvidas nos comentários em cada aula que elas serão respondidas aqui
+                    </p>
                   </div>
-                  
-                  <Button variant="outline" className="w-full bg-transparent border-gray-700 text-gray-300 hover:bg-yellow-500 hover:text-black hover:border-yellow-500">
-                    <Users className="w-4 h-4 mr-2" />
-                    Ver Todas as Discussões
-                  </Button>
-                </div>
+                ) : (
+                  <div className="space-y-4">
+                    {userQuestions.map((question) => (
+                      <div key={question.id} className="bg-gray-800/50 rounded-lg p-4 space-y-3 border border-gray-700">
+                        {/* Pergunta do Aluno */}
+                        <div className="flex items-start space-x-3">
+                          <Avatar className="flex-shrink-0">
+                            <AvatarFallback className="bg-gray-600 text-white">
+                              {question.user.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <span className="font-semibold text-sm text-white">{question.user.name}</span>
+                              <Badge variant="outline" className="text-xs border-blue-500 text-blue-400">Estudante</Badge>
+                            </div>
+                            <p className="text-xs text-gray-500 mb-1">
+                              {question.lesson.title}
+                            </p>
+                            <p className="text-sm text-gray-300">
+                              {question.content}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Resposta do Professor */}
+                        {question.replies && question.replies.length > 0 ? (
+                          <div className="flex items-start space-x-3 pl-4 border-l-2 border-yellow-500/30">
+                            <Avatar className="flex-shrink-0">
+                              <AvatarFallback className="bg-yellow-500 text-black font-semibold">
+                                {question.replies[0].user.name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <span className="font-semibold text-sm text-white">{question.replies[0].user.name}</span>
+                                <Badge variant="secondary" className="text-xs bg-yellow-500 text-black">Instrutor</Badge>
+                              </div>
+                              <p className="text-sm text-gray-300">
+                                {question.replies[0].content}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="pl-4 border-l-2 border-gray-700/30">
+                            <p className="text-xs text-gray-500 italic">
+                              Aguardando resposta do professor...
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    
+                    {userQuestions.length > 0 && (
+                      <Button 
+                        variant="outline" 
+                        className="w-full bg-transparent border-gray-700 text-gray-300 hover:bg-yellow-500 hover:text-black hover:border-yellow-500"
+                        onClick={() => {
+                          // Navegar para a página de cursos onde estão todas as perguntas
+                          router.push('/cursos/aurum-course-id')
+                        }}
+                      >
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Ver todas as perguntas e respostas
+                      </Button>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

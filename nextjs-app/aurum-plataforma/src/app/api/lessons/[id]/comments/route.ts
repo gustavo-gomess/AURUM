@@ -7,44 +7,32 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id: lessonId } = await params;
     
-    // Buscar comentários principais (sem parentId)
+    // Buscar comentários principais (sem parentId) com otimizações
     const comments = await prisma.comment.findMany({
       where: { 
         lessonId, 
         parentId: null 
       },
-      include: {
+      select: {
+        id: true,
+        content: true,
+        timestamp: true,
         user: {
           select: {
             id: true,
             name: true,
-            email: true,
-            role: true
-          }
-        },
-        answeredByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
             role: true
           }
         },
         replies: {
-          include: {
+          select: {
+            id: true,
+            content: true,
+            timestamp: true,
             user: {
               select: {
                 id: true,
                 name: true,
-                email: true,
-                role: true
-              }
-            },
-            answeredByUser: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
                 role: true
               }
             }
@@ -52,10 +40,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           orderBy: { timestamp: 'asc' }
         }
       },
-      orderBy: { timestamp: 'asc' }
+      orderBy: { timestamp: 'desc' }, // Comentários mais recentes primeiro
+      take: 50 // Limitar a 50 comentários principais por performance
     });
 
-    return NextResponse.json({ success: true, data: comments }, { status: 200 });
+    return NextResponse.json({ 
+      success: true, 
+      data: comments 
+    }, { 
+      status: 200,
+      headers: {
+        'Cache-Control': 'private, max-age=10' // Cache de 10 segundos
+      }
+    });
   } catch (error: any) {
     console.error("Error fetching comments:", error);
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
