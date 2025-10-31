@@ -4,9 +4,10 @@ import { verifyToken } from '@/lib/auth';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const prisma = dbConnect();
     
     // Verificar token
@@ -37,7 +38,7 @@ export async function DELETE(
     }
 
     // Não permitir deletar a si mesmo
-    if (decoded.userId === params.id) {
+    if (decoded.userId === id) {
       return NextResponse.json(
         { error: 'Cannot delete your own account' },
         { status: 400 }
@@ -46,7 +47,7 @@ export async function DELETE(
 
     // Verificar se o usuário existe
     const user = await prisma.user.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!user) {
@@ -58,7 +59,7 @@ export async function DELETE(
 
     // Deletar usuário (cascade vai deletar enrollments, progress, comments)
     await prisma.user.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({
@@ -76,9 +77,10 @@ export async function DELETE(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const prisma = dbConnect();
     
     // Verificar token
@@ -102,7 +104,7 @@ export async function GET(
 
     // Buscar usuário específico
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         name: true,
