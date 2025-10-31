@@ -23,6 +23,7 @@ model User {
   enrollments Enrollment[]
   comments    Comment[]
   answeredComments Comment[] @relation("AnsweredBy")
+  notifications Notification[]
 
   @@map("users")
 }
@@ -130,6 +131,21 @@ model Comment {
   @@index([parentId])
   @@index([lessonId, parentId])
   @@map("comments")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  commentId String   @map("comment_id")
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relacionamentos
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@map("notifications")
 }
 
 enum Role {
