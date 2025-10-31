@@ -157,7 +157,7 @@ export default function CoursePage() {
         // Buscar progresso do usuário
         await fetchProgress(token, params.id as string)
       } else {
-        router.push('/cursos')
+        router.push('/dashboard')
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -537,8 +537,8 @@ export default function CoursePage() {
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
               <h1 className="text-2xl font-bold mb-4">Curso não encontrado</h1>
-              <Button onClick={() => router.push('/cursos')} className="bg-yellow-500 hover:bg-yellow-400 text-black">
-                Voltar aos Cursos
+              <Button onClick={() => router.push('/dashboard')} className="bg-yellow-500 hover:bg-yellow-400 text-black">
+                Voltar ao Início
               </Button>
             </div>
           </div>
@@ -559,11 +559,11 @@ export default function CoursePage() {
           <div className="flex items-center space-x-4 mb-4">
             <Button 
               variant="ghost" 
-              onClick={() => router.push('/cursos')}
+              onClick={() => router.push('/dashboard')}
               className="text-gray-400 hover:text-white hover:bg-gray-800"
             >
               <ChevronLeft className="w-4 h-4 mr-2" />
-              Voltar aos Cursos
+              Voltar ao Início
             </Button>
           </div>
           

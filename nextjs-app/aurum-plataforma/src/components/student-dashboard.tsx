@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Play, Lock, CheckCircle, Clock, BookOpen, Users, MessageSquare, ChevronRight, Star, Calendar, Award, TrendingUp } from 'lucide-react'
+import { Play, Lock, CheckCircle, Clock, BookOpen, Users, MessageSquare, ChevronRight, Award } from 'lucide-react'
 import { Navigation } from '@/components/navigation'
 
 interface User {
@@ -96,7 +96,6 @@ interface UserQuestion {
 
 export function StudentDashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
-  const [selectedModule, setSelectedModule] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [userQuestions, setUserQuestions] = useState<UserQuestion[]>([])
   const [loadingQuestions, setLoadingQuestions] = useState(true)
@@ -348,132 +347,25 @@ export function StudentDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header do Dashboard */}
         <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-            <div className="mb-4 lg:mb-0">
-              <h1 className="text-3xl font-bold text-white mb-2">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
                 Olá, {user.name}! 👋
               </h1>
-              <p className="text-yellow-500">
+              <p className="text-yellow-500 text-sm sm:text-base">
                 Continue sua jornada em educação financeira na plataforma AURUM
               </p>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <div className="text-center">
-                <div className="flex items-center space-x-1 text-yellow-500">
-                  <Star className="w-4 h-4 fill-current" />
-                  <span className="font-semibold">1250</span>
-                </div>
-                <p className="text-xs text-gray-400">Pontos</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="flex items-center space-x-1 text-yellow-500">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="font-semibold">7</span>
-                </div>
-                <p className="text-xs text-gray-400">Dias seguidos</p>
-              </div>
-              
-              <Badge variant="secondary" className="bg-yellow-500 text-black">
+            <div className="flex items-center">
+              <Badge variant="secondary" className="bg-yellow-500 text-black px-4 py-2 text-sm">
                 {user.role === 'STUDENT' ? 'Estudante' : user.role}
               </Badge>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar com Módulos */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-20 bg-gray-900 border-gray-800">
-              <CardHeader>
-                  <CardTitle className="flex items-center space-x-2 text-white">
-                  <BookOpen className="w-5 h-5 text-yellow-500" />
-                  <span>Módulos do Curso</span>
-                </CardTitle>
-                <CardDescription className="text-gray-400">
-                  Educação Financeira Básica - {progress.completedModules} de {progress.totalModules} concluídos
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {[
-                  { title: '01 MENTALIDADE', description: 'Fundamentos da mentalidade financeira', lessons: 15 },
-                  { title: '02 DINHEIRO, BANCOS E GOVERNOS', description: 'Sistema financeiro e moedas', lessons: 10 },
-                  { title: '03 DÍVIDAS, GASTOS E ORÇAMENTO', description: 'Controle financeiro e orçamento', lessons: 10 },
-                  { title: '04 RENDA FIXA', description: 'Investimentos em renda fixa', lessons: 12 },
-                  { title: '05 RENDA VARIÁVEL', description: 'Ações e análise fundamentalista', lessons: 19 }
-                ].map((module, index) => {
-                  const moduleProgress = calculateModuleProgress(index, module.lessons)
-                  const isCompleted = moduleProgress === 100
-                  const isCurrent = moduleProgress > 0 && moduleProgress < 100
-                  // Administradores têm todos os módulos desbloqueados
-                  const isLocked = user.role === 'ADMIN' ? false : (index > 0 && calculateModuleProgress(index - 1, [15, 10, 10, 12, 19][index - 1]) < 100)
-
-                  return (
-                    <div
-                      key={index}
-                      className={`p-3 rounded-lg border border-gray-700 transition-all cursor-pointer ${
-                        isLocked ? 'opacity-50 pointer-events-none' : ''
-                      } ${
-                        isCurrent ? 'border-yellow-500 bg-gray-800' : ''
-                      } ${
-                        isCompleted ? 'border-green-500 bg-gray-800' : ''
-                      } ${
-                        selectedModule === index.toString() ? 'ring-2 ring-yellow-500' : ''
-                      }`}
-                      onClick={() => !isLocked && setSelectedModule(
-                        selectedModule === index.toString() ? null : index.toString()
-                      )}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          {isLocked ? (
-                            <Lock className="w-4 h-4 text-gray-500" />
-                          ) : isCompleted ? (
-                            <CheckCircle className="w-4 h-4 text-green-500" />
-                          ) : moduleProgress > 0 ? (
-                            <Play className="w-4 h-4 text-yellow-500" />
-                          ) : (
-                            <Play className="w-4 h-4 text-gray-500" />
-                          )}
-                          <span className="font-medium text-sm">
-                            Módulo {index + 1}
-                          </span>
-                        </div>
-                        {!isLocked && (
-                          <ChevronRight className={`w-4 h-4 transition-transform ${
-                            selectedModule === index.toString() ? 'rotate-90' : ''
-                          }`} />
-                        )}
-                      </div>
-                      
-                      <h4 className="font-medium text-sm mb-1 text-white">{module.title}</h4>
-                      <p className="text-xs text-gray-400 mb-2">{module.description}</p>
-                      
-                      {!isLocked && (
-                        <div className="space-y-1">
-                          <Progress value={moduleProgress} className="h-1" />
-                          <div className="flex justify-between text-xs text-gray-400">
-                            <span>{moduleProgress}% completo</span>
-                            <span>{module.lessons} aulas</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {isLocked && (
-                        <p className="text-xs text-gray-500 mt-2">
-                          Complete o módulo anterior para desbloquear
-                        </p>
-                      )}
-                    </div>
-                  )
-                })}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Conteúdo Principal */}
-          <div className="lg:col-span-3 space-y-8">
+        <div className="space-y-8">
             {/* Progresso Geral */}
             <Card className="bg-gray-900 border-gray-800">
               <CardHeader>
@@ -483,30 +375,30 @@ export function StudentDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-yellow-500 mb-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                    <div className="text-4xl font-bold text-yellow-500 mb-2">
                       {progress.overallProgress}%
                     </div>
-                    <p className="text-sm text-gray-400">Progresso Geral</p>
-                    <Progress value={progress.overallProgress} className="mt-2" />
+                    <p className="text-sm text-gray-400 font-medium mb-2">Progresso Geral</p>
+                    <Progress value={progress.overallProgress} className="mt-2 h-2" />
                   </div>
                   
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-green-500 mb-1">
+                  <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                    <div className="text-4xl font-bold text-green-500 mb-2">
                       {progress.completedModules}
                     </div>
-                    <p className="text-sm text-gray-400">Módulos Concluídos</p>
+                    <p className="text-sm text-gray-400 font-medium">Módulos Concluídos</p>
                     <p className="text-xs text-gray-500 mt-1">
                       de {progress.totalModules} módulos
                     </p>
                   </div>
                   
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-400 mb-1">
+                  <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700 sm:col-span-2 lg:col-span-1">
+                    <div className="text-4xl font-bold text-blue-400 mb-2">
                       {progress.completedLessons}
                     </div>
-                    <p className="text-sm text-gray-400">Vídeos Assistidos</p>
+                    <p className="text-sm text-gray-400 font-medium">Vídeos Assistidos</p>
                     <p className="text-xs text-gray-500 mt-1">
                       de {progress.totalLessons} vídeos
                     </p>
@@ -525,8 +417,8 @@ export function StudentDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-col md:flex-row gap-6">
-                    <div className="md:w-1/3">
+                  <div className="flex flex-col lg:flex-row gap-6">
+                    <div className="w-full lg:w-1/3">
                       <div className="aspect-video bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-lg overflow-hidden border border-yellow-500/30">
                         <div className="w-full h-full flex items-center justify-center">
                           <Play className="w-16 h-16 text-yellow-500" />
@@ -534,18 +426,18 @@ export function StudentDashboard() {
                       </div>
                     </div>
                     
-                    <div className="md:w-2/3">
+                    <div className="flex-1">
                       <Badge variant="outline" className="mb-2 border-yellow-500/50 text-yellow-500">
                         {lastWatchedLesson.moduleTitle}
                       </Badge>
                       <h3 className="text-xl font-semibold mb-2 text-white">
                         {lastWatchedLesson.lessonTitle}
                       </h3>
-                      <p className="text-gray-400 mb-4">
+                      <p className="text-gray-400 mb-4 text-sm">
                         {lastWatchedLesson.lessonDescription}
                       </p>
                       
-                      <div className="flex items-center space-x-4 text-sm text-gray-400 mb-4">
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400 mb-4">
                         <div className="flex items-center space-x-1">
                           <BookOpen className="w-4 h-4" />
                           <span>Educação Financeira</span>
@@ -564,7 +456,7 @@ export function StudentDashboard() {
                       </div>
                       
                       <Button 
-                        className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold"
+                        className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold w-full sm:w-auto"
                         onClick={handleContinueWatching}
                       >
                         <Play className="w-4 h-4 mr-2" />
@@ -673,7 +565,6 @@ export function StudentDashboard() {
                 )}
               </CardContent>
             </Card>
-          </div>
         </div>
       </div>
     </div>

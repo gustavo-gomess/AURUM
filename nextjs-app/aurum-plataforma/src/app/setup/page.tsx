@@ -149,10 +149,10 @@ export default function SetupPage() {
               <div className="flex space-x-2">
                 <Button 
                   variant="outline"
-                  onClick={() => router.push('/cursos')}
+                  onClick={() => router.push('/cursos/aurum-course-id')}
                   className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800"
                 >
-                  Ver Cursos
+                  Ver Aulas
                 </Button>
                 <Button 
                   variant="outline"

@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Menu, X, BookOpen, LayoutDashboard, Bell, Settings, Users, Shield, ChevronDown, MessageSquare } from 'lucide-react'
+import { Menu, X, BookOpen, Home, Bell, Settings, Users, Shield, ChevronDown, MessageSquare, GraduationCap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface User {
@@ -15,10 +15,21 @@ interface User {
   role: string;
 }
 
+interface Notification {
+  id: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+  commentId: string;
+}
+
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false)
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [notificationCount, setNotificationCount] = useState(0)
   const pathname = usePathname()
   const router = useRouter()
 
@@ -26,7 +37,29 @@ export function Navigation() {
     const token = localStorage.getItem('token')
     if (token) {
       fetchUserData(token)
+      fetchNotifications(token)
+      
+      // Atualizar notificações a cada 30 segundos
+      const interval = setInterval(() => {
+        fetchNotifications(token)
+      }, 30000)
+      
+      return () => clearInterval(interval)
     }
+  }, [])
+
+  // Fechar dropdowns ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (!target.closest('.notifications-dropdown') && !target.closest('.admin-dropdown')) {
+        setIsNotificationsOpen(false)
+        setIsAdminMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const fetchUserData = async (token: string) => {
@@ -43,6 +76,85 @@ export function Navigation() {
     }
   }
 
+  const fetchNotifications = async (token: string) => {
+    try {
+      const response = await fetch('/api/notifications', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setNotifications(data.notifications || [])
+        setNotificationCount(data.count || 0)
+      } else {
+        // Se der erro, apenas log e não quebre a aplicação
+        console.warn('Notifications not available:', response.status)
+        setNotifications([])
+        setNotificationCount(0)
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error)
+      // Garantir que não quebre a aplicação
+      setNotifications([])
+      setNotificationCount(0)
+    }
+  }
+
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const response = await fetch('/api/notifications', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ notificationId })
+      })
+
+      if (response.ok) {
+        // Atualizar estado local
+        setNotifications(prev => prev.filter(n => n.id !== notificationId))
+        setNotificationCount(prev => Math.max(0, prev - 1))
+      } else {
+        console.warn('Failed to mark notification as read:', response.status)
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error)
+      // Não quebrar a aplicação
+    }
+  }
+
+  const markAllAsRead = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const response = await fetch('/api/notifications', {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        setNotifications([])
+        setNotificationCount(0)
+        setIsNotificationsOpen(false)
+      } else {
+        console.warn('Failed to mark all notifications as read:', response.status)
+      }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error)
+      // Não quebrar a aplicação
+    }
+  }
+
+  const handleNotificationClick = (notification: Notification) => {
+    markAsRead(notification.id)
+    setIsNotificationsOpen(false)
+    router.push('/dashboard') // Redirecionar para o dashboard onde está a seção de perguntas
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -51,15 +163,15 @@ export function Navigation() {
 
   const navigationItems = [
     {
-      name: 'Dashboard',
+      name: 'Casa',
       href: '/dashboard',
-      icon: LayoutDashboard,
+      icon: Home,
       active: pathname === '/dashboard'
     },
     {
-      name: 'Cursos',
-      href: '/cursos',
-      icon: BookOpen,
+      name: 'Aulas',
+      href: '/cursos/aurum-course-id',
+      icon: GraduationCap,
       active: pathname.startsWith('/cursos')
     }
   ]
@@ -112,7 +224,7 @@ export function Navigation() {
             
             {/* Menu Admin Dropdown */}
             {user?.role === 'ADMIN' && (
-              <div className="relative">
+              <div className="relative admin-dropdown">
                 <button
                   onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
                   className={cn(
@@ -132,7 +244,7 @@ export function Navigation() {
 
                 {/* Dropdown Menu */}
                 {isAdminMenuOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50">
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 admin-dropdown">
                     {adminMenuItems.map((item) => {
                       const Icon = item.icon
                       return (
@@ -163,10 +275,78 @@ export function Navigation() {
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <Button variant="ghost" size="sm" className="relative text-gray-300 hover:text-yellow-500 hover:bg-gray-800">
-              <Bell className="w-4 h-4" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-500 rounded-full"></span>
-            </Button>
+            <div className="relative notifications-dropdown">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="relative text-gray-300 hover:text-yellow-500 hover:bg-gray-800"
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              >
+                <Bell className="w-4 h-4" />
+                {notificationCount > 0 && (
+                  <>
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 text-black text-xs font-bold rounded-full flex items-center justify-center">
+                      {notificationCount}
+                    </span>
+                  </>
+                )}
+              </Button>
+
+              {/* Dropdown de Notificações */}
+              {isNotificationsOpen && (
+                <div className="absolute top-full right-0 mt-2 w-80 sm:w-96 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto notifications-dropdown">
+                  <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-3 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-white">Notificações</h3>
+                    {notifications.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={markAllAsRead}
+                        className="text-xs text-yellow-500 hover:text-yellow-400 h-auto py-1 px-2"
+                      >
+                        Marcar todas como lidas
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {notifications.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <Bell className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                      <p className="text-gray-400 text-sm">Nenhuma notificação nova</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-700">
+                      {notifications.map((notification) => (
+                        <button
+                          key={notification.id}
+                          onClick={() => handleNotificationClick(notification)}
+                          className="w-full p-4 text-left hover:bg-gray-700 transition-colors"
+                        >
+                          <div className="flex items-start space-x-3">
+                            <div className="flex-shrink-0 w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                              <MessageSquare className="w-4 h-4 text-black" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-gray-200 leading-relaxed">
+                                {notification.message}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {new Date(notification.createdAt).toLocaleDateString('pt-BR', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* User Profile */}
             <div className="flex items-center space-x-3">
