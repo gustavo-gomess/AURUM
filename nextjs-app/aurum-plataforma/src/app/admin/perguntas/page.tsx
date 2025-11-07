@@ -103,8 +103,8 @@ export default function PerguntasPage() {
       // Buscar comentários de todas as lições
       const allComments: Comment[] = []
       
-      for (const module of course.modules || []) {
-        for (const lesson of module.lessons || []) {
+      for (const courseModule of course.modules || []) {
+        for (const lesson of courseModule.lessons || []) {
           try {
             const commentsResponse = await fetch(`/api/lessons/${lesson.id}/comments`)
             if (commentsResponse.ok) {
@@ -115,7 +115,7 @@ export default function PerguntasPage() {
                   id: lesson.id,
                   title: lesson.title,
                   module: {
-                    title: module.title
+                    title: courseModule.title
                   }
                 }
               }))

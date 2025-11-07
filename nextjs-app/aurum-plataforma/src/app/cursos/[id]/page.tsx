@@ -424,11 +424,11 @@ export default function CoursePage() {
 
   const isModuleCompleted = (moduleIndex: number) => {
     if (!course) return false
-    const module = course.modules[moduleIndex]
-    if (!module || !module.lessons) return false
+    const courseModule = course.modules[moduleIndex]
+    if (!courseModule || !courseModule.lessons) return false
     
     // Verifica se todas as aulas do módulo estão concluídas
-    return module.lessons.every((_, lessonIndex) => 
+    return courseModule.lessons.every((_, lessonIndex) => 
       isLessonCompleted(moduleIndex, lessonIndex)
     )
   }
@@ -597,16 +597,16 @@ export default function CoursePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2 overflow-y-auto flex-1 pr-2">
-                {course.modules.map((module, moduleIndex) => {
+                {course.modules.map((courseModule, moduleIndex) => {
                   const isExpanded = expandedModules.has(moduleIndex)
-                  const moduleProgress = module.lessons.filter((_, lessonIndex) => 
+                  const moduleProgress = courseModule.lessons.filter((_, lessonIndex) => 
                     isLessonCompleted(moduleIndex, lessonIndex)
                   ).length
-                  const totalLessons = module.lessons.length
+                  const totalLessons = courseModule.lessons.length
                   const isCompleted = isModuleCompleted(moduleIndex)
                   
                   return (
-                    <div key={module.id} className={`border rounded-lg overflow-hidden transition-all ${
+                    <div key={courseModule.id} className={`border rounded-lg overflow-hidden transition-all ${
                       isCompleted 
                         ? 'border-green-500 bg-green-900/30' 
                         : 'border-gray-800 bg-gray-800/50'
@@ -634,7 +634,7 @@ export default function CoursePage() {
                                 ? 'text-green-400 group-hover:text-green-300' 
                                 : 'text-white group-hover:text-yellow-500'
                             }`}>
-                              {module.title}
+                              {courseModule.title}
                             </h4>
                             <p className={`text-xs mt-1 ${
                               isCompleted ? 'text-green-500' : 'text-gray-400'
@@ -666,7 +666,7 @@ export default function CoursePage() {
                       {/* Lista de Aulas - Mostra apenas quando expandido */}
                       {isExpanded && (
                         <div className="px-2 pb-2 space-y-1 border-t border-gray-700/50 pt-2">
-                          {module.lessons.map((lesson, lessonIndex) => {
+                          {courseModule.lessons.map((lesson, lessonIndex) => {
                             const isUnlocked = isLessonUnlocked(moduleIndex, lessonIndex)
                             const isCompleted = isLessonCompleted(moduleIndex, lessonIndex)
                             const isActive = currentModule === moduleIndex && currentLesson === lessonIndex

@@ -41,7 +41,7 @@ export function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: Vime
       // Aguardar um pouco para garantir que o iframe está totalmente carregado
       timeoutId = setTimeout(() => {
         try {
-          // @ts-ignore - Vimeo SDK
+          // @ts-expect-error - Vimeo SDK
           player = new window.Vimeo.Player(iframeRef.current)
           
           console.log('Vimeo Player inicializado com sucesso')
@@ -77,7 +77,6 @@ export function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: Vime
     }
 
     // Verificar se o SDK do Vimeo já está carregado
-    // @ts-ignore
     if (typeof window.Vimeo !== 'undefined') {
       console.log('📦 SDK do Vimeo já carregado, inicializando player...')
       initPlayer()

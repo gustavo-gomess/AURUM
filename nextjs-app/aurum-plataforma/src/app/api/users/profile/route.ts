@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import prisma from '@/lib/database';
+import dbConnect from '@/lib/database';
+import { PrismaClient } from '@prisma/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -13,6 +14,8 @@ interface JWTPayload {
 
 export async function PUT(request: NextRequest) {
   try {
+    const prisma = dbConnect() as PrismaClient;
+    
     // Extrair e verificar token
     const token = request.headers.get('authorization')?.split(' ')[1];
     

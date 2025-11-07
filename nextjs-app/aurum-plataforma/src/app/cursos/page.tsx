@@ -82,7 +82,7 @@ export default function CursosPage() {
 
   const calculateCourseStats = (course: Course) => {
     const totalModules = course.modules?.length || course._count?.modules || 0
-    const totalLessons = course.modules?.reduce((acc, module) => acc + (module.lessons?.length || 0), 0) || 0
+    const totalLessons = course.modules?.reduce((acc, courseModule) => acc + (courseModule.lessons?.length || 0), 0) || 0
     const estimatedDuration = totalLessons * 25 // 25 min por aula em média
     
     return {

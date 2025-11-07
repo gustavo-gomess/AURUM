@@ -24,11 +24,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Course not found' }, { status: 404 });
     }
 
-    const module = await prisma.module.create({
+    const courseModule = await prisma.module.create({
       data: { title, description, order, courseId }
     });
 
-    return NextResponse.json({ success: true, data: module }, { status: 201 });
+    return NextResponse.json({ success: true, data: courseModule }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
   }

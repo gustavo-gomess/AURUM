@@ -313,21 +313,21 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {modules.map((module, index) => (
+            {modules.map((moduleItem, index) => (
               <Card key={index} className="bg-gray-900 border-gray-800 hover:shadow-lg transition-all">
                 <CardHeader>
-                  <div className={`w-12 h-12 bg-gradient-to-r ${module.color} rounded-lg flex items-center justify-center mb-4`}>
-                    <module.icon className="w-6 h-6 text-white" />
+                  <div className={`w-12 h-12 bg-gradient-to-r ${moduleItem.color} rounded-lg flex items-center justify-center mb-4`}>
+                    <moduleItem.icon className="w-6 h-6 text-white" />
                   </div>
-                  <CardTitle className="text-white">{module.title}</CardTitle>
+                  <CardTitle className="text-white">{moduleItem.title}</CardTitle>
                   <CardDescription className="text-gray-400">
-                    {module.description}
+                    {moduleItem.description}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-400">
-                      {module.lessons} aulas
+                      {moduleItem.lessons} aulas
                     </span>
                     <ArrowRight className="w-4 h-4 text-yellow-500" />
                   </div>
@@ -360,7 +360,7 @@ export default function HomePage() {
                     ))}
                   </div>
                   <p className="text-gray-300 mb-4 italic">
-                    "{testimonial.comment}"
+                    &quot;{testimonial.comment}&quot;
                   </p>
                   <div className="flex items-center">
                     <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center mr-3">

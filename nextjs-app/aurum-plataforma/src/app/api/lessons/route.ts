@@ -19,8 +19,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Module ID and Course ID are required' }, { status: 400 });
     }
 
-    const module = await prisma.module.findUnique({ where: { id: moduleId } });
-    if (!module) {
+    const courseModule = await prisma.module.findUnique({ where: { id: moduleId } });
+    if (!courseModule) {
       return NextResponse.json({ success: false, message: 'Module not found' }, { status: 404 });
     }
 

@@ -135,7 +135,7 @@ export function StudentDashboard() {
       const aurumCourse = aurumCourseData.course
       
       // Calcular progresso REAL do usuário
-      let progress = {
+      const progress = {
         overallProgress: 0,
         completedModules: 0,
         totalModules: 5, // 5 módulos fixos
@@ -209,8 +209,8 @@ export function StudentDashboard() {
             // Procurar a primeira aula que não tem progresso registrado
             let foundNextLesson = false
             for (let modIndex = 0; modIndex < aurumCourse.modules.length && !foundNextLesson; modIndex++) {
-              const module = aurumCourse.modules[modIndex]
-              for (let lesIndex = 0; lesIndex < module.lessons.length && !foundNextLesson; lesIndex++) {
+              const courseModule = aurumCourse.modules[modIndex]
+              for (let lesIndex = 0; lesIndex < courseModule.lessons.length && !foundNextLesson; lesIndex++) {
                 const hasProgress = userProgress.some((p: any) => 
                   p.moduleIndex === modIndex && p.lessonIndex === lesIndex
                 )
@@ -237,14 +237,14 @@ export function StudentDashboard() {
 
           // Buscar informações da aula
           if (lastProgress && aurumCourse.modules) {
-            const module = aurumCourse.modules[lastProgress.moduleIndex]
-            if (module && module.lessons) {
-              const lesson = module.lessons[lastProgress.lessonIndex]
+            const courseModule = aurumCourse.modules[lastProgress.moduleIndex]
+            if (courseModule && courseModule.lessons) {
+              const lesson = courseModule.lessons[lastProgress.lessonIndex]
               if (lesson) {
                 lastWatchedLesson = {
                   moduleIndex: lastProgress.moduleIndex,
                   lessonIndex: lastProgress.lessonIndex,
-                  moduleTitle: module.title,
+                  moduleTitle: courseModule.title,
                   lessonTitle: lesson.title,
                   lessonDescription: lesson.description || 'Continue sua jornada de aprendizado',
                   completed: lastProgress.completed || false

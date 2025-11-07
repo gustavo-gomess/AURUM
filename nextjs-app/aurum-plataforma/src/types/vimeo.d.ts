@@ -1,6 +1,6 @@
 // Declarações de tipos para o Vimeo Player SDK
 interface Window {
-  Vimeo: {
+  Vimeo?: {
     Player: new (iframe: HTMLIFrameElement) => VimeoPlayer
   }
 }

@@ -9,7 +9,7 @@ export async function GET(
   const prisma = dbConnect();
   try {
     const { id } = await params;
-    const module = await prisma.module.findUnique({
+    const courseModule = await prisma.module.findUnique({
       where: { id },
       include: { 
         lessons: {
@@ -18,10 +18,10 @@ export async function GET(
         course: true
       }
     });
-    if (!module) {
+    if (!courseModule) {
       return NextResponse.json({ success: false, message: 'Module not found' }, { status: 404 });
     }
-    return NextResponse.json({ success: true, data: module }, { status: 200 });
+    return NextResponse.json({ success: true, data: courseModule }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
   }
@@ -43,7 +43,7 @@ export async function PUT(
     }
     const { id } = await params;
     const body = await req.json();
-    const module = await prisma.module.update({
+    const courseModule = await prisma.module.update({
       where: { id },
       data: body,
       include: { 
@@ -52,7 +52,7 @@ export async function PUT(
         }
       }
     });
-    return NextResponse.json({ success: true, data: module }, { status: 200 });
+    return NextResponse.json({ success: true, data: courseModule }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
   }
@@ -75,7 +75,7 @@ export async function DELETE(
     const { id } = await params;
     
     // Deletar o módulo (Prisma deletará automaticamente as lessons devido ao cascade)
-    const module = await prisma.module.delete({
+    await prisma.module.delete({
       where: { id }
     });
 
