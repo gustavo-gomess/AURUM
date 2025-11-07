@@ -34,7 +34,14 @@ export default function LoginPage() {
         // Redirecionar para dashboard
         router.push('/dashboard');
       } else {
-        setError(data.error || 'Erro ao fazer login');
+        // Mostrar mensagem de erro mais específica
+        if (response.status === 401) {
+          setError(data.error || 'Email ou senha incorretos');
+        } else if (response.status === 429) {
+          setError('Muitas tentativas. Aguarde um momento e tente novamente.');
+        } else {
+          setError(data.error || data.message || 'Erro ao fazer login');
+        }
       }
     } catch (error) {
       setError('Erro de conexão');
@@ -103,15 +110,6 @@ export default function LoginPage() {
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-400">
-              Não tem uma conta?{' '}
-              <a href="/register" className="text-yellow-500 hover:text-yellow-400">
-                Cadastre-se
-              </a>
-            </p>
-          </div>
         </div>
       </div>
     </div>

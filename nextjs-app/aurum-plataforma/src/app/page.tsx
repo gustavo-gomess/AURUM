@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,26 +20,11 @@ import {
   DollarSign,
   BarChart3,
   PiggyBank,
-  CreditCard,
   LineChart
 } from 'lucide-react'
 
 export default function HomePage() {
   const router = useRouter()
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    setIsLoggedIn(!!token)
-  }, [])
-
-  const handleGetStarted = () => {
-    if (isLoggedIn) {
-      router.push('/dashboard')
-    } else {
-      router.push('/login')
-    }
-  }
 
   const features = [
     {
@@ -158,30 +142,12 @@ export default function HomePage() {
 
             {/* CTA */}
             <div className="flex items-center space-x-4">
-              {!isLoggedIn ? (
-                <>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => router.push('/login')}
-                    className="text-gray-300 hover:text-yellow-500 hover:bg-gray-800"
-                  >
-                    Entrar
-                  </Button>
-                  <Button 
-                    onClick={handleGetStarted}
-                    className="bg-yellow-500 hover:bg-yellow-400 text-black"
-                  >
-                    Começar Agora
-                  </Button>
-                </>
-              ) : (
-                <Button 
-                  onClick={() => router.push('/dashboard')}
-                  className="bg-yellow-500 hover:bg-yellow-400 text-black"
-                >
-                  Acessar Plataforma
-                </Button>
-              )}
+              <Button 
+                onClick={() => router.push('/login')}
+                className="bg-yellow-500 hover:bg-yellow-400 text-black"
+              >
+                Acessar Plataforma
+              </Button>
             </div>
           </div>
         </div>
@@ -210,24 +176,6 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  size="lg"
-                  onClick={handleGetStarted}
-                  className="bg-yellow-500 hover:bg-yellow-400 text-black text-lg px-8 py-6"
-                >
-                  <Play className="w-5 h-5 mr-2" />
-                  Começar Curso Agora
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  onClick={() => router.push('/setup')}
-                  className="border-gray-700 text-gray-300 hover:bg-gray-800 px-8 py-6"
-                >
-                  Ver Demo Gratuita
-                </Button>
-              </div>
 
               {/* Stats */}
               <div className="flex items-center space-x-8 pt-8">
@@ -446,16 +394,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="pt-6">
-                <Button 
-                  size="lg" 
-                  onClick={handleGetStarted}
-                  className="w-full bg-black hover:bg-gray-800 text-yellow-500 text-lg py-6"
-                >
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  Começar Agora
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -470,23 +408,6 @@ export default function HomePage() {
           <p className="text-xl text-black/80 mb-8">
             Junte-se a milhares de pessoas que já mudaram sua relação com o dinheiro
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              onClick={handleGetStarted}
-              className="bg-black hover:bg-gray-800 text-yellow-500 px-8 py-6"
-            >
-              Começar Curso
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => router.push('/setup')}
-              className="border-black text-black hover:bg-black hover:text-yellow-500 px-8 py-6"
-            >
-              Ver Demo
-            </Button>
-          </div>
         </div>
       </section>
 

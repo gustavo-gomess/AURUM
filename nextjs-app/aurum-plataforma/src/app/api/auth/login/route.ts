@@ -22,9 +22,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Normalizar email (remover espaços e converter para lowercase)
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
+    // Usuário administrador fixo (hardcoded)
+    const ADMIN_EMAIL = 'admin@aurum.com.br';
+    const ADMIN_PASSWORD = 'admin';
+    
+    // Verificar se é o usuário administrador fixo
+    if (normalizedEmail === ADMIN_EMAIL && normalizedPassword === ADMIN_PASSWORD) {
+      // Gerar token JWT para o administrador fixo
+      const token = generateToken({
+        userId: 'admin-fixed-user-id',
+        email: ADMIN_EMAIL,
+        role: 'ADMIN',
+      });
+
+      // Retornar dados do administrador fixo
+      const adminUser = {
+        id: 'admin-fixed-user-id',
+        name: 'Administrador',
+        email: ADMIN_EMAIL,
+        role: 'ADMIN',
+        enrollments: [],
+      };
+
+      return NextResponse.json({
+        user: adminUser,
+        token,
+      });
+    }
+
     // Buscar usuário por email
     const user = await prisma.user.findUnique({ 
-      where: { email: email.toLowerCase() },
+      where: { email: normalizedEmail },
       include: {
         enrollments: {
           include: {
@@ -41,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar senha
-    const isPasswordValid = await comparePassword(password, user.password);
+    const isPasswordValid = await comparePassword(normalizedPassword, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Invalid credentials' },

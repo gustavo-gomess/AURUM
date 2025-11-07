@@ -24,6 +24,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Verificar se é o usuário administrador fixo
+    if (payload.userId === 'admin-fixed-user-id' && payload.email === 'admin@aurum.com.br') {
+      const adminUser = {
+        id: 'admin-fixed-user-id',
+        name: 'Administrador',
+        email: 'admin@aurum.com.br',
+        avatarUrl: null,
+        role: 'ADMIN',
+        enrollments: [],
+      };
+      return NextResponse.json({ user: adminUser });
+    }
+
     // Buscar usuário
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
