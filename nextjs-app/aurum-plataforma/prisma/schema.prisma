@@ -15,6 +15,7 @@ model User {
   name      String   @db.VarChar(60)
   email     String   @unique
   password  String
+  avatarUrl String?  @map("avatar_url")
   role      Role     @default(STUDENT)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -148,7 +149,34 @@ model Notification {
   @@map("notifications")
 }
 
+model Live {
+  id               String   @id @default(cuid())
+  title            String   @db.VarChar(200)
+  description      String   @db.Text
+  instructorName   String   @map("instructor_name") @db.VarChar(100)
+  instructorAvatar String?  @map("instructor_avatar")
+  instructorBio    String?  @map("instructor_bio") @db.VarChar(500)
+  thumbnailUrl     String   @map("thumbnail_url")
+  vimeoVideoId     String   @map("vimeo_video_id") @db.VarChar(50)
+  scheduledDate    String   @map("scheduled_date") @db.VarChar(50)
+  scheduledTime    String   @map("scheduled_time") @db.VarChar(10)
+  duration         String   @db.VarChar(20)
+  category         String   @db.VarChar(50)
+  status           LiveStatus @default(UPCOMING)
+  viewersCount     Int      @default(0) @map("viewers_count")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("lives")
+}
+
 enum Role {
   ADMIN
   STUDENT
+}
+
+enum LiveStatus {
+  LIVE
+  UPCOMING
+  FINISHED
 }
