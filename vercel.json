@@ -1,5 +1,5 @@
 {
-  "rootDirectory": "nextjs-app/aurum-plataforma",
+  "rootDirectory": "aurum-plataforma",
   "installCommand": "npm install --legacy-peer-deps"
 }
 
