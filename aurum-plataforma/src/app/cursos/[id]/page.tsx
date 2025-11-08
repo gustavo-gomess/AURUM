@@ -86,6 +86,7 @@ export default function CoursePage() {
   const [expandedModules, setExpandedModules] = useState<Set<number>>(new Set([0])) // Primeiro módulo expandido por padrão
   const [loadingComments, setLoadingComments] = useState(false)
   const [postingComment, setPostingComment] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
@@ -153,11 +154,21 @@ export default function CoursePage() {
       if (courseResponse.ok) {
         const courseData = await courseResponse.json()
         setCourse(courseData.course)
+        setError(null)
         
         // Buscar progresso do usuário
         await fetchProgress(token, params.id as string)
       } else {
-        router.push('/dashboard')
+        const errorData = await courseResponse.json().catch(() => ({}))
+        console.error('Error fetching course:', errorData)
+        // Se o curso não foi encontrado (404), redirecionar para dashboard
+        if (courseResponse.status === 404) {
+          router.push('/dashboard')
+        } else {
+          // Para outros erros, mostrar mensagem de erro
+          setError('Erro ao carregar o curso. Por favor, tente novamente mais tarde.')
+          console.error('Failed to load course, status:', courseResponse.status)
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -522,6 +533,35 @@ export default function CoursePage() {
             <div className="text-center">
               <div className="w-8 h-8 bg-yellow-500 rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-gray-400">Carregando curso...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <Navigation />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center min-h-96">
+            <div className="text-center">
+              <div className="text-red-500 text-xl mb-4">⚠️ Erro</div>
+              <p className="text-gray-400 mb-4">{error}</p>
+              <button
+                onClick={() => {
+                  setError(null)
+                  setLoading(true)
+                  const token = localStorage.getItem('token')
+                  if (token) {
+                    fetchUserAndCourse(token)
+                  }
+                }}
+                className="bg-yellow-500 text-black px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
+              >
+                Tentar Novamente
+              </button>
             </div>
           </div>
         </div>

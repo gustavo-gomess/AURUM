@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/database';
-import { Role } from '@prisma/client';
+import { Role, PrismaClient } from '@prisma/client';
 import { hashPassword, generateToken } from '@/lib/auth';
 import rateLimit from '@/lib/rateLimit';
 import logger from '@/lib/logger';
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   if (res) return res;
 
   try {
-    const prisma = dbConnect();
+    const prisma: PrismaClient = dbConnect() as PrismaClient;
 
     const { name, email, password, role = 'STUDENT' } = await request.json();
 
@@ -69,8 +69,23 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     logger.error("Registration error:", error);
+    console.error("Registration error details:", {
+      message: error?.message,
+      code: error?.code,
+      meta: error?.meta,
+      stack: error?.stack
+    });
+    
+    // Retornar mensagem de erro mais detalhada em desenvolvimento
+    const errorMessage = process.env.NODE_ENV === 'production' 
+      ? "Internal server error" 
+      : error?.message || "Internal server error";
+    
     return NextResponse.json(
-      { error: "Internal server error" },
+      { 
+        error: errorMessage,
+        ...(process.env.NODE_ENV !== 'production' && { details: error?.code || error?.meta })
+      },
       { status: 500 }
     );
   }

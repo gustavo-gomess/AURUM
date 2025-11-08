@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/database';
+import { PrismaClient } from '@prisma/client';
 import { extractTokenFromRequest, verifyToken } from '@/lib/auth';
-import { redisClient, connectRedis } from '@/lib/cache';
 import logger from '@/lib/logger';
 
 export async function GET(
@@ -9,18 +9,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const prisma = dbConnect();
-    await connectRedis();
+    const prisma: PrismaClient = dbConnect() as PrismaClient;
 
     const { id } = await params;
-    const cacheKey = `course:${id}`;
-
-    // Tentar buscar do cache
-    const cachedCourse = await redisClient.get(cacheKey);
-    if (cachedCourse) {
-      logger.info(`Course ${id} found in cache.`);
-      return NextResponse.json({ course: JSON.parse(cachedCourse) });
-    }
 
     // Buscar curso por ID
     const course = await prisma.course.findUnique({
@@ -48,10 +39,6 @@ export async function GET(
       );
     }
 
-    // Armazenar no cache (TTL de 1 hora)
-    await redisClient.set(cacheKey, JSON.stringify(course), { EX: 3600 });
-    logger.info(`Course ${id} cached.`);
-
     return NextResponse.json({ course });
 
   } catch (error: any) {
@@ -68,11 +55,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const prisma = dbConnect();
-    await connectRedis();
+    const prisma: PrismaClient = dbConnect() as PrismaClient;
 
     const { id } = await params;
-    const cacheKey = `course:${id}`;
 
     // Extrair token do header Authorization
     const token = extractTokenFromRequest(request);
@@ -133,10 +118,6 @@ export async function PUT(
       );
     }
 
-    // Invalidar cache
-    await redisClient.del(cacheKey);
-    logger.info(`Cache for course ${id} invalidated.`);
-
     return NextResponse.json({ course });
 
   } catch (error: any) {
@@ -153,11 +134,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const prisma = dbConnect();
-    await connectRedis();
+    const prisma: PrismaClient = dbConnect() as PrismaClient;
 
     const { id } = await params;
-    const cacheKey = `course:${id}`;
 
     // Extrair token do header Authorization
     const token = extractTokenFromRequest(request);
@@ -200,10 +179,6 @@ export async function DELETE(
         { status: 404 }
       );
     }
-
-    // Invalidar cache
-    await redisClient.del(cacheKey);
-    logger.info(`Cache for course ${id} invalidated.`);
 
     return NextResponse.json({ message: 'Course deleted successfully' });
 
