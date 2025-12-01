@@ -352,7 +352,7 @@ export function StudentDashboard() {
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
                 Olá, {user.name}! 👋
               </h1>
-              <p className="text-yellow-500 text-sm sm:text-base">
+              <p className="text-white text-sm sm:text-base">
                 Continue sua jornada em educação financeira na plataforma AURUM
               </p>
             </div>
@@ -367,39 +367,39 @@ export function StudentDashboard() {
 
         <div className="space-y-8">
             {/* Progresso Geral */}
-            <Card className="bg-gray-900 border-gray-800">
+            <Card className="bg-gray-900 border-2 border-yellow-500">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-white">
+                <CardTitle className="flex items-center space-x-2 text-white-500">
                   <Award className="w-5 h-5 text-yellow-500" />
                   <span>Seu Progresso</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                  <div className="text-center p-4 bg-gray-800/50 rounded-lg border-2 border-yellow-500/30">
                     <div className="text-4xl font-bold text-yellow-500 mb-2">
                       {progress.overallProgress}%
                     </div>
-                    <p className="text-sm text-gray-400 font-medium mb-2">Progresso Geral</p>
+                    <p className="text-sm text-yellow-400 font-medium mb-2">Progresso Geral</p>
                     <Progress value={progress.overallProgress} className="mt-2 h-2" />
                   </div>
                   
-                  <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                    <div className="text-4xl font-bold text-green-500 mb-2">
+                  <div className="text-center p-4 bg-gray-800/50 rounded-lg border-2 border-yellow-500/30">
+                    <div className="text-4xl font-bold text-yellow-500 mb-2">
                       {progress.completedModules}
                     </div>
-                    <p className="text-sm text-gray-400 font-medium">Módulos Concluídos</p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-sm text-yellow-400 font-medium">Módulos Concluídos</p>
+                    <p className="text-xs text-yellow-300 mt-1">
                       de {progress.totalModules} módulos
                     </p>
                   </div>
                   
-                  <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700 sm:col-span-2 lg:col-span-1">
-                    <div className="text-4xl font-bold text-blue-400 mb-2">
+                  <div className="text-center p-4 bg-gray-800/50 rounded-lg border-2 border-yellow-500/30 sm:col-span-2 lg:col-span-1">
+                    <div className="text-4xl font-bold text-yellow-500 mb-2">
                       {progress.completedLessons}
                     </div>
-                    <p className="text-sm text-gray-400 font-medium">Vídeos Assistidos</p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-sm text-yellow-400 font-medium">Vídeos Assistidos</p>
+                    <p className="text-xs text-yellow-300 mt-1">
                       de {progress.totalLessons} vídeos
                     </p>
                   </div>
@@ -409,9 +409,9 @@ export function StudentDashboard() {
 
             {/* Próxima Aula */}
             {lastWatchedLesson && (
-              <Card className="bg-gradient-to-r from-gray-900 to-gray-800 border-gray-700">
+              <Card className="bg-gradient-to-r from-gray-900 to-gray-800 border-2 border-yellow-500/30">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2 text-white">
+                  <CardTitle className="flex items-center space-x-2 text-white-500">
                     <Play className="w-5 h-5 text-yellow-500" />
                     <span>Continue Assistindo</span>
                   </CardTitle>
@@ -430,25 +430,25 @@ export function StudentDashboard() {
                       <Badge variant="outline" className="mb-2 border-yellow-500/50 text-yellow-500">
                         {lastWatchedLesson.moduleTitle}
                       </Badge>
-                      <h3 className="text-xl font-semibold mb-2 text-white">
+                      <h3 className="text-xl font-semibold mb-2 text-yellow-400">
                         {lastWatchedLesson.lessonTitle}
                       </h3>
-                      <p className="text-gray-400 mb-4 text-sm">
+                      <p className="text-white-300 mb-4 text-sm">
                         {lastWatchedLesson.lessonDescription}
                       </p>
                       
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400 mb-4">
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-white mb-4">
                         <div className="flex items-center space-x-1">
                           <BookOpen className="w-4 h-4" />
                           <span>Educação Financeira</span>
                         </div>
                         {lastWatchedLesson.completed ? (
-                          <div className="flex items-center space-x-1 text-green-500">
+                          <div className="flex items-center space-x-1 text-yellow-500">
                             <CheckCircle className="w-4 h-4" />
                             <span>Concluída</span>
                           </div>
                         ) : (
-                          <div className="flex items-center space-x-1 text-yellow-500">
+                          <div className="flex items-center space-x-1 text-white">
                             <Clock className="w-4 h-4" />
                             <span>Em andamento</span>
                           </div>
@@ -469,13 +469,13 @@ export function StudentDashboard() {
             )}
 
             {/* Seção de Perguntas e Respostas */}
-            <Card className="bg-gray-900 border-gray-800">
+            <Card className="bg-gray-900 border-2 border-yellow-500/30">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-white">
+                <CardTitle className="flex items-center space-x-2 text-white-500">
                   <MessageSquare className="w-5 h-5 text-yellow-500" />
                   <span>Perguntas realizadas</span>
                 </CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardDescription className="text-yellow-300">
                   Veja as dúvidas enviadas pelos alunos e as respostas do professor.
                 </CardDescription>
               </CardHeader>
@@ -483,15 +483,15 @@ export function StudentDashboard() {
                 {loadingQuestions ? (
                   <div className="text-center py-8">
                     <div className="w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                    <p className="text-gray-400 text-sm">Carregando suas perguntas...</p>
+                    <p className="text-yellow-400 text-sm">Carregando suas perguntas...</p>
                   </div>
                 ) : userQuestions.length === 0 ? (
                   <div className="text-center py-8 bg-gray-800/30 rounded-lg border border-gray-700">
                     <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-300 text-sm mb-2 font-medium">
+                    <p className="text-yellow-400 text-sm mb-2 font-medium">
                       Nenhuma pergunta realizada
                     </p>
-                    <p className="text-gray-500 text-xs px-4">
+                    <p className="text-yellow-300 text-xs px-4">
                       Informe suas dúvidas nos comentários em cada aula que elas serão respondidas aqui
                     </p>
                   </div>
@@ -511,10 +511,10 @@ export function StudentDashboard() {
                               <span className="font-semibold text-sm text-white">{question.user.name}</span>
                               <Badge variant="outline" className="text-xs border-blue-500 text-blue-400">Estudante</Badge>
                             </div>
-                            <p className="text-xs text-gray-500 mb-1">
+                            <p className="text-xs text-yellow-300 mb-1">
                               {question.lesson.title}
                             </p>
-                            <p className="text-sm text-gray-300">
+                            <p className="text-sm text-white">
                               {question.content}
                             </p>
                           </div>
@@ -533,14 +533,14 @@ export function StudentDashboard() {
                                 <span className="font-semibold text-sm text-white">{question.replies[0].user.name}</span>
                                 <Badge variant="secondary" className="text-xs bg-yellow-500 text-black">Instrutor</Badge>
                               </div>
-                              <p className="text-sm text-gray-300">
+                              <p className="text-sm text-white">
                                 {question.replies[0].content}
                               </p>
                             </div>
                           </div>
                         ) : (
                           <div className="pl-4 border-l-2 border-gray-700/30">
-                            <p className="text-xs text-gray-500 italic">
+                            <p className="text-xs text-yellow-400 italic">
                               Aguardando resposta do professor...
                             </p>
                           </div>

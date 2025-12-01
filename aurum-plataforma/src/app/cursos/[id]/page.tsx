@@ -768,7 +768,7 @@ export default function CoursePage() {
                           {currentLessonData.description}
                         </CardDescription>
                       </div>
-                      <Badge variant="outline" className="border-gray-700 text-gray-300">
+                      <Badge variant="outline" className="border-gray-600 text-gray-300">
                         Aula {currentLesson + 1} de {course.modules[currentModule].lessons.length}
                       </Badge>
                     </div>

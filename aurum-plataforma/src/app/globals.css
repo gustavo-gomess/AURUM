@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #ededed;
+  
+  /* Cores Institucionais AURUM */
+  --aurum-primary: #FADE35;      /* Amarelo vibrante - Cor Primária */
+  --aurum-accent: #5B6770;       /* Azul-cinza escuro - Cor de Destaque */
+  --aurum-black: #000000;        /* Preto */
 }
 
 @theme inline {
@@ -10,13 +15,35 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  
+  /* Cores Institucionais AURUM */
+  --color-aurum-primary: #FADE35;  /* Amarelo - Cor Primária */
+  --color-aurum-accent: #5B6770;   /* Cinza - Cor de Destaque */
+  --color-aurum-black: #000000;
+  
+  /* Sobrescrever cores amarelas do Tailwind com cor institucional */
+  --color-yellow-50: #FEFCE8;
+  --color-yellow-100: #FEF9C3;
+  --color-yellow-200: #FEF08A;
+  --color-yellow-300: #FDE047;
+  --color-yellow-400: #FADE35;
+  --color-yellow-500: #FADE35;
+  --color-yellow-600: #E6C82E;
+  --color-yellow-700: #D4B428;
+  --color-yellow-800: #C2A022;
+  --color-yellow-900: #B08C1C;
+  
+  /* Cinza customizado baseado na cor primária institucional */
+  --color-gray-50: #F5F6F7;
+  --color-gray-100: #E8EAEC;
+  --color-gray-200: #D1D5D9;
+  --color-gray-300: #B9BFC5;
+  --color-gray-400: #8A949C;
+  --color-gray-500: #6B7783;
+  --color-gray-600: #5B6770;
+  --color-gray-700: #4A545C;
+  --color-gray-800: #3A4147;
+  --color-gray-900: #2A2F33;
 }
 
 body {
@@ -25,10 +52,10 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - usando cores institucionais (cinza como destaque) */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #4B5563 #1F2937;
+  scrollbar-color: #5B6770 #2A2F33;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -36,16 +63,21 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #1F2937;
+  background: #2A2F33;
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #4B5563;
+  background: #5B6770;
   border-radius: 3px;
   transition: background 0.2s;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #6B7280;
+  background: #6B7783;
+}
+
+/* Gradiente Institucional - Preto para Amarelo Dourado */
+.gradient-aurum {
+  background: linear-gradient(to bottom, #000000, #FADE35);
 }

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Menu, X, BookOpen, Home, Bell, Settings, Users, Shield, ChevronDown, MessageSquare, GraduationCap, Loader2, User as UserIcon, Mail, Image as ImageIcon, CheckCircle2, Upload, Camera, Lock, Eye, EyeOff, Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Logo } from '@/components/logo'
 
 interface User {
   id: string;
@@ -396,15 +397,12 @@ export function Navigation() {
   ]
 
   return (
-    <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+    <header className="bg-gray-900 border-b-2 border-yellow-500 sticky top-0 z-50 shadow-lg shadow-yellow-500/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <div className="flex items-center space-x-4">
-            <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-              <span className="text-black font-bold text-sm">A</span>
-            </div>
-            <span className="text-xl font-bold text-yellow-500">AURUM</span>
+          <div className="flex items-center">
+            <Logo variant="light" size="sm" clickable href="/dashboard" />
           </div>
 
           {/* Desktop Navigation */}
@@ -418,7 +416,7 @@ export function Navigation() {
                   className={cn(
                     "flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                     item.active
-                      ? "bg-yellow-500 text-black"
+                      ? "bg-yellow-500 text-black font-bold"
                       : "text-gray-300 hover:text-yellow-500 hover:bg-gray-800"
                   )}
                 >

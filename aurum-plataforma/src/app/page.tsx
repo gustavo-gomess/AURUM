@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Logo } from '@/components/logo'
 import { 
   BookOpen, 
   Play, 
@@ -122,14 +123,8 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
-                <span className="text-black font-bold text-lg">A</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-yellow-500">AURUM</h1>
-                <p className="text-xs text-gray-400">Educação Financeira</p>
-              </div>
+            <div className="flex items-center">
+              <Logo variant="light" size="sm" />
             </div>
 
             {/* Navigation */}

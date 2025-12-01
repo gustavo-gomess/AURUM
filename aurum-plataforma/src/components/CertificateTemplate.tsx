@@ -12,7 +12,7 @@ const CertificateTemplate: React.FC<CertificateProps> = ({ userName, courseTitle
     <div style={{
       width: '800px',
       height: '600px',
-      border: '10px solid #FFD700',
+      border: '10px solid #FADE35',
       padding: '20px',
       textAlign: 'center',
       fontFamily: 'Arial, sans-serif',
@@ -24,7 +24,7 @@ const CertificateTemplate: React.FC<CertificateProps> = ({ userName, courseTitle
       justifyContent: 'center',
       alignItems: 'center'
     }}>
-      <h1 style={{ color: '#FFD700', fontSize: '48px', marginBottom: '20px' }}>Certificado de Conclusão</h1>
+      <h1 style={{ color: '#FADE35', fontSize: '48px', marginBottom: '20px' }}>Certificado de Conclusão</h1>
       <p style={{ fontSize: '24px', marginBottom: '10px' }}>Este certificado é concedido a</p>
       <h2 style={{ color: '#333', fontSize: '36px', marginBottom: '20px' }}>{userName}</h2>
       <p style={{ fontSize: '24px', marginBottom: '10px' }}>pela conclusão bem-sucedida do curso</p>

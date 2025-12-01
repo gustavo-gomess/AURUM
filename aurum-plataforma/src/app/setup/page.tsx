@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Logo } from '@/components/logo'
 import { useRouter } from 'next/navigation'
 
 export default function SetupPage() {
@@ -108,11 +109,11 @@ export default function SetupPage() {
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl bg-gray-900 border-gray-800">
         <CardHeader className="text-center">
-          <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-black font-bold text-xl">A</span>
+          <div className="flex items-center justify-center mb-4">
+            <Logo variant="light" size="md" />
           </div>
-          <CardTitle className="text-2xl font-bold text-yellow-500">
-            AURUM - Configuração Inicial
+          <CardTitle className="text-2xl font-bold text-white mt-4">
+            Configuração Inicial
           </CardTitle>
           <p className="text-gray-400">
             Configure sua plataforma de educação financeira em um clique
