@@ -11,7 +11,7 @@ interface VimeoPlayerProps {
   onVideoEnd?: () => void
 }
 
-export function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: VimeoPlayerProps) {
+function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: VimeoPlayerProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
@@ -31,7 +31,7 @@ export function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: Vime
   useEffect(() => {
     if (!iframeRef.current || !videoId || videoId === '000000000') return
 
-    let player: VimeoPlayer | null = null
+    let vimeoPlayerInstance: any = null
     let timeoutId: NodeJS.Timeout
 
     const initPlayer = () => {
@@ -42,12 +42,12 @@ export function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: Vime
       timeoutId = setTimeout(() => {
         try {
           // @ts-expect-error - Vimeo SDK
-          player = new window.Vimeo.Player(iframeRef.current)
+          vimeoPlayerInstance = new window.Vimeo.Player(iframeRef.current)
           
           console.log('Vimeo Player inicializado com sucesso')
           
           // Listener para quando o vídeo terminar
-          player.on('ended', () => {
+          vimeoPlayerInstance.on('ended', () => {
             console.log('🎬 EVENTO ENDED DISPARADO - Vídeo terminou!')
             
             // Esconder o iframe imediatamente para não mostrar sugestões
@@ -62,7 +62,7 @@ export function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: Vime
           })
 
           // Adicionar listener de progresso para debug
-          player.on('timeupdate', (data: any) => {
+          vimeoPlayerInstance.on('timeupdate', (data: any) => {
             // Quando estiver próximo do fim (últimos 2 segundos)
             if (data.duration - data.seconds < 2 && data.duration - data.seconds > 1.5) {
               console.log(`⏱️ Vídeo próximo do fim: ${data.seconds.toFixed(1)}s / ${data.duration.toFixed(1)}s`)
@@ -107,10 +107,10 @@ export function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: Vime
       if (timeoutId) {
         clearTimeout(timeoutId)
       }
-      if (player) {
+      if (vimeoPlayerInstance) {
         try {
-          player.off('ended')
-          player.off('timeupdate')
+          vimeoPlayerInstance.off('ended')
+          vimeoPlayerInstance.off('timeupdate')
         } catch (error) {
           console.error('Erro ao remover listener:', error)
         }
@@ -221,3 +221,7 @@ export function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: Vime
     </div>
   )
 }
+
+// Export explícito para evitar problemas com Turbopack
+export { VimeoPlayer }
+export default VimeoPlayer
