@@ -32,7 +32,16 @@ export default function SetupPage() {
       })
       const { token } = await loginResponse.json()
 
-      // 3. Criar curso diretamente
+      // 3. Limpar banco de dados (remover dados antigos)
+      setStatus('🗑️  Limpando banco de dados...')
+      await fetch('/api/dev/reset-db', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      // 4. Criar curso diretamente
       setStatus('📚 Criando curso "EDUCAÇÃO FINANCEIRA"...')
       const courseResponse = await fetch('/api/courses', {
         method: 'POST',
@@ -50,8 +59,8 @@ export default function SetupPage() {
       const courseData = await courseResponse.json()
       const courseId = courseData.course.id
 
-      // 4. Executar seed completo
-      setStatus('🌱 Executando seed completo com todos os módulos...')
+      // 5. Executar seed completo com dados corretos
+      setStatus('🌱 Executando seed completo com todos os módulos e vídeos corretos...')
       const seedResponse = await fetch('/api/dev/seed', {
         method: 'POST',
         headers: {
@@ -68,21 +77,16 @@ export default function SetupPage() {
 🎯 Configuração concluída com sucesso:
 • Usuários criados (admin e estudante)
 • Curso "EDUCAÇÃO FINANCEIRA BÁSICA" criado
-• 10 MÓDULOS COMPLETOS criados
-• 80+ aulas criadas com conteúdo real
-• Todos os vídeos funcionando (ID: 1120965691)
+• 5 MÓDULOS COMPLETOS criados com dados corretos
+• 66 aulas criadas com vídeos corretos do Vimeo
+• Todos os vídeos com IDs específicos funcionais
 
 📚 MÓDULOS CRIADOS:
-1. Mentalidade Financeira (15 aulas)
-2. Orçamento e Controle Financeiro (10 aulas)
-3. Investimentos para Iniciantes (10 aulas)
-4. Controle de Dívidas e Crédito (8 aulas)
-5. Empreendedorismo Financeiro (6 aulas)
-6. Planejamento de Aposentadoria (7 aulas)
-7. Impostos e Declarações (5 aulas)
-8. Seguros e Proteção Financeira (6 aulas)
-9. Educação Financeira dos Filhos (6 aulas)
-10. Estratégias Financeiras Avançadas (6 aulas)
+1. MENTALIDADE (15 aulas)
+2. DINHEIRO, BANCOS E GOVERNOS (10 aulas)
+3. DÍVIDAS, GASTOS E ORÇAMENTO (10 aulas)
+4. RENDA FIXA (12 aulas)
+5. RENDA VARIÁVEL (19 aulas)
 
 📝 Credenciais de login:
 • Admin: admin@aurum.com.br / admin123
@@ -90,11 +94,11 @@ export default function SetupPage() {
 
 🚀 Próximos passos:
 1. Acesse /cursos para ver o curso completo
-2. Navegue por todos os 10 módulos
-3. Assista às aulas com vídeos do Vimeo
+2. Navegue por todos os 5 módulos
+3. Assista às aulas com vídeos reais do Vimeo
 4. Teste o sistema de comentários
 
-🎥 TODOS OS VÍDEOS estão configurados e funcionais!
+🎥 Todos os vídeos estão configurados com IDs corretos!
 🏆 O curso está 100% pronto para uso!`)
 
     } catch (error: any) {
@@ -127,13 +131,13 @@ export default function SetupPage() {
             </h3>
             <ul className="text-gray-400 space-y-1 text-sm">
               <li>✓ Usuários admin e estudante</li>
-              <li>✓ Curso completo de educação financeira</li>
-              <li>✓ <strong className="text-yellow-500">10 módulos completos</strong> com conteúdo real</li>
-              <li>✓ <strong className="text-yellow-500">80+ aulas</strong> detalhadas</li>
-              <li>✓ Todos os vídeos funcionais do Vimeo</li>
+              <li>✓ Curso AURUM - Educação Financeira Completa</li>
+              <li>✓ <strong className="text-yellow-500">5 módulos completos</strong> com conteúdo real</li>
+              <li>✓ <strong className="text-yellow-500">66 aulas</strong> detalhadas com vídeos corretos</li>
+              <li>✓ Todos os vídeos com IDs específicos do Vimeo</li>
               <li>✓ Sistema de comentários</li>
               <li>✓ Navegação completa entre módulos</li>
-              <li>✓ Estrutura padrão para futuros cursos</li>
+              <li>✓ Dados idênticos ao arquivo seed.js</li>
             </ul>
           </div>
 

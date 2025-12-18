@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/aurum_db?schema=public";
+const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/aurum_plataforma?schema=public";
 
 interface PrismaCache {
   conn: PrismaClient | null;
