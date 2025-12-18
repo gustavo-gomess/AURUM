@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     // MÓDULO 01 - MENTALIDADE (15 aulas)
     const lessons01 = [
-      { title: 'LIMPAR O TERRENO', vimeoId: '1129933679', order: 1 },
+      { title: 'LIMPAR O TERRENO', vimeoId: '1147752447', order: 1 },
       { title: 'MENTALIDADE DE ABUNDÂNCIA X MENTALIDADE DE ESCASSEZ', vimeoId: '1146931332', order: 2 },
       { title: 'CRENÇAS LIMITANTES SOBRE VOCÊ', vimeoId: '1146931421', order: 3 },
       { title: 'CRENÇAS LIMITANTES EM RELAÇÃO AO DINHEIRO', vimeoId: '1146931552', order: 4 },
@@ -173,25 +173,23 @@ export async function POST(request: NextRequest) {
 
     // MÓDULO 05 - RENDA VARIÁVEL (19 aulas)
     const lessons05 = [
-      { title: 'RENDA VARIÁVEL E ESCOLAS DE ANÁLISE FUNDAMENTALISTA X GRÁFICA', vimeoId: '1129933679', order: 1 },
-      { title: 'AÇÕES O QUE SÃO E PORQUE INVESTIR', vimeoId: '1129932850', order: 2 },
-      { title: 'TIPOS DE AÇÕES E NOMENCLATURAS (ON, PN, Units e Tag Along)', vimeoId: '1129933679', order: 3 },
-      { title: 'INDICADORES FUNDAMENTAIS QUE TODO INVESTIDOR DEVE CONHECER', vimeoId: '1129932850', order: 4 },
-      { title: 'FERRAMENTAS E SITES PARA CONSULTAR INDICADORES', vimeoId: '1129933679', order: 5 },
-      { title: 'COMO COMPRAR AÇÕES PELO HOME BROKER (na prática)', vimeoId: '1129932850', order: 6 },
-      { title: 'ORDENS START E STOP COMO SE PROTEGER E LUCRAR COM ESTRATÉGIA', vimeoId: '1129933679', order: 7 },
-      { title: 'PROVENTOS DIVIDENDOS; JCP; BONIFICAÇÕES E SUBSCRIÇÕES', vimeoId: '1129932850', order: 8 },
-      { title: 'DESDOBRAMENTOS E GRUPAMENTOS POR QUE AS EMPRESAS FAZEM ISSO', vimeoId: '1129933679', order: 9 },
-      { title: 'LEITURA DE GRÁFICOS CANDLESTICKS; SUPORTES E RESISTÊNCIAS', vimeoId: '1129932850', order: 10 },
-      { title: 'ALUGUEL DE AÇÕES E OUTRAS FORMAS DE RENTABILIZAR SUA CARTEIRA', vimeoId: '1129933679', order: 11 },
-      { title: 'FUNDOS DE AÇÕES E MULTIMERCADOS COMO FUNCIONAM E QUANDO USAR', vimeoId: '1129932850', order: 12 },
-      { title: 'ETFs e BDRs DIVERSIFICAÇÃO NACIONAL E INTERNACIONAL', vimeoId: '1129933679', order: 13 },
-      { title: 'FUNDOS IMOBILIÁRIOS (FIIs) COMO GERAM RENDA PASSIVA', vimeoId: '1129932850', order: 14 },
-      { title: 'PREVIDÊNCIA PRIVADA (PGBL e VGBL) QUANDO VALE A PENA', vimeoId: '1129933679', order: 15 },
-      { title: 'CARTEIRA DE INVESTIMENTOS E DIVERSIFICAÇÃO INTELIGENTE', vimeoId: '1129932850', order: 16 },
-      { title: 'APORTES MENSAIS; DISCIPLINA E JUROS COMPOSTOS', vimeoId: '1129933679', order: 17 },
-      { title: 'QUANDO VENDER UM ATIVO (e Quando Não Fazer Nada)', vimeoId: '1129932850', order: 18 },
-      { title: 'CONSOLIDANDO SUA CARTEIRA EM UMA PLATAFORMA', vimeoId: '1129933679', order: 19 },
+      { title: 'RENDA VARIÁVEL E ESCOLAS DE ANÁLISE FUNDAMENTALISTA X GRÁFICA', vimeoId: '1147688108', order: 1 },
+      { title: 'AÇÕES O QUE SÃO E PORQUE INVESTIR', vimeoId: '1147688249', order: 2 },
+      { title: 'TIPOS DE AÇÕES E NOMENCLATURAS (ON, PN, Units e Tag Along)', vimeoId: '1147688373', order: 3 },
+      { title: 'INDICADORES FUNDAMENTAIS QUE TODO INVESTIDOR DEVE CONHECER', vimeoId: '1147688520', order: 4 },
+      { title: 'FERRAMENTAS E SITES PARA CONSULTAR INDICADORES', vimeoId: '1147688770', order: 5 },
+      { title: 'COMO COMPRAR AÇÕES PELO HOME BROKER (na prática)', vimeoId: '1147688903', order: 6 },
+      { title: 'PROVENTOS DIVIDENDOS; JCP; BONIFICAÇÕES E SUBSCRIÇÕES', vimeoId: '1147689218', order: 7 },
+      { title: 'DESDOBRAMENTOS E GRUPAMENTOS POR QUE AS EMPRESAS FAZEM ISSO', vimeoId: '1147689524', order: 8 },
+      { title: 'LEITURA DE GRÁFICOS CANDLESTICKS; SUPORTES E RESISTÊNCIAS', vimeoId: '1147689737', order: 9 },
+      { title: 'ALUGUEL DE AÇÕES E OUTRAS FORMAS DE RENTABILIZAR SUA CARTEIRA', vimeoId: '1147690097', order: 10 },
+      { title: 'ETFs e BDRs DIVERSIFICAÇÃO NACIONAL E INTERNACIONAL', vimeoId: '1147690310', order: 11 },
+      { title: 'FUNDOS IMOBILIÁRIOS (FIIs)', vimeoId: '1147690689', order: 12 },
+      { title: 'ETFs e BDRs DIVERSIFICAÇÃO NACIONAL E INTERNACIONAL', vimeoId: '1147691126', order: 13 },
+      { title: 'CARTEIRA DE INVESTIMENTOS E DIVERSIFICAÇÃO INTELIGENTE', vimeoId: '1147751769', order: 14 },
+      { title: 'APORTES MENSAIS; DISCIPLINA E JUROS COMPOSTOS', vimeoId: '1147751944', order: 15 },
+      { title: 'QUANDO VENDER UM ATIVO (e Quando Não Fazer Nada)', vimeoId: '1147752153', order: 16 },
+      { title: 'CONSOLIDANDO SUA CARTEIRA DE INVESTIMENTOS', vimeoId: '1147752333', order: 17 },
     ];
 
     await upsertModuleWithLessons(
