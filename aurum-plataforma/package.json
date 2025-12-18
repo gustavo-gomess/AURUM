@@ -1,5 +1,6 @@
 {
   "name": "aurum-plataforma",
+  "description": "Aurum Plataforma - Educação Financeira Completa",
   "version": "0.1.0",
   "private": true,
   "scripts": {
