@@ -35,7 +35,7 @@ async function main() {
 
   // Aulas do Módulo 01
   const lessons01 = [
-    { title: 'LIMPAR O TERRENO', videoId: '1129933679', order: 1 },
+    { title: 'LIMPAR O TERRENO', videoId: '1147752447', order: 1 },
     { title: 'MENTALIDADE DE ABUNDÂNCIA X MENTALIDADE DE ESCASSEZ', videoId: '1146931332', order: 2 },
     { title: 'CRENÇAS LIMITANTES SOBRE VOCÊ', videoId: '1146931421', order: 3 },
     { title: 'CRENÇAS LIMITANTES EM RELAÇÃO AO DINHEIRO', videoId: '1146931552', order: 4 },
