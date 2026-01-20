@@ -8,20 +8,15 @@ import { Logo } from '@/components/logo'
 import { 
   BookOpen, 
   Play, 
-  Trophy, 
   Users, 
   Star, 
-  ArrowRight, 
   CheckCircle,
   Target,
   TrendingUp,
   Shield,
-  Award,
-  Clock,
   DollarSign,
   BarChart3,
-  PiggyBank,
-  LineChart
+  PiggyBank
 } from 'lucide-react'
 
 export default function HomePage() {
@@ -31,7 +26,7 @@ export default function HomePage() {
     {
       icon: BookOpen,
       title: "Conteúdo Completo",
-      description: "10+ módulos especializados em educação financeira básica"
+      description: "5 módulos especializados em educação financeira básica"
     },
     {
       icon: Play,
@@ -42,55 +37,50 @@ export default function HomePage() {
       icon: Users,
       title: "Comunidade Ativa",
       description: "Interaja com outros estudantes e tire suas dúvidas"
-    },
-    {
-      icon: Award,
-      title: "Certificado",
-      description: "Receba certificado reconhecido ao concluir o curso"
     }
   ]
 
   const modules = [
     {
       icon: Target,
-      title: "Mentalidade Financeira",
-      description: "Desenvolva a mentalidade certa para alcançar a liberdade financeira",
+      title: "Mentalidade",
+      description: "Fundamentos e hábitos para construir uma base financeira sólida",
       lessons: 15,
       color: "from-yellow-400 to-yellow-600"
     },
     {
       icon: PiggyBank,
-      title: "Orçamento Pessoal",
-      description: "Aprenda a organizar suas finanças e controlar seus gastos",
-      lessons: 8,
+      title: "Dinheiro, Bancos e Governos",
+      description: "Entenda o papel do dinheiro e como instituições e governos impactam você",
+      lessons: 10,
       color: "from-green-400 to-green-600"
     },
     {
       icon: TrendingUp,
-      title: "Investimentos",
-      description: "Faça seu dinheiro trabalhar para você com investimentos seguros",
-      lessons: 12,
+      title: "Dívidas, Gastos e Orçamento",
+      description: "Organize despesas, saia das dívidas e planeje seu orçamento",
+      lessons: 10,
       color: "from-blue-400 to-blue-600"
     },
     {
       icon: Shield,
-      title: "Controle de Dívidas",
-      description: "Estratégias para quitar dívidas e evitar o endividamento",
-      lessons: 6,
+      title: "Renda Fixa",
+      description: "Conheça produtos e estratégias de renda fixa para investir com segurança",
+      lessons: 12,
       color: "from-red-400 to-red-600"
     },
     {
       icon: BarChart3,
-      title: "Planejamento",
-      description: "Planeje seu futuro financeiro com metas claras e alcançáveis",
-      lessons: 10,
+      title: "Renda Variável",
+      description: "Aprenda sobre renda variável e como construir uma carteira diversificada",
+      lessons: 19,
       color: "from-purple-400 to-purple-600"
     },
     {
       icon: DollarSign,
-      title: "Renda Extra",
-      description: "Descubra formas de aumentar sua renda e diversificar fontes",
-      lessons: 7,
+      title: "Aula Bônus",
+      description: "Uma aula extra com conteúdo prático para acelerar seus resultados",
+      lessons: 1,
       color: "from-orange-400 to-orange-600"
     }
   ]
@@ -131,7 +121,6 @@ export default function HomePage() {
             <nav className="hidden md:flex items-center space-x-8">
               <a href="#about" className="text-gray-300 hover:text-yellow-500 transition-colors">Sobre</a>
               <a href="#modules" className="text-gray-300 hover:text-yellow-500 transition-colors">Módulos</a>
-              <a href="#testimonials" className="text-gray-300 hover:text-yellow-500 transition-colors">Depoimentos</a>
               <a href="#pricing" className="text-gray-300 hover:text-yellow-500 transition-colors">Preços</a>
             </nav>
 
@@ -172,43 +161,8 @@ export default function HomePage() {
               </div>
 
 
-              {/* Stats */}
-              <div className="flex items-center space-x-8 pt-8">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-yellow-500">1000+</div>
-                  <div className="text-sm text-gray-400">Alunos Ativos</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-yellow-500">4.9</div>
-                  <div className="text-sm text-gray-400">Avaliação</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-yellow-500">50h</div>
-                  <div className="text-sm text-gray-400">Conteúdo</div>
-                </div>
-              </div>
             </div>
 
-            {/* Hero Image/Video Preview */}
-            <div className="relative">
-              <Card className="bg-gray-900 border-gray-800 overflow-hidden">
-                <div className="aspect-video bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center relative">
-                  <div className="absolute inset-0 bg-black/20"></div>
-                  <Play className="w-16 h-16 text-white/90 cursor-pointer hover:scale-110 transition-transform" />
-                  <div className="absolute bottom-4 left-4">
-                    <Badge className="bg-red-500 text-white">AO VIVO</Badge>
-                  </div>
-                </div>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-white mb-2">
-                    Aula Gratuita: Primeiros Passos
-                  </h3>
-                  <p className="text-gray-400 text-sm">
-                    Assista nossa aula introdutória e descubra como transformar suas finanças.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </div>
       </section>
@@ -225,7 +179,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
             {features.map((feature, index) => (
               <Card key={index} className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-all">
                 <CardHeader className="text-center">
@@ -272,7 +226,6 @@ export default function HomePage() {
                     <span className="text-sm text-gray-400">
                       {moduleItem.lessons} aulas
                     </span>
-                    <ArrowRight className="w-4 h-4 text-yellow-500" />
                   </div>
                 </CardContent>
               </Card>
@@ -281,47 +234,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section id="testimonials" className="py-20 bg-gray-900/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              O que nossos <span className="text-yellow-500">Alunos</span> dizem
-            </h2>
-            <p className="text-xl text-gray-400">
-              Histórias reais de transformação financeira
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-gray-800 border-gray-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-500 fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-gray-300 mb-4 italic">
-                    &quot;{testimonial.comment}&quot;
-                  </p>
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-sm font-medium">
-                        {testimonial.name.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="font-medium text-white">{testimonial.name}</div>
-                      <div className="text-sm text-gray-400">{testimonial.role}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Pricing Section */}
       <section id="pricing" className="py-20">
@@ -335,41 +247,38 @@ export default function HomePage() {
             </p>
           </div>
 
-          <Card className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-black relative overflow-hidden">
+          <Card className="bg-gradient-to-br from-yellow-400 to-yellow-600 text-black relative overflow-hidden rounded-2xl shadow-2xl ring-1 ring-black/10">
             <div className="absolute top-4 right-4">
-              <Badge className="bg-black text-yellow-500">POPULAR</Badge>
+              <Badge className="bg-black/90 text-yellow-400 px-3 py-1 rounded-full text-xs tracking-wide">POPULAR</Badge>
             </div>
             
-            <CardHeader className="text-center pb-8">
-              <CardTitle className="text-3xl font-bold">Curso Completo</CardTitle>
-              <div className="text-5xl font-bold mt-4">
-                R$ 197
-                <span className="text-lg font-normal">/único</span>
+            <CardHeader className="text-center pb-6 pt-10">
+              <CardTitle className="text-3xl lg:text-4xl font-bold">Curso Completo</CardTitle>
+              <div className="mt-5 flex items-end justify-center gap-2">
+                <span className="text-5xl lg:text-6xl font-bold">R$ 197</span>
+                <span className="text-base font-medium pb-1">/mês</span>
               </div>
-              <p className="text-black/80 mt-2">Pagamento único • Acesso vitalício</p>
+              <p className="text-black/80 mt-3">Pagamento mensal • Acesso anual</p>
             </CardHeader>
 
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
+            <CardContent className="space-y-6 pb-10">
+              <div className="h-px bg-black/10"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
                   <div className="flex items-center">
                     <CheckCircle className="w-5 h-5 mr-3 text-green-700" />
-                    <span>10+ módulos completos</span>
+                    <span>5 módulos completos</span>
                   </div>
                   <div className="flex items-center">
                     <CheckCircle className="w-5 h-5 mr-3 text-green-700" />
-                    <span>50+ horas de conteúdo</span>
+                    <span>Acesso anual</span>
                   </div>
                   <div className="flex items-center">
                     <CheckCircle className="w-5 h-5 mr-3 text-green-700" />
-                    <span>Certificado de conclusão</span>
-                  </div>
-                  <div className="flex items-center">
-                    <CheckCircle className="w-5 h-5 mr-3 text-green-700" />
-                    <span>Acesso vitalício</span>
+                    <span>Atualizações gratuitas</span>
                   </div>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center">
                     <CheckCircle className="w-5 h-5 mr-3 text-green-700" />
                     <span>Suporte especializado</span>
@@ -377,10 +286,6 @@ export default function HomePage() {
                   <div className="flex items-center">
                     <CheckCircle className="w-5 h-5 mr-3 text-green-700" />
                     <span>Comunidade exclusiva</span>
-                  </div>
-                  <div className="flex items-center">
-                    <CheckCircle className="w-5 h-5 mr-3 text-green-700" />
-                    <span>Atualizações gratuitas</span>
                   </div>
                   <div className="flex items-center">
                     <CheckCircle className="w-5 h-5 mr-3 text-green-700" />
@@ -426,7 +331,6 @@ export default function HomePage() {
               <h3 className="font-semibold text-white mb-4">Curso</h3>
               <ul className="space-y-2 text-gray-400">
                 <li><a href="#" className="hover:text-yellow-500">Módulos</a></li>
-                <li><a href="#" className="hover:text-yellow-500">Certificado</a></li>
                 <li><a href="#" className="hover:text-yellow-500">Suporte</a></li>
               </ul>
             </div>

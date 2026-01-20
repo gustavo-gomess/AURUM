@@ -16,7 +16,11 @@ function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: VimeoPlayer
   const [hasError, setHasError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
   const [videoEnded, setVideoEnded] = useState(false)
+  const [iframeLoaded, setIframeLoaded] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const playerRef = useRef<any>(null)
+  const endedTriggeredRef = useRef(false)
+  const onVideoEndRef = useRef(onVideoEnd)
 
   // Resetar estado quando o videoId mudar
   useEffect(() => {
@@ -25,102 +29,124 @@ function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: VimeoPlayer
     setHasError(false)
     setRetryCount(0)
     setVideoEnded(false)
+    setIframeLoaded(false)
+    endedTriggeredRef.current = false
+    if (playerRef.current) {
+      try {
+        playerRef.current.off('ended')
+        playerRef.current.off('timeupdate')
+        playerRef.current.off('error')
+        playerRef.current.destroy?.()
+      } catch (error) {
+        console.error('Erro ao limpar player anterior:', error)
+      } finally {
+        playerRef.current = null
+      }
+    }
   }, [videoId])
+
+  useEffect(() => {
+    onVideoEndRef.current = onVideoEnd
+  }, [onVideoEnd])
+
+  const triggerVideoEnd = () => {
+    if (endedTriggeredRef.current) return
+    endedTriggeredRef.current = true
+    setVideoEnded(true)
+    if (onVideoEndRef.current) {
+      console.log('📞 Chamando callback onVideoEnd...')
+      onVideoEndRef.current()
+    } else {
+      console.warn('⚠️ onVideoEnd não está definido!')
+    }
+  }
 
   // Integrar com Vimeo Player API para detectar quando o vídeo termina
   useEffect(() => {
-    if (!iframeRef.current || !videoId || videoId === '000000000') return
+    if (!iframeRef.current || !videoId || videoId === '000000000' || !iframeLoaded) return
 
-    let vimeoPlayerInstance: any = null
-    let timeoutId: NodeJS.Timeout
+    let isCancelled = false
 
-    const initPlayer = () => {
-      if (!iframeRef.current) return
-      
-      
-      // Aguardar um pouco para garantir que o iframe está totalmente carregado
-      timeoutId = setTimeout(() => {
-        try {
-          // @ts-expect-error - Vimeo SDK
-          vimeoPlayerInstance = new window.Vimeo.Player(iframeRef.current)
-          
-          console.log('Vimeo Player inicializado com sucesso')
-          
-          // Listener para quando o vídeo terminar
-          vimeoPlayerInstance.on('ended', () => {
-            console.log('🎬 EVENTO ENDED DISPARADO - Vídeo terminou!')
-            
-            // Esconder o iframe imediatamente para não mostrar sugestões
-            setVideoEnded(true)
-            
-            if (onVideoEnd) {
-              console.log('📞 Chamando callback onVideoEnd...')
-              onVideoEnd()
-            } else {
-              console.warn('⚠️ onVideoEnd não está definido!')
-            }
-          })
+    const ensureSdkLoaded = () => {
+      if (typeof window.Vimeo !== 'undefined') {
+        return Promise.resolve()
+      }
 
-          // Adicionar listener de progresso para debug
-          vimeoPlayerInstance.on('timeupdate', (data: any) => {
-            // Quando estiver próximo do fim (últimos 2 segundos)
-            if (data.duration - data.seconds < 2 && data.duration - data.seconds > 1.5) {
-              console.log(`⏱️ Vídeo próximo do fim: ${data.seconds.toFixed(1)}s / ${data.duration.toFixed(1)}s`)
-            }
-          })
-
-          console.log('✅ Listeners de eventos adicionados')
-        } catch (error) {
-          console.error('❌ Erro ao inicializar Vimeo Player:', error)
+      return new Promise<void>((resolve, reject) => {
+        const existingScript = document.querySelector('script[src="https://player.vimeo.com/api/player.js"]')
+        if (existingScript) {
+          existingScript.addEventListener('load', () => resolve())
+          existingScript.addEventListener('error', () => reject(new Error('Falha ao carregar SDK do Vimeo')))
+          return
         }
-      }, 1000) // Aguarda 1 segundo para garantir que o iframe está pronto
-    }
 
-    // Verificar se o SDK do Vimeo já está carregado
-    if (typeof window.Vimeo !== 'undefined') {
-      console.log('📦 SDK do Vimeo já carregado, inicializando player...')
-      initPlayer()
-    } else {
-      // Verificar se o script já existe
-      const existingScript = document.querySelector('script[src="https://player.vimeo.com/api/player.js"]')
-      
-      if (existingScript) {
-        console.log('📜 Script do Vimeo encontrado, aguardando carregamento...')
-        // Script já existe, aguardar o carregamento
-        existingScript.addEventListener('load', initPlayer)
-      } else {
-        console.log('📥 Carregando SDK do Vimeo...')
-        // Carregar o SDK do Vimeo Player
         const script = document.createElement('script')
         script.src = 'https://player.vimeo.com/api/player.js'
         script.async = true
-        script.onload = () => {
-          console.log('✅ SDK do Vimeo carregado com sucesso')
-          initPlayer()
-        }
+        script.onload = () => resolve()
+        script.onerror = () => reject(new Error('Falha ao carregar SDK do Vimeo'))
         document.body.appendChild(script)
+      })
+    }
+
+    const initPlayer = async () => {
+      try {
+        await ensureSdkLoaded()
+        if (isCancelled || !iframeRef.current) return
+
+        // @ts-expect-error - Vimeo SDK
+        const vimeoPlayerInstance = new window.Vimeo.Player(iframeRef.current)
+        playerRef.current = vimeoPlayerInstance
+
+        console.log('✅ Vimeo Player inicializado')
+
+        vimeoPlayerInstance.on('ended', () => {
+          console.log('🎬 EVENTO ENDED DISPARADO - Vídeo terminou!')
+          triggerVideoEnd()
+        })
+
+        vimeoPlayerInstance.on('timeupdate', (data: any) => {
+          if (data?.duration && data?.seconds) {
+            const remaining = data.duration - data.seconds
+            if (remaining <= 0.5 || data.percent >= 0.995) {
+              console.log(`⏱️ Fallback fim do vídeo: ${data.seconds.toFixed(1)}s / ${data.duration.toFixed(1)}s`)
+              triggerVideoEnd()
+            }
+          }
+        })
+
+        vimeoPlayerInstance.on('error', (error: any) => {
+          console.error('❌ Erro do Vimeo Player:', error)
+        })
+      } catch (error) {
+        console.error('❌ Erro ao inicializar Vimeo Player:', error)
       }
     }
 
+    initPlayer()
+
     // Cleanup
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
-      if (vimeoPlayerInstance) {
+      isCancelled = true
+      if (playerRef.current) {
         try {
-          vimeoPlayerInstance.off('ended')
-          vimeoPlayerInstance.off('timeupdate')
+          playerRef.current.off('ended')
+          playerRef.current.off('timeupdate')
+          playerRef.current.off('error')
+          playerRef.current.destroy?.()
         } catch (error) {
           console.error('Erro ao remover listener:', error)
+        } finally {
+          playerRef.current = null
         }
       }
     }
-  }, [videoId, onVideoEnd])
+  }, [videoId, iframeLoaded])
 
   const handleLoad = () => {
     setIsLoading(false)
     setHasError(false)
+    setIframeLoaded(true)
   }
 
   const handleError = () => {
@@ -132,6 +158,9 @@ function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: VimeoPlayer
     setRetryCount(prev => prev + 1)
     setIsLoading(true)
     setHasError(false)
+    setVideoEnded(false)
+    setIframeLoaded(false)
+    endedTriggeredRef.current = false
   }
 
   // Verificar se o videoId é válido
@@ -206,7 +235,7 @@ function VimeoPlayer({ videoId, title, className = '', onVideoEnd }: VimeoPlayer
       <iframe
         ref={iframeRef}
         key={`${videoId}-${retryCount}`}
-        src={`https://player.vimeo.com/video/${videoId}?h=0&badge=0&autopause=0&player_id=vimeo-${videoId}&title=0&byline=0&portrait=0&controls=1&dnt=1`}
+        src={`https://player.vimeo.com/video/${videoId}?h=0&badge=0&autopause=0&player_id=vimeo-${videoId}&title=0&byline=0&portrait=0&controls=1&dnt=1&playsinline=1`}
         width="100%"
         height="100%"
         frameBorder="0"
