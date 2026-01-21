@@ -163,6 +163,21 @@ export default function HomePage() {
 
             </div>
 
+            <div className="w-full">
+              <div className="aspect-video bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-xl">
+                <iframe
+                  src="https://player.vimeo.com/video/1147752447?h=0&badge=0&autopause=0&title=0&byline=0&portrait=0&controls=1&dnt=1&playsinline=1"
+                  width="100%"
+                  height="100%"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                  title="AURUM - Aula de apresentação"
+                  className="w-full h-full"
+                />
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -334,28 +349,11 @@ export default function HomePage() {
                 <li><a href="#" className="hover:text-yellow-500">Suporte</a></li>
               </ul>
             </div>
-
-            <div>
-              <h3 className="font-semibold text-white mb-4">Empresa</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-yellow-500">Sobre</a></li>
-                <li><a href="#" className="hover:text-yellow-500">Blog</a></li>
-                <li><a href="#" className="hover:text-yellow-500">Contato</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-white mb-4">Legal</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-yellow-500">Termos</a></li>
-                <li><a href="#" className="hover:text-yellow-500">Privacidade</a></li>
-                <li><a href="#" className="hover:text-yellow-500">Cookies</a></li>
-              </ul>
-            </div>
           </div>
 
+
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 AURUM. Todos os direitos reservados.</p>
+            <p>&copy; 2026 AURUM. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

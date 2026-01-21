@@ -12,7 +12,7 @@ async function main() {
     create: {
       id: 'aurum-course-id',
       title: 'AURUM - Educação Financeira Completa',
-      description: 'Curso completo de educação financeira abordando mentalidade, dinheiro e bancos, dívidas e orçamento, renda fixa, renda variável, investimentos no exterior, criptomoedas e empreendedorismo.',
+      description: 'Curso completo de educação financeira abordando mentalidade, dinheiro e bancos, dívidas e orçamento, renda fixa e renda variável.',
       instructor: 'AURUM Academy',
       price: 497.00,
     },

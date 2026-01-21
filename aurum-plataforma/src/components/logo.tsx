@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 interface LogoProps {
@@ -13,8 +12,7 @@ interface LogoProps {
   href?: string;
 }
 
-export function Logo({ className, variant = 'light', size = 'md', clickable = false, href = '/dashboard' }: LogoProps) {
-  const router = useRouter();
+export function Logo({ className, variant = 'light', size = 'md', clickable = true, href = 'https://aurum-plataforma.vercel.app/' }: LogoProps): JSX.Element {
   const sizeClasses = {
     sm: {
       width: 120,
@@ -32,31 +30,38 @@ export function Logo({ className, variant = 'light', size = 'md', clickable = fa
 
   const currentSize = sizeClasses[size];
 
-  const handleClick = () => {
-    if (clickable) {
-      router.push(href);
-    }
-  };
+  const content = (
+    <Image
+      src="/aurum-logo.png"
+      alt="AURUM NOVA ESCOLA"
+      width={currentSize.width}
+      height={currentSize.height}
+      className="object-contain"
+      priority
+      style={{
+        maxWidth: '100%',
+        height: 'auto',
+      }}
+      unoptimized
+    />
+  );
+
+  if (!clickable) {
+    return (
+      <div className={cn('flex items-center justify-center', className)}>
+        {content}
+      </div>
+    );
+  }
 
   return (
-    <div 
-      className={cn('flex items-center justify-center', clickable && 'cursor-pointer hover:opacity-80 transition-opacity', className)}
-      onClick={handleClick}
+    <a
+      href={href}
+      className={cn('flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity', className)}
+      aria-label="Ir para a página inicial da AURUM"
     >
-      <Image
-        src="/aurum-logo.png"
-        alt="AURUM NOVA ESCOLA"
-        width={currentSize.width}
-        height={currentSize.height}
-        className="object-contain"
-        priority
-        style={{
-          maxWidth: '100%',
-          height: 'auto',
-        }}
-        unoptimized
-      />
-    </div>
+      {content}
+    </a>
   );
 }
 
