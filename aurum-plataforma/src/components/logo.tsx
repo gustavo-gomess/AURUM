@@ -12,7 +12,7 @@ interface LogoProps {
   href?: string;
 }
 
-export function Logo({ className, variant = 'light', size = 'md', clickable = true, href = 'https://aurum-plataforma.vercel.app/' }: LogoProps): JSX.Element {
+export function Logo({ className, variant = 'light', size = 'md', clickable = true, href = 'https://aurum-plataforma.vercel.app/' }: LogoProps) {
   const sizeClasses = {
     sm: {
       width: 120,
