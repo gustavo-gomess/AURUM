@@ -114,9 +114,9 @@ export function DialogContent({ children, className, onClose, ...props }: Dialog
               onOpenChange(false)
               onClose?.()
             }}
-            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:pointer-events-none"
+            className="absolute right-4 top-4 rounded-full bg-gray-800/80 p-2 text-yellow-400 shadow-md transition hover:bg-yellow-400 hover:text-black focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-gray-900"
           >
-            <X className="h-4 w-4 text-gray-400" />
+            <X className="h-5 w-5" />
             <span className="sr-only">Close</span>
           </button>
           {children}
