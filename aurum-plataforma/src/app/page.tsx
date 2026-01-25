@@ -1,10 +1,10 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Logo } from '@/components/logo'
 import { 
   BookOpen, 
@@ -22,7 +22,6 @@ import {
 
 export default function HomePage() {
   const router = useRouter()
-  const [expandedModuleIndex, setExpandedModuleIndex] = useState<number | null>(null)
 
   const features = [
     {
@@ -299,45 +298,55 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {modules.map((moduleItem, index) => (
-              <Card
-                key={index}
-                className="bg-gray-900 border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer"
-                onClick={() => {
-                  setExpandedModuleIndex(expandedModuleIndex === index ? null : index)
-                }}
-              >
-                <CardHeader>
-                  <div className={`w-12 h-12 bg-gradient-to-r ${moduleItem.color} rounded-lg flex items-center justify-center mb-4`}>
-                    <moduleItem.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <CardTitle className="text-white">{moduleItem.title}</CardTitle>
-                  <CardDescription className="text-gray-400">
-                    {moduleItem.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-400">
-                      {moduleItem.lessons} aulas
-                    </span>
-                  </div>
-                  {expandedModuleIndex === index && moduleItem.items.length > 0 && (
-                    <div className="mt-4 rounded-lg bg-gradient-to-b from-gray-800/60 to-gray-900/40 p-3">
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-yellow-400 font-semibold mb-3">
-                        O que você vai aprender
+              <Dialog key={index}>
+                <DialogTrigger asChild>
+                  <Card className="bg-gray-900 border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer">
+                    <CardHeader>
+                      <div className={`w-12 h-12 bg-gradient-to-r ${moduleItem.color} rounded-lg flex items-center justify-center mb-4`}>
+                        <moduleItem.icon className="w-6 h-6 text-white" />
+                      </div>
+                      <CardTitle className="text-white">{moduleItem.title}</CardTitle>
+                      <CardDescription className="text-gray-400">
+                        {moduleItem.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-400">
+                          {moduleItem.lessons} aulas
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </DialogTrigger>
+                <DialogContent className="bg-gray-900 border border-gray-800 text-white max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-yellow-400">{moduleItem.title}</DialogTitle>
+                  </DialogHeader>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-400 mb-4">{moduleItem.description}</p>
+                    {moduleItem.items.length > 0 ? (
+                      <>
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-yellow-400 font-semibold mb-4">
+                          O que você vai aprender
+                        </p>
+                        <ul className="space-y-2">
+                          {moduleItem.items.map((item) => (
+                            <li key={item} className="flex items-start gap-2 text-sm text-gray-200">
+                              <CheckCircle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                              <span className="leading-relaxed">{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-400">
+                        Em breve mais detalhes desse conteúdo.
                       </p>
-                      <ul className="space-y-2">
-                        {moduleItem.items.map((item) => (
-                          <li key={item} className="flex items-start gap-2 text-[11px] text-gray-200">
-                            <CheckCircle className="w-3.5 h-3.5 text-yellow-400 mt-0.5 flex-shrink-0" />
-                            <span className="leading-relaxed">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
             ))}
           </div>
         </div>
