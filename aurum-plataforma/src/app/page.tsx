@@ -301,7 +301,7 @@ export default function HomePage() {
             {modules.map((moduleItem, index) => (
               <Card
                 key={index}
-                className="bg-gray-900 border-gray-800 hover:shadow-lg transition-all cursor-pointer"
+                className="bg-gray-900 border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer"
                 onClick={() => {
                   setExpandedModuleIndex(expandedModuleIndex === index ? null : index)
                 }}
@@ -322,15 +322,15 @@ export default function HomePage() {
                     </span>
                   </div>
                   {expandedModuleIndex === index && moduleItem.items.length > 0 && (
-                    <div className="mt-4 rounded-lg border border-yellow-500/20 bg-gray-800/50 p-3">
-                      <p className="text-[10px] uppercase tracking-wide text-yellow-400 font-semibold mb-2">
+                    <div className="mt-4 rounded-lg bg-gradient-to-b from-gray-800/60 to-gray-900/40 p-3">
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-yellow-400 font-semibold mb-3">
                         O que você vai aprender
                       </p>
-                      <ul className="space-y-1">
+                      <ul className="space-y-2">
                         {moduleItem.items.map((item) => (
-                          <li key={item} className="flex items-start gap-2 text-xs text-gray-300">
-                            <CheckCircle className="w-3 h-3 text-yellow-500 mt-0.5 flex-shrink-0" />
-                            <span className="leading-tight">{item}</span>
+                          <li key={item} className="flex items-start gap-2 text-[11px] text-gray-200">
+                            <CheckCircle className="w-3.5 h-3.5 text-yellow-400 mt-0.5 flex-shrink-0" />
+                            <span className="leading-relaxed">{item}</span>
                           </li>
                         ))}
                       </ul>
