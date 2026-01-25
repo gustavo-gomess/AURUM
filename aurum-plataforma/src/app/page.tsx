@@ -166,7 +166,7 @@ export default function HomePage() {
             <div className="w-full">
               <div className="aspect-video bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-xl">
                 <iframe
-                  src="https://player.vimeo.com/video/1147752447?h=0&badge=0&autopause=0&title=0&byline=0&portrait=0&controls=1&dnt=1&playsinline=1"
+                  src="https://player.vimeo.com/video/1146940366?h=0&badge=0&autopause=0&title=0&byline=0&portrait=0&controls=1&dnt=1&playsinline=1"
                   width="100%"
                   height="100%"
                   frameBorder="0"

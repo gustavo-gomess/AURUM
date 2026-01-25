@@ -588,6 +588,78 @@ export default function CoursePage() {
   }
 
   const currentLessonData = course.modules[currentModule]?.lessons[currentLesson]
+  const moduleDescriptionsById: Record<string, string[]> = {
+    'module-01-mentalidade': [
+      'LIMPAR O TERRENO',
+      'MENTALIDADE ABUNDÂNCIA X MENTALIDADE ESCASSEZ',
+      'CRENÇAS LIMITANTES SOBRE VOCÊ',
+      'CRENÇAS LIMITANTES EM RELAÇÃO AO DINHEIRO',
+      'O PODER DO AMBIENTE E DAS PESSOAS AO REDOR',
+      'COMPORTAMENTO; FICAR RICO É COMPORTAMENTAL E NÃO INTELECTUAL',
+      'COMO CRIAR UM HÁBITO',
+      'MINDSET LONGO PRAZO X IMEDIATO',
+      'FOCO E PRIORIDADES',
+      'IMPORTÂNCIA DA META - COMO ESTABELECER UMA',
+      'AUTO RESPONSABILIDADE A CHAVE PRA MUDAR DE VIDA',
+      'COMO LIDAR COM O MEDO E O FRACASSO FINANCEIRO',
+      'MELHORIA CONTÍNUA',
+      'APRENDA A SER GRATO'
+    ],
+    'module-02-dinheiro': [
+      'A HISTÓRIA DO DINHEIRO',
+      'MOEDAS FIDUCIÁRIAS O FIM DO LASTRO EM OURO',
+      'QUAL A FUNÇÃO DO DINHEIRO',
+      'INFLAÇÃO; O QUE É E COMO FUNCIONA',
+      'INFLAÇÃO X DEFLAÇÃO',
+      'RESERVAS FRACIONÁRIAS; O DINHEIRO QUE NÃO EXISTE',
+      'EFEITO CANTILLON',
+      'PORQUE OS GOVERNOS FAZEM DIVIDAS',
+      'A IMPORTÂNCIA DO CAPITALISMO',
+      'CONCLUSÃO E FECHAMENTO; O PAPEL DA INFLAÇÃO NA EXPANSÃO DA DIVIDA PÚBLICA'
+    ],
+    'module-03-dividas': [
+      'DIAGNÓSTICO FINANCEIRO ENTENDENDO A RAIZ DO ENDIVIDAMENTO',
+      'O CUSTO INVISÍVEL DA DÍVIDA O PREÇO QUE VOCÊ NÃO VÊ',
+      'COMO SAIR DAS DÍVIDAS - PASSO A PASSO',
+      'A VIDA DO ZERO A ZERO O ENGANO DA SOBREVIVÊNCIA FINANCEIRA',
+      'O GRANDE VILÃO O CONSUMO AUTOMÁTICO',
+      'A MENTIRA DO EU MEREÇO E DA CLASSE MÉDIA ENDIVIDADA',
+      'POR QUE SOBRAR DINHEIRO NÃO É O FIM, MAS O COMEÇO',
+      'CRIANDO O SEU ORÇAMENTO PESSOAL INTELIGENTE',
+      'O PRIMEIRO PASSO PARA INVESTIR E FAZER O DINHEIRO TRABALHAR',
+      'AULA EXTRA - COMO CONVERSAR SOBRE DINHEIRO COM A FAMÍLIA'
+    ],
+    'module-04-renda-fixa': [
+      'O QUE É A RENDA FIXA',
+      'MITOS E VERDADES DA RENDA FIXA',
+      'ENDIVIDAMENTO X INVESTIMENTOS - CONSÓRCIOS, FINANCIAMENTOS E TÍTULOS DE CAPITALIZAÇÃO',
+      'TESOURO DIRETO (SELIC, PREFIXADO E IPCA+)',
+      'CDB, LCI, LCA E CDI; ENTENDENDO A RENDA FIXA DOS BANCOS E O PAPEL DO FGC',
+      'RISCO DE CRÉDITO E BANCOS RUINS',
+      'DEBÊNTURES, CRI E CRA A RENDA FIXA DE EMPRESAS',
+      'IOF, IR E TRIBUTAÇÃO NA RENDA FIXA + COE',
+      'PIRÂMIDES FINANCEIRAS E GOLPES',
+      'CORRETORAS, BANCOS E HOME BROKER POR ONDE INVESTIR',
+      'RESERVA DE EMERGÊNCIA ONDE COLOCAR NA PRÁTICA',
+      'COMPRANDO TESOURO DIRETO NA PRÁTICA - PASSO A PASSO'
+    ],
+    'module-05-renda-variavel': [
+      'RENDA VARIÁVEL E ESCOLAS DE ANÁLISE FUNDAMENTALISTA X GRÁFICA',
+      'AÇÕES O QUE SÃO E PORQUE INVESTIR',
+      'TIPOS DE AÇÕES E NOMENCLATURAS (ON, PN, UNITS E TAG ALONG)',
+      'INDICADORES FUNDAMENTAIS QUE TODO INVESTIDOR DEVE CONHECER',
+      'FERRAMENTAS E SITES PARA CONSULTAR INDICADORES',
+      'COMO COMPRAR AÇÕES PELO HOME BROKER E PRINCIPAIS FUNCIONALIDADES',
+      'PROVENTOS DIVIDENDOS; JCP; BONIFICAÇÕES E SUBSCRIÇÕES',
+      'DESDOBRAMENTOS E GRUPAMENTOS POR QUE AS EMPRESAS FAZEM ISSO',
+      'LEITURA DE GRÁFICOS CANDLESTICKS; SUPORTES E RESISTÊNCIAS',
+      'ALUGUEL DE AÇÕES E OUTRAS FORMAS DE RENTABILIZAR SUA CARTEIRA',
+      'FUNDOS DE AÇÕES E MULTIMERCADOS COMO FUNCIONAM E QUANDO USAR',
+      'FUNDOS IMOBILIÁRIOS (FIIS) COMO GERAM RENDA PASSIVA',
+      'PREVIDÊNCIA PRIVADA (PGBL E VGBL) QUANDO VALE A PENA',
+      'CARTEIRA DE INVESTIMENTOS E DIVERSIFICAÇÃO INTELIGENTE'
+    ]
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -644,6 +716,7 @@ export default function CoursePage() {
                   ).length
                   const totalLessons = courseModule.lessons.length
                   const isCompleted = isModuleCompleted(moduleIndex)
+                  const moduleDescriptionItems = moduleDescriptionsById[courseModule.id]
                   
                   return (
                     <div key={courseModule.id} className={`border rounded-lg overflow-hidden transition-all ${
@@ -706,6 +779,27 @@ export default function CoursePage() {
                       {/* Lista de Aulas - Mostra apenas quando expandido */}
                       {isExpanded && (
                         <div className="px-2 pb-2 space-y-1 border-t border-gray-700/50 pt-2">
+                          {(moduleDescriptionItems?.length || courseModule.description) && (
+                            <div className="mb-2 rounded-md border border-yellow-500/20 bg-gray-900/40 px-2 py-2">
+                              <p className="text-[10px] uppercase tracking-wide text-yellow-400 font-semibold mb-2">
+                                O que você vai aprender
+                              </p>
+                              {moduleDescriptionItems?.length ? (
+                                <ul className="space-y-1">
+                                  {moduleDescriptionItems.map((item) => (
+                                    <li key={item} className="flex items-start gap-2 text-xs text-gray-300">
+                                      <CheckCircle className="w-3 h-3 text-yellow-500 mt-0.5 flex-shrink-0" />
+                                      <span className="leading-tight">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p className="text-xs text-gray-400 leading-relaxed">
+                                  {courseModule.description}
+                                </p>
+                              )}
+                            </div>
+                          )}
                           {courseModule.lessons.map((lesson, lessonIndex) => {
                             const isUnlocked = isLessonUnlocked(moduleIndex, lessonIndex)
                             const isCompleted = isLessonCompleted(moduleIndex, lessonIndex)
