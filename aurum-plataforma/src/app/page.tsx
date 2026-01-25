@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +23,7 @@ import {
 
 export default function HomePage() {
   const router = useRouter()
+  const [openModuleIndex, setOpenModuleIndex] = useState<number | null>(null)
 
   const features = [
     {
@@ -298,7 +300,11 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {modules.map((moduleItem, index) => (
-              <Dialog key={index}>
+              <Dialog
+                key={index}
+                open={openModuleIndex === index}
+                onOpenChange={(open) => setOpenModuleIndex(open ? index : null)}
+              >
                 <DialogTrigger asChild>
                   <Card className="bg-gray-900 border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer">
                     <CardHeader>
