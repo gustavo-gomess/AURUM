@@ -334,21 +334,21 @@ export default function HomePage() {
                     </div>
                   </CardContent>
                 </Card>
-                <DialogContent className="bg-gray-900 border border-gray-800 text-white max-h-[80vh] overflow-y-auto rounded-xl shadow-2xl">
-                  <DialogHeader>
-                    <DialogTitle className="text-yellow-400 text-xl">{moduleItem.title}</DialogTitle>
+                <DialogContent className="bg-gray-900 border border-gray-800 text-white max-h-[80vh] w-full max-w-3xl overflow-y-auto rounded-2xl shadow-2xl p-8 sm:p-10">
+                  <DialogHeader className="space-y-2 pr-10 p-0 text-left">
+                    <DialogTitle className="text-yellow-400 text-2xl">{moduleItem.title}</DialogTitle>
                   </DialogHeader>
-                  <div className="mt-1">
-                    <p className="text-sm text-gray-400 mb-5">{moduleItem.description}</p>
+                  <div className="mt-4 space-y-6">
+                    <p className="text-sm sm:text-base text-gray-300">{moduleItem.description}</p>
                     {moduleItem.items.length > 0 ? (
                       <>
-                        <p className="text-[11px] uppercase tracking-[0.25em] text-yellow-400 font-semibold mb-4">
+                        <p className="text-[11px] uppercase tracking-[0.25em] text-yellow-400 font-semibold">
                           O que você vai aprender
                         </p>
-                        <ul className="space-y-2.5">
+                        <ul className="space-y-3">
                           {moduleItem.items.map((item) => (
-                            <li key={item} className="flex items-start gap-2 text-sm text-gray-200">
-                              <CheckCircle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                            <li key={item} className="flex items-start gap-3 text-sm sm:text-base text-gray-200">
+                              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
                               <span className="leading-relaxed">{item}</span>
                             </li>
                           ))}
