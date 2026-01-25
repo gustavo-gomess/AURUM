@@ -388,7 +388,7 @@ export default function HomePage() {
             <CardHeader className="text-center pb-6 pt-10">
               <CardTitle className="text-3xl lg:text-4xl font-bold">Curso Completo</CardTitle>
               <div className="mt-5 flex items-end justify-center gap-2">
-                <span className="text-5xl lg:text-6xl font-bold">R$ 197</span>
+                <span className="text-5xl lg:text-6xl font-bold">R$ 167,80</span>
                 <span className="text-base font-medium pb-1">/mês</span>
               </div>
               <p className="text-black/80 mt-3">Pagamento mensal • Acesso anual</p>
