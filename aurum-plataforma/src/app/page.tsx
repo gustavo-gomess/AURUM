@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -21,6 +22,7 @@ import {
 
 export default function HomePage() {
   const router = useRouter()
+  const [expandedModuleIndex, setExpandedModuleIndex] = useState<number | null>(null)
 
   const features = [
     {
@@ -46,42 +48,113 @@ export default function HomePage() {
       title: "Mentalidade",
       description: "Fundamentos e hábitos para construir uma base financeira sólida",
       lessons: 15,
-      color: "from-yellow-400 to-yellow-600"
+      color: "from-yellow-400 to-yellow-600",
+      items: [
+        'LIMPAR O TERRENO',
+        'MENTALIDADE ABUNDÂNCIA X MENTALIDADE ESCASSEZ',
+        'CRENÇAS LIMITANTES SOBRE VOCÊ',
+        'CRENÇAS LIMITANTES EM RELAÇÃO AO DINHEIRO',
+        'O PODER DO AMBIENTE E DAS PESSOAS AO REDOR',
+        'COMPORTAMENTO; FICAR RICO É COMPORTAMENTAL E NÃO INTELECTUAL',
+        'COMO CRIAR UM HÁBITO',
+        'MINDSET LONGO PRAZO X IMEDIATO',
+        'FOCO E PRIORIDADES',
+        'IMPORTÂNCIA DA META - COMO ESTABELECER UMA',
+        'AUTO RESPONSABILIDADE A CHAVE PRA MUDAR DE VIDA',
+        'COMO LIDAR COM O MEDO E O FRACASSO FINANCEIRO',
+        'MELHORIA CONTÍNUA',
+        'APRENDA A SER GRATO'
+      ]
     },
     {
       icon: PiggyBank,
       title: "Dinheiro, Bancos e Governos",
       description: "Entenda o papel do dinheiro e como instituições e governos impactam você",
       lessons: 10,
-      color: "from-green-400 to-green-600"
+      color: "from-green-400 to-green-600",
+      items: [
+        'A HISTÓRIA DO DINHEIRO',
+        'MOEDAS FIDUCIÁRIAS O FIM DO LASTRO EM OURO',
+        'QUAL A FUNÇÃO DO DINHEIRO',
+        'INFLAÇÃO; O QUE É E COMO FUNCIONA',
+        'INFLAÇÃO X DEFLAÇÃO',
+        'RESERVAS FRACIONÁRIAS; O DINHEIRO QUE NÃO EXISTE',
+        'EFEITO CANTILLON',
+        'PORQUE OS GOVERNOS FAZEM DIVIDAS',
+        'A IMPORTÂNCIA DO CAPITALISMO',
+        'CONCLUSÃO E FECHAMENTO; O PAPEL DA INFLAÇÃO NA EXPANSÃO DA DIVIDA PÚBLICA'
+      ]
     },
     {
       icon: TrendingUp,
       title: "Dívidas, Gastos e Orçamento",
       description: "Organize despesas, saia das dívidas e planeje seu orçamento",
       lessons: 10,
-      color: "from-blue-400 to-blue-600"
+      color: "from-blue-400 to-blue-600",
+      items: [
+        'DIAGNÓSTICO FINANCEIRO ENTENDENDO A RAIZ DO ENDIVIDAMENTO',
+        'O CUSTO INVISÍVEL DA DÍVIDA O PREÇO QUE VOCÊ NÃO VÊ',
+        'COMO SAIR DAS DÍVIDAS - PASSO A PASSO',
+        'A VIDA DO ZERO A ZERO O ENGANO DA SOBREVIVÊNCIA FINANCEIRA',
+        'O GRANDE VILÃO O CONSUMO AUTOMÁTICO',
+        'A MENTIRA DO EU MEREÇO E DA CLASSE MÉDIA ENDIVIDADA',
+        'POR QUE SOBRAR DINHEIRO NÃO É O FIM, MAS O COMEÇO',
+        'CRIANDO O SEU ORÇAMENTO PESSOAL INTELIGENTE',
+        'O PRIMEIRO PASSO PARA INVESTIR E FAZER O DINHEIRO TRABALHAR',
+        'AULA EXTRA - COMO CONVERSAR SOBRE DINHEIRO COM A FAMÍLIA'
+      ]
     },
     {
       icon: Shield,
       title: "Renda Fixa",
       description: "Conheça produtos e estratégias de renda fixa para investir com segurança",
       lessons: 12,
-      color: "from-red-400 to-red-600"
+      color: "from-red-400 to-red-600",
+      items: [
+        'O QUE É A RENDA FIXA',
+        'MITOS E VERDADES DA RENDA FIXA',
+        'ENDIVIDAMENTO X INVESTIMENTOS - CONSÓRCIOS, FINANCIAMENTOS E TÍTULOS DE CAPITALIZAÇÃO',
+        'TESOURO DIRETO (SELIC, PREFIXADO E IPCA+)',
+        'CDB, LCI, LCA E CDI; ENTENDENDO A RENDA FIXA DOS BANCOS E O PAPEL DO FGC',
+        'RISCO DE CRÉDITO E BANCOS RUINS',
+        'DEBÊNTURES, CRI E CRA A RENDA FIXA DE EMPRESAS',
+        'IOF, IR E TRIBUTAÇÃO NA RENDA FIXA + COE',
+        'PIRÂMIDES FINANCEIRAS E GOLPES',
+        'CORRETORAS, BANCOS E HOME BROKER POR ONDE INVESTIR',
+        'RESERVA DE EMERGÊNCIA ONDE COLOCAR NA PRÁTICA',
+        'COMPRANDO TESOURO DIRETO NA PRÁTICA - PASSO A PASSO'
+      ]
     },
     {
       icon: BarChart3,
       title: "Renda Variável",
       description: "Aprenda sobre renda variável e como construir uma carteira diversificada",
       lessons: 19,
-      color: "from-purple-400 to-purple-600"
+      color: "from-purple-400 to-purple-600",
+      items: [
+        'RENDA VARIÁVEL E ESCOLAS DE ANÁLISE FUNDAMENTALISTA X GRÁFICA',
+        'AÇÕES O QUE SÃO E PORQUE INVESTIR',
+        'TIPOS DE AÇÕES E NOMENCLATURAS (ON, PN, UNITS E TAG ALONG)',
+        'INDICADORES FUNDAMENTAIS QUE TODO INVESTIDOR DEVE CONHECER',
+        'FERRAMENTAS E SITES PARA CONSULTAR INDICADORES',
+        'COMO COMPRAR AÇÕES PELO HOME BROKER E PRINCIPAIS FUNCIONALIDADES',
+        'PROVENTOS DIVIDENDOS; JCP; BONIFICAÇÕES E SUBSCRIÇÕES',
+        'DESDOBRAMENTOS E GRUPAMENTOS POR QUE AS EMPRESAS FAZEM ISSO',
+        'LEITURA DE GRÁFICOS CANDLESTICKS; SUPORTES E RESISTÊNCIAS',
+        'ALUGUEL DE AÇÕES E OUTRAS FORMAS DE RENTABILIZAR SUA CARTEIRA',
+        'FUNDOS DE AÇÕES E MULTIMERCADOS COMO FUNCIONAM E QUANDO USAR',
+        'FUNDOS IMOBILIÁRIOS (FIIS) COMO GERAM RENDA PASSIVA',
+        'PREVIDÊNCIA PRIVADA (PGBL E VGBL) QUANDO VALE A PENA',
+        'CARTEIRA DE INVESTIMENTOS E DIVERSIFICAÇÃO INTELIGENTE'
+      ]
     },
     {
       icon: DollarSign,
       title: "Aula Bônus",
       description: "Uma aula extra com conteúdo prático para acelerar seus resultados",
       lessons: 1,
-      color: "from-orange-400 to-orange-600"
+      color: "from-orange-400 to-orange-600",
+      items: []
     }
   ]
 
@@ -226,7 +299,13 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {modules.map((moduleItem, index) => (
-              <Card key={index} className="bg-gray-900 border-gray-800 hover:shadow-lg transition-all">
+              <Card
+                key={index}
+                className="bg-gray-900 border-gray-800 hover:shadow-lg transition-all cursor-pointer"
+                onClick={() => {
+                  setExpandedModuleIndex(expandedModuleIndex === index ? null : index)
+                }}
+              >
                 <CardHeader>
                   <div className={`w-12 h-12 bg-gradient-to-r ${moduleItem.color} rounded-lg flex items-center justify-center mb-4`}>
                     <moduleItem.icon className="w-6 h-6 text-white" />
@@ -242,6 +321,21 @@ export default function HomePage() {
                       {moduleItem.lessons} aulas
                     </span>
                   </div>
+                  {expandedModuleIndex === index && moduleItem.items.length > 0 && (
+                    <div className="mt-4 rounded-lg border border-yellow-500/20 bg-gray-800/50 p-3">
+                      <p className="text-[10px] uppercase tracking-wide text-yellow-400 font-semibold mb-2">
+                        O que você vai aprender
+                      </p>
+                      <ul className="space-y-1">
+                        {moduleItem.items.map((item) => (
+                          <li key={item} className="flex items-start gap-2 text-xs text-gray-300">
+                            <CheckCircle className="w-3 h-3 text-yellow-500 mt-0.5 flex-shrink-0" />
+                            <span className="leading-tight">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
