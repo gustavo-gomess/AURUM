@@ -359,7 +359,7 @@ export function Navigation() {
 
   const navigationItems = [
     {
-      name: 'Casa',
+      name: 'Home',
       href: '/dashboard',
       icon: Home,
       active: pathname === '/dashboard'
