@@ -381,11 +381,7 @@ export default function HomePage() {
           </div>
 
           <Card className="bg-gradient-to-br from-yellow-400 to-yellow-600 text-black relative overflow-hidden rounded-2xl shadow-2xl ring-1 ring-black/10">
-            <div className="absolute top-4 right-4">
-              <Badge className="bg-black/90 text-yellow-400 px-3 py-1 rounded-full text-xs tracking-wide">POPULAR</Badge>
-            </div>
-            
-            <CardHeader className="text-center pb-6 pt-10">
+            <CardHeader className="text-center pb-6 pt-6">
               <CardTitle className="text-3xl lg:text-4xl font-bold">Curso Completo</CardTitle>
               <div className="mt-5 flex items-end justify-center gap-2">
                 <span className="text-5xl lg:text-6xl font-bold">R$ 167,80</span>
