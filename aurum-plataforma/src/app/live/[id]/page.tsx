@@ -5,16 +5,13 @@ import { useParams, useRouter } from "next/navigation"
 import { Navigation } from "@/components/navigation"
 import { VimeoPlayer } from "@/components/VimeoPlayer"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Users,
   Clock,
   Calendar,
-  Send,
-  Smile,
   ArrowLeft,
 } from "lucide-react"
 
@@ -35,46 +32,12 @@ interface LiveData {
   category: string
 }
 
-// Interface para mensagens do chat
-interface ChatMessage {
-  id: string
-  userName: string
-  userAvatar?: string
-  message: string
-  timestamp: string
-}
-
 export default function LivePage() {
   const params = useParams()
   const router = useRouter()
   const liveId = params.id as string
 
   const [liveData, setLiveData] = useState<LiveData | null>(null)
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      id: "1",
-      userName: "Maria Silva",
-      userAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
-      message: "Ótima explicação sobre diversificação!",
-      timestamp: "19:15",
-    },
-    {
-      id: "2",
-      userName: "João Santos",
-      userAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Joao",
-      message: "Qual a melhor estratégia para iniciantes?",
-      timestamp: "19:16",
-    },
-    {
-      id: "3",
-      userName: "Ana Costa",
-      userAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ana",
-      message: "Conteúdo incrível como sempre! 🔥",
-      timestamp: "19:18",
-    },
-  ])
-
-  const [newMessage, setNewMessage] = useState("")
 
   // Carregar dados da live baseado no ID
   useEffect(() => {
@@ -110,20 +73,6 @@ export default function LivePage() {
     fetchLiveData()
   }, [liveId])
 
-  // Função para enviar mensagem no chat
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      const message: ChatMessage = {
-        id: Date.now().toString(),
-        userName: "Você",
-        message: newMessage,
-        timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-      }
-      setChatMessages([...chatMessages, message])
-      setNewMessage("")
-    }
-  }
-
   // Loading state
   if (!liveData) {
     return (
@@ -154,9 +103,9 @@ export default function LivePage() {
           Voltar para o catálogo
         </Button>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="max-w-4xl mx-auto space-y-6">
           {/* Área principal - Video e Informações */}
-          <div className="xl:col-span-2 space-y-6">
+          <div className="space-y-6">
             {/* Player de Vídeo do Vimeo */}
             <Card className="overflow-hidden bg-gray-900 border-gray-800">
               <div className="relative">
@@ -260,73 +209,6 @@ export default function LivePage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          </div>
-
-          {/* Chat Lateral */}
-          <div className="xl:col-span-1">
-            <Card className="flex flex-col h-[600px] xl:h-[calc(100vh-8rem)] bg-gray-900 border-gray-800">
-              {/* Header do Chat */}
-              <CardHeader className="border-b border-gray-800 p-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-white">Chat ao Vivo</h2>
-                  <Badge className="bg-yellow-500/20 text-yellow-500 border border-yellow-500/30">
-                    {liveData.viewersCount > 0 ? liveData.viewersCount : 0} online
-                  </Badge>
-                </div>
-              </CardHeader>
-
-              {/* Mensagens do Chat */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {chatMessages.map((msg) => (
-                  <div key={msg.id} className="flex gap-3 animate-in slide-in-from-bottom-2">
-                    <Avatar className="h-8 w-8 flex-shrink-0 border border-gray-700">
-                      <AvatarImage src={msg.userAvatar || "/placeholder.svg"} />
-                      <AvatarFallback className="bg-gray-800 text-gray-300 text-xs">
-                        {msg.userName.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-medium text-white">{msg.userName}</span>
-                        <span className="text-xs text-gray-500">{msg.timestamp}</span>
-                      </div>
-                      <p className="text-sm text-gray-300 leading-relaxed">{msg.message}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Input de Mensagem */}
-              <div className="border-t border-gray-800 p-4">
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="flex-shrink-0 text-gray-400 hover:text-yellow-500 hover:bg-gray-800"
-                  >
-                    <Smile className="h-5 w-5" />
-                  </Button>
-                  <Input
-                    placeholder="Digite sua mensagem..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleSendMessage()
-                      }
-                    }}
-                    className="flex-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-yellow-500 focus:ring-yellow-500"
-                  />
-                  <Button
-                    size="icon"
-                    className="flex-shrink-0 bg-yellow-500 text-black hover:bg-yellow-400"
-                    onClick={handleSendMessage}
-                  >
-                    <Send className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
             </Card>
           </div>
         </div>
