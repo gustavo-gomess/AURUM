@@ -327,7 +327,7 @@ export default function HomePage() {
                             size="sm"
                             className="h-6 px-2 text-[11px] text-yellow-400 hover:text-black hover:bg-yellow-400"
                           >
-                            Descrição do módulo
+                            Clque aqui para ver mais detalhes
                           </Button>
                         </DialogTrigger>
                       </Badge>
