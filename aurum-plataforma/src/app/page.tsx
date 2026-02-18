@@ -18,7 +18,8 @@ import {
   Shield,
   DollarSign,
   BarChart3,
-  PiggyBank
+  PiggyBank,
+  MessageCircle
 } from 'lucide-react'
 
 export default function HomePage() {
@@ -200,6 +201,16 @@ export default function HomePage() {
 
             {/* CTA */}
             <div className="flex items-center space-x-4">
+              <Button
+                asChild
+                variant="outline"
+                className="border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white"
+              >
+                <a href="https://wa.me/554899749150" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4" />
+                  WhatsApp
+                </a>
+              </Button>
               <Button 
                 onClick={() => router.push('/login')}
                 className="bg-yellow-500 hover:bg-yellow-400 text-black"
@@ -432,6 +443,16 @@ export default function HomePage() {
           <p className="text-xl text-black/80 mb-8">
             Junte-se a milhares de pessoas que já mudaram sua relação com o dinheiro
           </p>
+          <Button
+            asChild
+            size="lg"
+            className="bg-[#25D366] hover:bg-[#20BD5A] text-white gap-2"
+          >
+            <a href="https://wa.me/554899749150" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+              <MessageCircle className="w-5 h-5" />
+              Fale conosco pelo WhatsApp
+            </a>
+          </Button>
         </div>
       </section>
 
