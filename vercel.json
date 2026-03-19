@@ -1,0 +1,6 @@
+{
+  "installCommand": "cd aurum-plataforma && npm install --legacy-peer-deps",
+  "buildCommand": "cd aurum-plataforma && npm run vercel-build",
+  "outputDirectory": "aurum-plataforma/.next",
+  "framework": "nextjs"
+}
