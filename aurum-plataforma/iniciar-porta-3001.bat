@@ -6,7 +6,7 @@ echo    🏆 AURUM - Porta 3001
 echo ========================================
 echo.
 echo 📁 Configurando ambiente...
-cd /d "C:\Users\gusge\OneDrive\Documentos\programs\Aurum\AURUM\nextjs-app\aurum-plataforma"
+cd /d "%~dp0"
 
 echo.
 echo 🚀 Iniciando servidor na porta 3001...

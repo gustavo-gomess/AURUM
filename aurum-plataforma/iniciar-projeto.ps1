@@ -8,18 +8,29 @@ Write-Host "   🏆 AURUM - Plataforma de Cursos" -ForegroundColor Yellow
 Write-Host "========================================" -ForegroundColor Yellow
 Write-Host ""
 
-# Navegar para o diretório correto
-$projectPath = "C:\Users\gusge\OneDrive\Documentos\programs\Aurum\AURUM\nextjs-app\aurum-plataforma"
+# Navegar para o diretório do script (aurum-plataforma)
+$projectPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $projectPath
 
 Write-Host "📁 Diretório: $projectPath" -ForegroundColor Cyan
 Write-Host ""
 
-# Configurar variáveis de ambiente
+# Configurar variáveis de ambiente (banco local)
 Write-Host "⚙️  Configurando variáveis de ambiente..." -ForegroundColor Cyan
+if (-not (Test-Path ".env")) {
+    if (Test-Path ".env.example") {
+        Copy-Item ".env.example" ".env"
+        Write-Host "   ✅ Arquivo .env criado a partir de .env.example" -ForegroundColor Green
+    } else {
+        $env:DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/aurum_plataforma"
+        Write-Host "   ⚠️  .env não encontrado - usando DATABASE_URL em memória" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "   ✅ .env encontrado (banco local)" -ForegroundColor Green
+}
 $env:PATH += ";C:\Program Files\nodejs"
 $env:PATH += ";C:\Program Files\PostgreSQL\17\bin"
-$env:DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/aurum_plataforma"
+if (-not $env:DATABASE_URL) { $env:DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/aurum_plataforma" }
 
 # Verificar Node.js
 Write-Host "🔍 Verificando Node.js..." -ForegroundColor Cyan

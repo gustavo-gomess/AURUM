@@ -9,8 +9,8 @@ Write-Host "   🏆 AURUM - Porta 3001" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Navegar para o diretório correto
-$projectPath = "C:\Users\gusge\OneDrive\Documentos\programs\Aurum\AURUM\nextjs-app\aurum-plataforma"
+# Navegar para o diretório do script (aurum-plataforma)
+$projectPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $projectPath
 
 Write-Host "📁 Diretório: $projectPath" -ForegroundColor Cyan
