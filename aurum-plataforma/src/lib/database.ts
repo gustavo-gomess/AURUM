@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/aurum_plataforma?schema=public";
+import { PrismaPg } from '@prisma/adapter-pg';
 
 interface PrismaCache {
   conn: PrismaClient | null;
@@ -21,16 +20,10 @@ function dbConnect(): PrismaClient {
     return cached!.conn;
   }
 
-  cached!.conn = new PrismaClient({
-    datasources: {
-      db: {
-        url: DATABASE_URL,
-      },
-    },
-  });
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+  cached!.conn = new PrismaClient({ adapter });
 
   return cached!.conn;
 }
 
 export default dbConnect;
-

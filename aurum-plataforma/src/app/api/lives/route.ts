@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import jwt from 'jsonwebtoken'
+import dbConnect from '@/lib/database'
 
-const prisma = new PrismaClient()
+export const dynamic = 'force-dynamic'
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
 // Helper function to verify admin token
@@ -15,6 +16,7 @@ async function verifyAdminToken(request: NextRequest) {
   const token = authHeader.substring(7)
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
+    const prisma = dbConnect()
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: { id: true, role: true }
@@ -29,6 +31,7 @@ async function verifyAdminToken(request: NextRequest) {
 // GET - Listar todas as lives (público)
 export async function GET(request: NextRequest) {
   try {
+    const prisma = dbConnect()
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
 
@@ -77,6 +80,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
+    const prisma = dbConnect()
     const data = await request.json()
 
     // Validações

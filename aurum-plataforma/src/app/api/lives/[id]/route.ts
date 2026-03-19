@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import jwt from 'jsonwebtoken'
+import dbConnect from '@/lib/database'
 
-const prisma = new PrismaClient()
+export const dynamic = 'force-dynamic'
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
 // Helper function to verify admin token
@@ -15,6 +16,7 @@ async function verifyAdminToken(request: NextRequest) {
   const token = authHeader.substring(7)
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
+    const prisma = dbConnect()
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: { id: true, role: true }
@@ -32,6 +34,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const prisma = dbConnect()
     const { id } = await params
     
     const live = await prisma.live.findUnique({
@@ -65,10 +68,10 @@ export async function PUT(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
+    const prisma = dbConnect()
     const { id } = await params
     const data = await request.json()
 
-    // Verificar se a live existe
     const existingLive = await prisma.live.findUnique({
       where: { id }
     })
@@ -119,9 +122,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
+    const prisma = dbConnect()
     const { id } = await params
 
-    // Verificar se a live existe
     const existingLive = await prisma.live.findUnique({
       where: { id }
     })
