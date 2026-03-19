@@ -3,7 +3,5 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
-  "outputDirectory": ".next",
-  "rootDirectory": "aurum-plataforma"
+  "outputDirectory": ".next"
 }
-
