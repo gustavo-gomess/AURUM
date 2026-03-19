@@ -77,6 +77,30 @@ body {
   background: #6B7783;
 }
 
+/* Carrossel infinito */
+@keyframes carousel-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.carousel-track {
+  animation: carousel-scroll 30s linear infinite;
+}
+
+.carousel-track:hover {
+  animation-play-state: paused;
+}
+
+/* Scrollbar oculto para carrosséis */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Gradiente Institucional - Preto para Amarelo Dourado */
 .gradient-aurum {
   background: linear-gradient(to bottom, #000000, #FADE35);
