@@ -13,8 +13,36 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aurum Plataforma",
-  description: "Plataforma completa de educação financeira - AURUM",
+  title: "AURUM — Nova Escola | Educação Financeira Completa",
+  description:
+    "Aprenda educação financeira do zero ao avançado. Cursos de mentalidade, renda fixa, renda variável, investimentos e muito mais. Comece agora com aula grátis.",
+  keywords: [
+    "educação financeira",
+    "investimentos",
+    "renda fixa",
+    "renda variável",
+    "cursos financeiros",
+    "como investir",
+    "liberdade financeira",
+    "AURUM",
+  ],
+  metadataBase: new URL("https://www.aurumnovaescola.com.br"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "AURUM — Nova Escola | Educação Financeira Completa",
+    description:
+      "Aprenda educação financeira do zero ao avançado. Cursos de mentalidade, renda fixa, renda variável e investimentos.",
+    url: "https://www.aurumnovaescola.com.br",
+    siteName: "AURUM Nova Escola",
+    locale: "pt_BR",
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: [
       {
