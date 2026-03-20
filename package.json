@@ -1,0 +1,12 @@
+{
+  "name": "aurum",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "next": "^16.0.10"
+  },
+  "scripts": {
+    "build": "cd aurum-plataforma && npm run build",
+    "dev": "cd aurum-plataforma && npm run dev"
+  }
+}
