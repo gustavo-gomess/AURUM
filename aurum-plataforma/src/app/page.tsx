@@ -10,6 +10,7 @@ import Gamification from "@/components/home/Gamification"
 import Testimonials from "@/components/home/Testimonials"
 import Offer from "@/components/home/Offer"
 import Guarantee from "@/components/home/Guarantee"
+import FAQ from "@/components/home/FAQ"
 import FinalCTA from "@/components/home/FinalCTA"
 
 export default function Home() {
@@ -28,6 +29,7 @@ export default function Home() {
         <Testimonials />
         <Offer />
         <Guarantee />
+        <FAQ />
         <FinalCTA />
       </main>
     </>

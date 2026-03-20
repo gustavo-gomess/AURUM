@@ -53,6 +53,19 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      {/* Botão voltar */}
+      <button
+        onClick={() => router.push('/')}
+        className="group fixed top-6 left-6 inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors duration-200"
+      >
+        <span className="w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900/80 group-hover:border-zinc-600 group-hover:bg-zinc-800 flex items-center justify-center transition-all duration-200">
+          <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+        </span>
+        Voltar
+      </button>
+
       <div className="max-w-md w-full mx-4">
         <div className="bg-gray-900 border-2 border-yellow-500 rounded-lg p-8 shadow-lg shadow-yellow-500/20">
           <div className="text-center mb-8">
