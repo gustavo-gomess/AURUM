@@ -57,9 +57,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <head>
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-      </head>
-      <body
+        <link rel="icon" href="/ favicon.png" type="image/svg+xml" />
+      </head> 
+      <body 
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
