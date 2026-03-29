@@ -20,10 +20,11 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relacionamentos
-  enrollments Enrollment[]
-  comments    Comment[]
+  enrollments    Enrollment[]
+  comments       Comment[]
   answeredComments Comment[] @relation("AnsweredBy")
-  notifications Notification[]
+  notifications  Notification[]
+  subscriptions  Subscription[]
 
   @@map("users")
 }
@@ -169,6 +170,24 @@ model Live {
   @@map("lives")
 }
 
+model Subscription {
+  id             String             @id @default(cuid())
+  userId         String?            @map("user_id")
+  abacatePayId   String             @unique @map("abacate_pay_id")
+  status         SubscriptionStatus @default(PENDING)
+  amount         Int                // valor em centavos (ex: 46800 = R$ 468,00)
+  expiresAt      DateTime?          @map("expires_at")
+  customerEmail  String             @map("customer_email")
+  customerName   String?            @map("customer_name")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([customerEmail])
+  @@map("subscriptions")
+}
+
 enum Role {
   ADMIN
   STUDENT
@@ -178,4 +197,12 @@ enum LiveStatus {
   LIVE
   UPCOMING
   FINISHED
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  REFUNDED
 }
