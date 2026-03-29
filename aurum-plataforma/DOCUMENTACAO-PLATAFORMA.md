@@ -1,0 +1,362 @@
+# 📚 Documentação Completa - Plataforma AURUM
+
+> **Objetivo:** Este documento serve como mapa completo da plataforma para facilitar alterações e refatorações. Use-o como referência ao planejar mudanças por partes.
+
+---
+
+## Índice
+
+1. [Visão Geral](#1-visão-geral)
+2. [Estrutura do Projeto](#2-estrutura-do-projeto)
+3. [Stack Tecnológica](#3-stack-tecnológica)
+4. [Banco de Dados (Prisma)](#4-banco-de-dados-prisma)
+5. [Autenticação e Autorização](#5-autenticação-e-autorização)
+6. [Rotas e Páginas](#6-rotas-e-páginas)
+7. [APIs (Backend)](#7-apis-backend)
+8. [Componentes](#8-componentes)
+9. [Fluxos Principais](#9-fluxos-principais)
+10. [Integrações Externas](#10-integrações-externas)
+11. [Configurações e Ambiente](#11-configurações-e-ambiente)
+12. [Pontos de Atenção e Inconsistências](#12-pontos-de-atenção-e-inconsistências)
+
+---
+
+## 1. Visão Geral
+
+A **Plataforma AURUM** é uma plataforma de educação financeira que oferece:
+
+- **Cursos** com módulos e aulas em vídeo (Vimeo)
+- **Lives** com transmissões ao vivo
+- **Sistema de comentários** (perguntas e respostas por aula)
+- **Progresso do aluno** (aulas concluídas)
+- **Notificações** quando o admin responde dúvidas
+- **Área administrativa** para gestão de usuários, perguntas e lives
+
+**Tipos de usuário:** `ADMIN` e `STUDENT`
+
+---
+
+## 2. Estrutura do Projeto
+
+```
+aurum-plataforma/
+├── prisma/
+│   ├── schema.prisma          # Schema do banco
+│   ├── seed.js                # Seed com curso, 5 módulos, 66 aulas
+│   └── migrations/
+├── public/
+│   └── favicon.svg
+├── src/
+│   ├── app/                   # Next.js App Router
+│   │   ├── api/               # API Routes (22 endpoints)
+│   │   ├── admin/             # Área admin (dashboard, usuarios, perguntas, lives)
+│   │   ├── cursos/            # Lista e detalhe de curso
+│   │   ├── live/              # Página de live
+│   │   ├── lives/             # Catálogo de lives
+│   │   ├── dashboard/         # Dashboard do aluno
+│   │   ├── login/
+│   │   ├── setup/             # Configuração inicial (dev)
+│   │   ├── layout.tsx
+│   │   ├── page.tsx           # Landing page
+│   │   └── globals.css
+│   ├── components/
+│   │   ├── ui/                # shadcn/ui (Button, Card, Badge, etc.)
+│   │   ├── logo.tsx
+│   │   ├── navigation.tsx     # Header com menu, notificações, perfil
+│   │   ├── student-dashboard.tsx
+│   │   ├── VimeoPlayer.tsx
+│   │   └── CertificateTemplate.tsx
+│   ├── lib/
+│   │   ├── auth.ts            # JWT, bcrypt
+│   │   ├── database.ts        # Prisma singleton
+│   │   ├── cache.ts
+│   │   ├── rateLimit.ts
+│   │   ├── logger.ts
+│   │   └── utils.ts
+│   ├── types/
+│   │   ├── database.ts        # Tipos Prisma estendidos
+│   │   └── vimeo.d.ts
+│   └── middleware.ts
+├── .env.example
+├── next.config.ts
+├── package.json
+└── Dockerfile
+```
+
+---
+
+## 3. Stack Tecnológica
+
+| Tecnologia | Versão | Uso |
+|------------|--------|-----|
+| Next.js | 16.x | App Router, SSR, API Routes |
+| React | 19.x | UI |
+| Prisma | 6.x | ORM (PostgreSQL) |
+| bcryptjs | 3.x | Hash de senhas |
+| jsonwebtoken | 9.x | JWT |
+| Tailwind CSS | 4.x | Estilos |
+| Radix UI | - | Componentes acessíveis |
+| Lucide React | - | Ícones |
+
+**Scripts principais:**
+- `npm run dev` — Desenvolvimento (Turbopack)
+- `npm run build` — Build (prisma generate + next build)
+- `npm run seed` — Popular banco
+- `npm run migrate` — Aplicar migrações
+
+---
+
+## 4. Banco de Dados (Prisma)
+
+### Modelos
+
+| Modelo | Campos principais | Relacionamentos |
+|--------|-------------------|-----------------|
+| **User** | id, name, email, password, avatarUrl, role | enrollments, comments, notifications |
+| **Course** | id, title, description, instructor, price | modules, enrollments |
+| **Module** | id, title, description, order, courseId | course, lessons |
+| **Lesson** | id, title, vimeoVideoId, order, tasks, moduleId, courseId | module, comments |
+| **Enrollment** | id, userId, courseId, enrolledAt, completedAt | user, course, progress |
+| **Progress** | id, enrollmentId, moduleIndex, lessonIndex, completed, completedAt | enrollment |
+| **Comment** | id, userId, lessonId, content, parentId, answeredBy, answerContent | user, lesson, parent, replies |
+| **Notification** | id, userId, commentId, message, read | user |
+| **Live** | id, title, vimeoVideoId, instructorName, scheduledDate, status, etc. | - |
+
+### Enums
+
+- **Role:** `ADMIN`, `STUDENT`
+- **LiveStatus:** `LIVE`, `UPCOMING`, `FINISHED`
+
+### Índices importantes
+
+- `Comment`: lessonId, parentId, (lessonId, parentId)
+- `Notification`: (userId, read)
+- `Enrollment`: unique(userId, courseId)
+- `Progress`: unique(enrollmentId, moduleIndex, lessonIndex)
+
+### Observação sobre matrícula (Enrollment)
+
+A matrícula é criada **automaticamente** quando o usuário acessa o progresso de um curso pela primeira vez (`GET /api/progress/[courseId]`). Não existe fluxo explícito de "comprar curso" ou "inscrever-se".
+
+---
+
+## 5. Autenticação e Autorização
+
+### Fluxo de login
+
+1. `POST /api/auth/login` com `{ email, password }`
+2. Retorna `{ user, token }`
+3. Cliente salva em `localStorage`: `token` e `user`
+4. Requisições autenticadas: `Authorization: Bearer <token>`
+5. Token JWT expira em **7 dias**
+
+### Admin fixo (hardcoded)
+
+- **Email:** `admin@aurum.com.br`
+- **Senha:** `admin` (não `admin123`)
+- **userId:** `admin-fixed-user-id` (não existe no banco)
+- Não usa banco de dados; retorno é montado manualmente no login
+
+### Usuários criados pelo setup
+
+- **Admin (banco):** `admin@aurum.com.br` / `admin123` (via `/api/dev/create-users`)
+- **Estudante:** `estudante@teste.com` / `student123`
+
+### Proteção de rotas
+
+- **Middleware** (`middleware.ts`): Apenas passa adiante; não bloqueia acesso
+- **Proteção no cliente:** Páginas checam `localStorage.getItem('token')` e redirecionam para `/login` se ausente
+- **Admin:** Checagem de `user.role === 'ADMIN'` no cliente
+
+### Arquivos relevantes
+
+- `src/lib/auth.ts` — `generateToken`, `verifyToken`, `hashPassword`, `comparePassword`, `extractTokenFromRequest`
+- `src/app/api/auth/login/route.ts` — Lógica de login (admin fixo + banco)
+- `src/app/api/auth/me/route.ts` — Dados do usuário autenticado
+
+---
+
+## 6. Rotas e Páginas
+
+| Rota | Arquivo | Descrição |
+|------|---------|-----------|
+| `/` | `app/page.tsx` | Landing page (features, módulos, CTA) |
+| `/login` | `app/login/page.tsx` | Login |
+| `/dashboard` | `app/dashboard/page.tsx` | Dashboard do aluno (usa `StudentDashboard`) |
+| `/cursos` | `app/cursos/page.tsx` | Lista de cursos |
+| `/cursos/[id]` | `app/cursos/[id]/page.tsx` | Curso com aulas, player, comentários |
+| `/lives` | `app/lives/page.tsx` | Catálogo de lives |
+| `/live/[id]` | `app/live/[id]/page.tsx` | Página de live |
+| `/setup` | `app/setup/page.tsx` | Setup inicial (criar usuários, seed, reset) |
+| `/admin` | `app/admin/page.tsx` | Painel admin (visão geral) |
+| `/admin/dashboard` | `app/admin/dashboard/page.tsx` | Dashboard admin |
+| `/admin/usuarios` | `app/admin/usuarios/page.tsx` | Gestão de usuários |
+| `/admin/perguntas` | `app/admin/perguntas/page.tsx` | Perguntas dos alunos |
+| `/admin/lives` | `app/admin/lives/page.tsx` | Gestão de lives |
+
+**Configuração Next.js:** `trailingSlash: true` — URLs terminam com `/`
+
+---
+
+## 7. APIs (Backend)
+
+### Resumo por domínio
+
+| Domínio | Endpoints | Autenticação |
+|---------|-----------|--------------|
+| Auth | login, register, me | login/register públicos; me requer Bearer |
+| Courses | GET/POST /api/courses, GET/PUT/DELETE /api/courses/[id] | POST/PUT/DELETE: Admin |
+| Modules | GET /api/modules, GET /api/modules/[id] | Público |
+| Lessons | GET /api/lessons, GET /api/lessons/[id], GET/POST /api/lessons/[id]/comments | Comentários: Bearer |
+| Progress | GET /api/progress/[courseId], POST /api/progress/update | Bearer |
+| Users | GET /api/users, GET /api/users/[id], PUT /api/users/profile | Admin (exceto profile) |
+| Notifications | GET/PUT/DELETE /api/notifications | Bearer |
+| Lives | GET /api/lives, GET /api/lives/[id] | Público |
+| Dev | create-users, seed, reset-db | seed/reset: Admin |
+
+### Detalhes importantes
+
+- **Rate limit:** login (5/min), register (2/min)
+- **Cache:** cursos (5 min), progresso (30 s em memória)
+- **Enrollment:** criada automaticamente em `GET /api/progress/[courseId]` se não existir
+- **Notificações:** criadas quando ADMIN responde um comentário (reply com `parentId`)
+
+---
+
+## 8. Componentes
+
+| Componente | Local | Função |
+|------------|-------|--------|
+| **Navigation** | `components/navigation.tsx` | Header com logo, menu, notificações, perfil, configurações, logout |
+| **StudentDashboard** | `components/student-dashboard.tsx` | Dashboard: progresso, última aula, minhas perguntas |
+| **VimeoPlayer** | `components/VimeoPlayer.tsx` | Player Vimeo com evento `ended` e callback `onVideoEnd` |
+| **Logo** | `components/logo.tsx` | Logo AURUM (variantes light/dark, tamanhos) |
+| **CertificateTemplate** | `components/CertificateTemplate.tsx` | Template de certificado |
+| **ui/** | `components/ui/` | Button, Card, Badge, Progress, Avatar, Dialog, Tabs, Input, Textarea |
+
+### VimeoPlayer — detalhes
+
+- Usa iframe: `https://player.vimeo.com/video/{id}`
+- SDK: `https://player.vimeo.com/api/player.js`
+- Eventos: `ended`, `timeupdate`, `error`
+- `onVideoEnd` é chamado ao terminar o vídeo (marca aula como concluída)
+- `videoId === '000000000'` → exibe "Conteúdo em breve"
+
+---
+
+## 9. Fluxos Principais
+
+### Fluxo do aluno
+
+1. **Landing** (`/`) → CTA para login ou cursos
+2. **Login** (`/login`) → `POST /api/auth/login` → salva token e user no `localStorage`
+3. **Dashboard** (`/dashboard`) → progresso, última aula, perguntas
+4. **Cursos** (`/cursos`) → lista cursos
+5. **Curso** (`/cursos/[id]`) → módulos, aulas, player, comentários
+6. **Progresso:** ao assistir aula até o fim, `VimeoPlayer` chama `onVideoEnd` → `POST /api/progress/update`
+7. **Matrícula:** criada na primeira vez que o progresso é buscado (`GET /api/progress/[courseId]`)
+
+### Fluxo de comentários e notificações
+
+1. Aluno faz pergunta: `POST /api/lessons/[id]/comments` com `{ content }`
+2. Admin responde: `POST /api/lessons/[id]/comments` com `{ content, parentId }`
+3. Sistema cria `Notification` para o aluno
+4. Aluno vê notificações no header (`Navigation`) e em "Minhas perguntas" no dashboard
+
+### Fluxo admin
+
+1. Login como admin
+2. Acesso a `/admin`, `/admin/usuarios`, `/admin/perguntas`, `/admin/lives`
+3. APIs de courses (POST/PUT/DELETE) exigem token de admin
+
+### Fluxo de setup (dev)
+
+1. Acessar `/setup`
+2. Cria usuários via `POST /api/dev/create-users`
+3. Login com admin (usa `admin123` no setup, mas login fixo usa `admin`)
+4. Reset do banco: `POST /api/dev/reset-db`
+5. Seed: `POST /api/dev/seed`
+
+---
+
+## 10. Integrações Externas
+
+| Serviço | Uso |
+|---------|-----|
+| **Vimeo** | Vídeos das aulas e lives (IDs em `vimeoVideoId`) |
+| **Imgur** | Upload de avatar (Client-ID em `navigation.tsx`) |
+| **WhatsApp** | Links de contato (`wa.me/...`) |
+| **PostgreSQL** | Banco de dados via Prisma |
+
+---
+
+## 11. Configurações e Ambiente
+
+### .env.example
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/aurum_plataforma"
+# JWT_SECRET="sua-chave-secreta-local"  # opcional
+```
+
+### Variáveis usadas
+
+- `DATABASE_URL` — Conexão PostgreSQL
+- `JWT_SECRET` — Assinatura JWT (fallback no código se não definido)
+
+### next.config.ts
+
+- `trailingSlash: true`
+- `images.unoptimized: true`
+- `typescript.ignoreBuildErrors: false`
+
+---
+
+## 12. Pontos de Atenção e Inconsistências
+
+### Credenciais
+
+| Contexto | Email | Senha |
+|----------|-------|-------|
+| Login fixo (hardcoded) | admin@aurum.com.br | `admin` |
+| Setup / create-users | admin@aurum.com.br | `admin123` |
+| Estudante (create-users) | estudante@teste.com | `student123` |
+
+O setup tenta login com `admin123`, mas o login fixo usa `admin`. Se o admin do banco foi criado pelo create-users, a senha é `admin123`.
+
+### Admin fixo vs admin do banco
+
+- O **admin fixo** não existe no banco; o login retorna um objeto montado manualmente.
+- O **admin do banco** (criado por create-users) tem senha hasheada.
+- Se ambos usam o mesmo email, o login fixo tem prioridade (verificação antes da busca no banco).
+
+### Inconsistências de nomenclatura
+
+- Alguns lugares usam `_id` (ex.: admin dashboard) em vez de `id` — pode causar bugs.
+
+### Segurança
+
+- Admin fixo com credenciais hardcoded em produção
+- Imgur Client-ID fixo no código
+- JWT_SECRET com fallback no código
+
+### Cache
+
+- Redis configurado no CI/CD, mas a implementação usa cache em memória (`lib/cache.ts`)
+
+---
+
+## Guia para Alterações por Partes
+
+Ao planejar mudanças, use este documento para:
+
+1. **Autenticação:** Verificar `auth.ts`, `login/route.ts`, `me/route.ts` e fluxo no cliente
+2. **Cursos/Aulas:** Schema Prisma, APIs de courses/lessons/modules, páginas em `cursos/`
+3. **Progresso:** `progress/update`, `progress/[courseId]`, `VimeoPlayer` (onVideoEnd)
+4. **Comentários:** `lessons/[id]/comments`, fluxo de notificações
+5. **Admin:** Páginas em `admin/`, APIs que checam role
+6. **Lives:** Modelo Live, APIs lives, páginas lives/
+
+---
+
+*Documento gerado para suporte a refatoração e evolução da Plataforma AURUM.*

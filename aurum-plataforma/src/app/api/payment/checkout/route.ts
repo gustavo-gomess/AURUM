@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    if (billing.error) {
+    if (billing.error || !billing.data) {
       console.error("[Checkout] AbacatePay error:", billing.error)
       return NextResponse.json(
         { error: "Erro ao gerar cobrança. Tente novamente." },
