@@ -19,10 +19,10 @@ export default function Home() {
       <Navbar />
       <main className="bg-black text-white min-h-screen pt-16">
         <Hero />
+        <ExtraCourses />
         <Problem />
         <Solution />
         <LearningPath />
-        <ExtraCourses />
         <HowItWorks />
         <Differentials />
         <Gamification />

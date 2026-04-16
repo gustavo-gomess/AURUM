@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 import { getExtraCourses, Course } from "@/data/courses"
 
 const courseVisuals: Record<string, {
@@ -43,7 +43,7 @@ function CourseCard({ course }: { course: Course }) {
     <a
       href={`/curso/${course.id}`}
       className={`
-        group relative block w-52 sm:w-60 h-80
+        group relative block shrink-0 w-52 sm:w-60 h-80
         rounded-2xl overflow-hidden
         bg-gradient-to-br ${visuals.gradient}
         border border-white/5 hover:border-white/20
@@ -94,47 +94,77 @@ function CourseCard({ course }: { course: Course }) {
 
 export default function ExtraCourses() {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const mouseDown = useRef(false)
+  const isDragging = useRef(false)
+  const startX = useRef(0)
+  const startScroll = useRef(0)
+  const stopAutoUntil = useRef(0)
   const extraCourses = getExtraCourses()
+  const duplicatedCourses = [...extraCourses, ...extraCourses]
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  useEffect(() => {
     const slider = scrollRef.current
     if (!slider) return
+    let raf = 0
 
-    const startX = e.pageX
-    const startScroll = slider.scrollLeft
-    let dragged = false
+    const tick = () => {
+      const now = Date.now()
+      const total = slider.scrollWidth
+      const half = total / 2
 
+      if (!mouseDown.current && now > stopAutoUntil.current) {
+        slider.scrollLeft += 0.5
+      }
+
+      if (slider.scrollLeft >= half) {
+        slider.scrollLeft -= half
+      } else if (slider.scrollLeft <= 0) {
+        slider.scrollLeft += half
+      }
+
+      raf = window.requestAnimationFrame(tick)
+    }
+
+    raf = window.requestAnimationFrame(tick)
+    return () => window.cancelAnimationFrame(raf)
+  }, [])
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const slider = scrollRef.current
+    if (!slider) return
+    mouseDown.current = true
+    isDragging.current = false
+    startX.current = e.pageX
+    startScroll.current = slider.scrollLeft
+    stopAutoUntil.current = Date.now() + 3000
     slider.style.cursor = "grabbing"
     slider.style.userSelect = "none"
 
     const onMove = (ev: MouseEvent) => {
-      const delta = ev.pageX - startX
-      if (Math.abs(delta) > 4) dragged = true
-      slider.scrollLeft = startScroll - delta
+      if (!mouseDown.current) return
+      const delta = ev.pageX - startX.current
+      if (Math.abs(delta) > 4) isDragging.current = true
+      slider.scrollLeft = startScroll.current - delta
     }
 
     const onUp = () => {
+      mouseDown.current = false
       slider.style.cursor = "grab"
       slider.style.userSelect = ""
-
-      // Se arrastou, bloqueia o próximo clique nos filhos
-      if (dragged) {
-        const blockClick = (ev: Event) => {
-          ev.preventDefault()
-          ev.stopPropagation()
-          slider.removeEventListener("click", blockClick, true)
-        }
-        slider.addEventListener("click", blockClick, { capture: true })
-        // Remove o bloqueio se o clique não acontecer em 200ms
-        setTimeout(() => slider.removeEventListener("click", blockClick, true), 200)
-      }
-
       window.removeEventListener("mousemove", onMove)
       window.removeEventListener("mouseup", onUp)
     }
 
     window.addEventListener("mousemove", onMove)
     window.addEventListener("mouseup", onUp)
+  }
+
+  const handleClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isDragging.current) {
+      e.preventDefault()
+      e.stopPropagation()
+      isDragging.current = false
+    }
   }
 
   return (
@@ -172,11 +202,12 @@ export default function ExtraCourses() {
       <div
         ref={scrollRef}
         onMouseDown={handleMouseDown}
+        onClickCapture={handleClickCapture}
         className="no-scrollbar w-full overflow-x-scroll flex gap-4 px-6 pb-2"
-        style={{ cursor: "grab", WebkitOverflowScrolling: "touch" }}
+        style={{ cursor: "grab", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}
       >
-        {extraCourses.map((course) => (
-          <CourseCard key={course.id} course={course} />
+        {duplicatedCourses.map((course, index) => (
+          <CourseCard key={`${course.id}-${index}`} course={course} />
         ))}
         {/* Espaço extra no final */}
         <div className="shrink-0 w-6" aria-hidden="true" />
