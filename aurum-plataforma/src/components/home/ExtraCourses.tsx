@@ -94,31 +94,31 @@ function CourseCard({ course }: { course: Course }) {
 
 export default function ExtraCourses() {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const isDown = useRef(false)
-  const startX = useRef(0)
-  const scrollStart = useRef(0)
+  const extraCourses = getExtraCourses()
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollRef.current) return
-    isDown.current = true
-    startX.current = e.pageX - scrollRef.current.offsetLeft
-    scrollStart.current = scrollRef.current.scrollLeft
-    scrollRef.current.style.cursor = "grabbing"
-  }
+    const slider = scrollRef.current
+    if (!slider) return
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDown.current || !scrollRef.current) return
-    e.preventDefault()
-    const x = e.pageX - scrollRef.current.offsetLeft
-    scrollRef.current.scrollLeft = scrollStart.current - (x - startX.current)
-  }
+    const startX = e.pageX
+    const startScroll = slider.scrollLeft
+    slider.style.cursor = "grabbing"
+    slider.style.userSelect = "none"
 
-  const handleMouseUp = () => {
-    isDown.current = false
-    if (scrollRef.current) scrollRef.current.style.cursor = "grab"
-  }
+    const onMove = (ev: MouseEvent) => {
+      slider.scrollLeft = startScroll - (ev.pageX - startX)
+    }
 
-  const extraCourses = getExtraCourses()
+    const onUp = () => {
+      slider.style.cursor = "grab"
+      slider.style.userSelect = ""
+      window.removeEventListener("mousemove", onMove)
+      window.removeEventListener("mouseup", onUp)
+    }
+
+    window.addEventListener("mousemove", onMove)
+    window.addEventListener("mouseup", onUp)
+  }
 
   return (
     <section className="bg-black py-20">
@@ -155,10 +155,7 @@ export default function ExtraCourses() {
       <div
         ref={scrollRef}
         onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        className="no-scrollbar w-full overflow-x-scroll flex gap-4 px-6 pb-2 select-none"
+        className="no-scrollbar w-full overflow-x-scroll flex gap-4 px-6 pb-2"
         style={{ cursor: "grab", WebkitOverflowScrolling: "touch" }}
       >
         {extraCourses.map((course) => (
