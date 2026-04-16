@@ -102,16 +102,33 @@ export default function ExtraCourses() {
 
     const startX = e.pageX
     const startScroll = slider.scrollLeft
+    let dragged = false
+
     slider.style.cursor = "grabbing"
     slider.style.userSelect = "none"
 
     const onMove = (ev: MouseEvent) => {
-      slider.scrollLeft = startScroll - (ev.pageX - startX)
+      const delta = ev.pageX - startX
+      if (Math.abs(delta) > 4) dragged = true
+      slider.scrollLeft = startScroll - delta
     }
 
     const onUp = () => {
       slider.style.cursor = "grab"
       slider.style.userSelect = ""
+
+      // Se arrastou, bloqueia o próximo clique nos filhos
+      if (dragged) {
+        const blockClick = (ev: Event) => {
+          ev.preventDefault()
+          ev.stopPropagation()
+          slider.removeEventListener("click", blockClick, true)
+        }
+        slider.addEventListener("click", blockClick, { capture: true })
+        // Remove o bloqueio se o clique não acontecer em 200ms
+        setTimeout(() => slider.removeEventListener("click", blockClick, true), 200)
+      }
+
       window.removeEventListener("mousemove", onMove)
       window.removeEventListener("mouseup", onUp)
     }
