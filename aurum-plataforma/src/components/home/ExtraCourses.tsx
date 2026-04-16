@@ -110,7 +110,7 @@ function CourseCard({ course }: { course: Course }) {
 
 export default function ExtraCourses() {
   return (
-    <section className="relative bg-black py-24 overflow-hidden">
+    <section className="relative bg-black py-24">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
 
       {/* Header */}
