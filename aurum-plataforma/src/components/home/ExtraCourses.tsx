@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { getExtraCourses, Course } from "@/data/courses"
 
 const courseVisuals: Record<string, {
@@ -108,6 +109,57 @@ function CourseCard({ course }: { course: Course }) {
   )
 }
 
+function DragCarousel({ courses }: { courses: Course[] }) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  const isDragging = React.useRef(false)
+  const startX = React.useRef(0)
+  const scrollLeft = React.useRef(0)
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!ref.current) return
+    isDragging.current = true
+    startX.current = e.pageX - ref.current.offsetLeft
+    scrollLeft.current = ref.current.scrollLeft
+    ref.current.style.cursor = "grabbing"
+  }
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || !ref.current) return
+    e.preventDefault()
+    const x = e.pageX - ref.current.offsetLeft
+    ref.current.scrollLeft = scrollLeft.current - (x - startX.current)
+  }
+
+  const stopDrag = () => {
+    isDragging.current = false
+    if (ref.current) ref.current.style.cursor = "grab"
+  }
+
+  return (
+    <div
+      ref={ref}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={stopDrag}
+      onMouseLeave={stopDrag}
+      className="flex gap-4 overflow-x-auto px-6 pb-6 select-none"
+      style={{
+        cursor: "grab",
+        scrollSnapType: "x mandatory",
+        WebkitOverflowScrolling: "touch",
+        scrollbarWidth: "none",
+      }}
+    >
+      {courses.map((course) => (
+        <div key={course.id} className="shrink-0" style={{ scrollSnapAlign: "start" }}>
+          <CourseCard course={course} />
+        </div>
+      ))}
+      <div className="shrink-0 w-4" aria-hidden="true" />
+    </div>
+  )
+}
+
 export default function ExtraCourses() {
   return (
     <section className="relative bg-black py-24">
@@ -144,56 +196,8 @@ export default function ExtraCourses() {
         </div>
       </div>
 
-      {/* Fade edges — só no desktop */}
-      <div className="hidden md:block absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-      <div className="hidden md:block absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
-
-      {/* Esconde scrollbar mantendo funcionalidade */}
-      <style>{`
-        .drag-scroll::-webkit-scrollbar { display: none; }
-      `}</style>
-
-      {/* Carrossel arrastável (touch no celular, mouse no desktop) */}
-      <div
-        className="drag-scroll flex gap-4 overflow-x-auto pb-4 px-6"
-        style={{
-          scrollSnapType: "x mandatory",
-          WebkitOverflowScrolling: "touch",
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-          cursor: "grab",
-        }}
-        onMouseDown={(e) => {
-          const el = e.currentTarget
-          el.style.cursor = "grabbing"
-          el.style.userSelect = "none"
-          const startX = e.pageX - el.offsetLeft
-          const scrollLeft = el.scrollLeft
-          const onMove = (ev: MouseEvent) => {
-            const x = ev.pageX - el.offsetLeft
-            el.scrollLeft = scrollLeft - (x - startX)
-          }
-          const onUp = () => {
-            el.style.cursor = "grab"
-            el.style.userSelect = ""
-            window.removeEventListener("mousemove", onMove)
-            window.removeEventListener("mouseup", onUp)
-          }
-          window.addEventListener("mousemove", onMove)
-          window.addEventListener("mouseup", onUp)
-        }}
-      >
-        {extraCourses.map((course) => (
-          <div
-            key={course.id}
-            className="shrink-0"
-            style={{ scrollSnapAlign: "start" }}
-          >
-            <CourseCard course={course} />
-          </div>
-        ))}
-        <div className="shrink-0 w-2" aria-hidden="true" />
-      </div>
+      {/* Carrossel arrastável */}
+      <DragCarousel courses={extraCourses} />
     </section>
   )
 }
