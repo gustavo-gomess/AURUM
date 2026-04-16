@@ -1,3 +1,5 @@
+"use client"
+
 import { getExtraCourses, Course } from "@/data/courses"
 
 const courseVisuals: Record<string, {
@@ -47,7 +49,7 @@ function CourseCard({ course }: { course: Course }) {
   return (
     <a
       href={`/curso/${course.id}`}
-      className={`group relative shrink-0 w-64 h-[340px] rounded-2xl bg-gradient-to-br ${visuals.gradient} border border-white/5 hover:border-white/15 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${visuals.glow}`}
+      className={`group relative w-56 sm:w-64 h-[320px] rounded-2xl bg-gradient-to-br ${visuals.gradient} border border-white/5 hover:border-white/15 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${visuals.glow}`}
     >
       {/* Banner image */}
       {visuals.image ? (
@@ -142,20 +144,55 @@ export default function ExtraCourses() {
         </div>
       </div>
 
-      {/* Fade edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+      {/* Fade edges — só no desktop */}
+      <div className="hidden md:block absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+      <div className="hidden md:block absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
 
-      {/* Infinite carousel */}
-      <div className="overflow-hidden">
-        <div className="carousel-track flex gap-5 w-max pb-3">
-          {extraCourses.map((course) => (
-            <CourseCard key={`a-${course.id}`} course={course} />
-          ))}
-          {extraCourses.map((course) => (
-            <CourseCard key={`b-${course.id}`} course={course} />
-          ))}
-        </div>
+      {/* Esconde scrollbar mantendo funcionalidade */}
+      <style>{`
+        .drag-scroll::-webkit-scrollbar { display: none; }
+      `}</style>
+
+      {/* Carrossel arrastável (touch no celular, mouse no desktop) */}
+      <div
+        className="drag-scroll flex gap-4 overflow-x-auto pb-4 px-6"
+        style={{
+          scrollSnapType: "x mandatory",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+          cursor: "grab",
+        }}
+        onMouseDown={(e) => {
+          const el = e.currentTarget
+          el.style.cursor = "grabbing"
+          el.style.userSelect = "none"
+          const startX = e.pageX - el.offsetLeft
+          const scrollLeft = el.scrollLeft
+          const onMove = (ev: MouseEvent) => {
+            const x = ev.pageX - el.offsetLeft
+            el.scrollLeft = scrollLeft - (x - startX)
+          }
+          const onUp = () => {
+            el.style.cursor = "grab"
+            el.style.userSelect = ""
+            window.removeEventListener("mousemove", onMove)
+            window.removeEventListener("mouseup", onUp)
+          }
+          window.addEventListener("mousemove", onMove)
+          window.addEventListener("mouseup", onUp)
+        }}
+      >
+        {extraCourses.map((course) => (
+          <div
+            key={course.id}
+            className="shrink-0"
+            style={{ scrollSnapAlign: "start" }}
+          >
+            <CourseCard course={course} />
+          </div>
+        ))}
+        <div className="shrink-0 w-2" aria-hidden="true" />
       </div>
     </section>
   )
