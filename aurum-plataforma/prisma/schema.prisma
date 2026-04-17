@@ -176,6 +176,8 @@ model Subscription {
   abacatePayId   String             @unique @map("abacate_pay_id")
   status         SubscriptionStatus @default(PENDING)
   amount         Int                // valor em centavos (ex: 46800 = R$ 468,00)
+  paymentMethod  PaymentMethod      @default(PIX) @map("payment_method")
+  autoRenew      Boolean            @default(false) @map("auto_renew")
   expiresAt      DateTime?          @map("expires_at")
   customerEmail  String             @map("customer_email")
   customerName   String?            @map("customer_name")
@@ -205,4 +207,9 @@ enum SubscriptionStatus {
   EXPIRED
   CANCELLED
   REFUNDED
+}
+
+enum PaymentMethod {
+  PIX
+  CARD
 }

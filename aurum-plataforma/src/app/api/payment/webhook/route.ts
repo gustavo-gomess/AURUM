@@ -58,7 +58,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true })
     }
 
-    // Idempotência — não processa duas vezes
+    // Se já está ativa e é cartão com auto-renew, trata como renovação
+    if (subscription.status === "ACTIVE" && subscription.autoRenew) {
+      await prisma.subscription.update({
+        where: { abacatePayId: billingId },
+        data: {
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        },
+      })
+      console.log(`[Webhook] ♻️ Subscription renewed for ${subscription.customerEmail}`)
+      return NextResponse.json({ ok: true })
+    }
+
     if (subscription.status === "ACTIVE") {
       console.log("[Webhook] Already activated, skipping:", billingId)
       return NextResponse.json({ ok: true })

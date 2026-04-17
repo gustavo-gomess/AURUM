@@ -5,19 +5,22 @@ import Link from "next/link"
 
 type PaymentStatus = "loading" | "pending" | "active" | "error"
 
-const MAX_POLLS = 40     // 40 × 3s = 2 minutos
-const POLL_INTERVAL = 3000 // 3 segundos
+const MAX_POLLS = 40
+const POLL_INTERVAL = 3000
 
 export default function CheckoutSuccessPage() {
   const [status, setStatus] = useState<PaymentStatus>("loading")
   const [email, setEmail] = useState("")
   const [pollCount, setPollCount] = useState(0)
+  const [isCard, setIsCard] = useState(false)
 
   useEffect(() => {
     const billingId = localStorage.getItem("abacate_billing_id")
     const storedEmail = localStorage.getItem("abacate_billing_email")
+    const storedMethod = localStorage.getItem("abacate_payment_method")
 
     if (storedEmail) setEmail(storedEmail)
+    if (storedMethod === "card") setIsCard(true)
 
     if (!billingId) {
       setStatus("error")
@@ -42,6 +45,7 @@ export default function CheckoutSuccessPage() {
           setStatus("active")
           localStorage.removeItem("abacate_billing_id")
           localStorage.removeItem("abacate_billing_email")
+          localStorage.removeItem("abacate_payment_method")
           clearInterval(timer)
           return
         }
@@ -60,7 +64,6 @@ export default function CheckoutSuccessPage() {
       }
     }
 
-    // Primeira checagem imediata
     poll()
     const timer = setInterval(poll, POLL_INTERVAL)
 
@@ -94,6 +97,17 @@ export default function CheckoutSuccessPage() {
                 )}
               </p>
             </div>
+
+            {isCard && (
+              <div className="w-full p-4 rounded-xl bg-blue-500/8 border border-blue-500/20 text-left">
+                <p className="text-blue-200 text-sm leading-relaxed">
+                  <strong className="text-blue-300">Renovação automática ativa:</strong>{" "}
+                  seu plano será renovado automaticamente a cada 12 meses. Você pode
+                  cancelar a renovação a qualquer momento pelo painel ou entrando em
+                  contato com nosso suporte.
+                </p>
+              </div>
+            )}
 
             <div className="w-full p-4 rounded-xl bg-yellow-400/8 border border-yellow-400/20 text-left">
               <p className="text-yellow-200 text-sm leading-relaxed">
@@ -137,7 +151,10 @@ export default function CheckoutSuccessPage() {
 
             <div>
               <h1 className="text-2xl font-black text-white mb-2">
-                Aguardando confirmação do PIX
+                {isCard
+                  ? "Processando pagamento no cartão"
+                  : "Aguardando confirmação do PIX"
+                }
               </h1>
               <p className="text-zinc-400 text-base">
                 Estamos verificando o pagamento automaticamente...
@@ -146,8 +163,18 @@ export default function CheckoutSuccessPage() {
 
             <div className="w-full p-4 rounded-xl border border-zinc-800 bg-zinc-900/40 text-left">
               <p className="text-zinc-400 text-sm leading-relaxed">
-                <strong className="text-zinc-300">Como funciona:</strong>{" "}
-                após confirmar o PIX no seu banco, o acesso é liberado em até 1 minuto automaticamente.
+                {isCard ? (
+                  <>
+                    <strong className="text-zinc-300">Como funciona:</strong>{" "}
+                    assim que o pagamento no cartão for aprovado, seu acesso será liberado
+                    automaticamente. Isso geralmente leva alguns segundos.
+                  </>
+                ) : (
+                  <>
+                    <strong className="text-zinc-300">Como funciona:</strong>{" "}
+                    após confirmar o PIX no seu banco, o acesso é liberado em até 1 minuto automaticamente.
+                  </>
+                )}
               </p>
             </div>
 
@@ -173,7 +200,7 @@ export default function CheckoutSuccessPage() {
                 Não conseguimos confirmar ainda
               </h1>
               <p className="text-zinc-400 text-base leading-relaxed">
-                Se você já pagou, não se preocupe — o acesso será liberado assim que o pagamento for processado pelo banco.
+                Se você já pagou, não se preocupe — o acesso será liberado assim que o pagamento for processado.
               </p>
             </div>
 

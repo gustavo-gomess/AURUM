@@ -36,7 +36,7 @@ export default function FreeLesson({ content }: Props) {
         {/* Vimeo Player */}
         <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl shadow-black/50">
           <iframe
-            src="https://player.vimeo.com/video/1146940366?badge=0&autopause=0&player_id=0&app_id=58479&title=0&byline=0&portrait=0"
+            src="https://player.vimeo.com/video/1147752447?badge=0&autopause=0&player_id=0&app_id=58479&title=0&byline=0&portrait=0"
             className="absolute inset-0 w-full h-full"
             allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
             allowFullScreen

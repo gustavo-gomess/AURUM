@@ -5,11 +5,15 @@ import { useState } from "react"
 const faqs = [
   {
     question: "Quais as formas de pagamento?",
-    answer: "Aceitamos cartão de crédito (parcelado em até 12x), cartão de débito, PIX e boleto bancário. O acesso é liberado imediatamente após a confirmação do pagamento.",
+    answer: "Aceitamos cartão de crédito, cartão de débito e PIX. Ao pagar com cartão, a assinatura é renovada automaticamente a cada ano (R$ 468/ano). No PIX, o pagamento é único sem renovação automática. O acesso é liberado imediatamente após a confirmação.",
+  },
+  {
+    question: "Como funciona a renovação automática no cartão?",
+    answer: "Ao assinar com cartão de crédito ou débito, sua assinatura renova automaticamente a cada 12 meses pelo valor de R$ 468,00 (equivalente a R$ 39/mês). Você será notificado antes da renovação e pode cancelar a qualquer momento, sem multa e sem burocracia.",
   },
   {
     question: "Posso cancelar quando quiser?",
-    answer: "Sim. Você pode cancelar a assinatura a qualquer momento, sem multa e sem burocracia. Após o cancelamento, seu acesso segue ativo até o fim do período pago.",
+    answer: "Sim. Você pode cancelar a assinatura e a renovação automática a qualquer momento, sem multa e sem burocracia. Após o cancelamento, seu acesso segue ativo até o fim do período pago.",
   },
   {
     question: "Quanto tempo terei acesso ao conteúdo?",

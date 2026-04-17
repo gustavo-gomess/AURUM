@@ -42,11 +42,11 @@ export default function Offer() {
               <span className="text-6xl font-black text-white leading-none">39</span>
               <span className="text-zinc-400 text-lg font-medium mb-1">/mês</span>
             </div>
-            <span className="text-zinc-500 text-sm mb-2">parcelado em 12x no cartão</span>
+            <span className="text-zinc-500 text-sm mb-2">Cobrado anualmente — R$ 468 no total</span>
 
-            <div className="w-full mb-6 py-2 px-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+            <div className="w-full mb-4 py-2 px-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
               <p className="text-yellow-300 text-xs font-semibold">
-                Total: R$ 468 — 1 ano de acesso completo
+                Pague com cartão de crédito, débito ou PIX
               </p>
             </div>
 
@@ -54,13 +54,18 @@ export default function Offer() {
               href={CHECKOUT_URL}
               className="w-full py-4 rounded-xl bg-yellow-400 text-black font-black text-base hover:bg-yellow-300 transition-all duration-200 shadow-xl shadow-yellow-400/25 hover:-translate-y-0.5 text-center flex items-center justify-center gap-2"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M2 5h2l3.6 7.59L6.25 15c-.16.28-.25.61-.25.96C6 17.1 6.9 18 8 18h12v-2H8.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0023.46 5H4.21l-.94-2H0v2h2zM7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm13 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="2" y="5" width="20" height="14" rx="2" />
+                <path d="M2 10h20" />
+                <path d="M6 15h4" strokeLinecap="round" />
               </svg>
-              Quero assinar agora — PIX
+              Quero assinar agora
             </a>
 
-            <p className="text-zinc-600 text-xs mt-4">
+            <p className="text-zinc-500 text-xs mt-3 leading-relaxed text-center">
+              No cartão, a assinatura renova automaticamente a cada ano.
+            </p>
+            <p className="text-zinc-600 text-xs mt-1">
               7 dias de garantia · Pagamento seguro via AbacatePay
             </p>
           </div>
@@ -83,7 +88,7 @@ export default function Offer() {
 
             <div className="mt-8 p-4 rounded-xl border border-zinc-700 bg-zinc-900/50">
               <p className="text-zinc-400 text-xs leading-relaxed">
-                🔒 <strong className="text-zinc-300">Pagamento 100% seguro:</strong> você será redirecionado para a página da AbacatePay. Pague via PIX e seu acesso é liberado automaticamente em até 1 minuto.
+                🔒 <strong className="text-zinc-300">Pagamento 100% seguro:</strong> você será redirecionado para a página da AbacatePay. Pague via cartão de crédito, débito ou PIX. No cartão, a cobrança é recorrente (R$ 468/ano) com renovação automática — cancele quando quiser.
               </p>
             </div>
           </div>
