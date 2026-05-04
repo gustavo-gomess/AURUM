@@ -20,6 +20,13 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-3 shrink-0">
+          <Link
+            href="/confirmacao-presenca"
+            className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-yellow-400/40 text-yellow-300 text-sm font-semibold hover:bg-yellow-400/10 transition-all duration-200"
+          >
+            Confirmar presença
+          </Link>
+
           {/* WhatsApp */}
           <a
             href="https://wa.me/55"
