@@ -23,7 +23,7 @@ function PlayIcon() {
 
 export default function LearningPath() {
   return (
-    <section id="trilha" className="relative bg-zinc-950 px-6 py-28 overflow-hidden">
+    <section id="trilha" className="relative bg-zinc-950 px-6 py-28 overflow-hidden scroll-mt-20">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
 
       <div className="max-w-2xl mx-auto">

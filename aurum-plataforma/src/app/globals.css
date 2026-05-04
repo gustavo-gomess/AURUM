@@ -46,6 +46,10 @@
   --color-gray-900: #2A2F33;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
