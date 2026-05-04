@@ -160,7 +160,7 @@ export default function ConfirmacaoPresencaPage() {
                 Se quiser, voce pode acessar a plataforma Aurum agora:
               </p>
               <Link
-                href="/dashboard"
+                href="https://www.aurumnovaescola.com.br/"
                 className="mt-4 inline-flex items-center rounded-xl bg-yellow-400 px-5 py-2.5 text-sm font-bold text-black hover:bg-yellow-300 transition"
               >
                 Acessar Plataforma
