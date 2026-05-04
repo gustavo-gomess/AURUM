@@ -1,5 +1,6 @@
 import Navbar from "@/components/home/Navbar"
 import Hero from "@/components/home/Hero"
+import CursoPrincipalBanner from "@/components/CursoPrincipalBanner"
 import Problem from "@/components/home/Problem"
 import Solution from "@/components/home/Solution"
 import LearningPath from "@/components/home/LearningPath"
@@ -19,6 +20,7 @@ export default function Home() {
       <Navbar />
       <main className="bg-black text-white min-h-screen pt-16">
         <Hero />
+        <CursoPrincipalBanner />
         <ExtraCourses />
         <Problem />
         <Solution />

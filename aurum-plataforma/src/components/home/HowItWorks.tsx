@@ -37,18 +37,6 @@ export default function HowItWorks() {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
 
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-900 text-zinc-500 text-xs font-semibold uppercase tracking-widest mb-5">
-            Como funciona
-          </span>
-          <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-            Simples. Direto. Eficiente.
-          </h2>
-          <p className="mt-4 text-zinc-500 text-base max-w-xl mx-auto">
-            Sem complicação. Em 3 passos você já está aprendendo e evoluindo.
-          </p>
-        </div>
-
         <div className="grid md:grid-cols-3 gap-6 relative">
           {/* Linha conectora (desktop) */}
           <div className="hidden md:block absolute top-10 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px bg-gradient-to-r from-zinc-800 via-yellow-500/30 to-zinc-800" />
