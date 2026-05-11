@@ -45,7 +45,7 @@ export default function Hero() {
         {/* CTA Buttons */}
         <div className="mt-12 flex flex-col sm:flex-row items-center gap-4">
           <a
-            href="#trilha"
+            href="/curso-principal"
             className="group relative inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-yellow-400 text-black font-bold text-base hover:bg-yellow-300 transition-all duration-200 shadow-xl shadow-yellow-500/25 hover:shadow-yellow-500/40 hover:-translate-y-0.5"
           >
             Começar pelo básico
