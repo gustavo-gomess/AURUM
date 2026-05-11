@@ -3,7 +3,7 @@
 import Image from "next/image"
 import { useState } from "react"
 
-const IMAGEM_BANNER: string | null = null
+const IMAGEM_BANNER = "/images/banner-curso-principal.png"
 
 export default function CursoPrincipalBanner() {
   const [aberto, setAberto] = useState(false)
@@ -27,16 +27,14 @@ export default function CursoPrincipalBanner() {
         >
           <div className="aspect-[16/9] md:aspect-[21/8] w-full" />
 
-          {IMAGEM_BANNER && (
-            <Image
-              src={IMAGEM_BANNER}
-              alt="Curso principal: do zero à liberdade financeira"
-              fill
-              priority
-              sizes="(min-width: 1280px) 1152px, 100vw"
-              className="object-cover"
-            />
-          )}
+          <Image
+            src={IMAGEM_BANNER}
+            alt="Curso principal: do zero à liberdade financeira"
+            fill
+            priority
+            sizes="(min-width: 1280px) 1152px, 100vw"
+            className="object-cover"
+          />
 
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(250,222,53,0.18),transparent_60%)]" />
 
