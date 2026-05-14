@@ -1,640 +1,314 @@
-#  AURUM - Plataforma de Educação Financeira
+# Aurum — Plataforma de educação financeira
 
-Plataforma completa de cursos online com sistema de progresso, comentários e gestão de alunos.
-
-## 🆕 Novidades v2.0 - Outubro 2025
-
-🔔 **Sistema de Notificações** - Alunos recebem notificações quando professores respondem suas dúvidas  
-📝 **Perguntas Realizadas** - Seção personalizada mostrando apenas suas perguntas e respostas  
-⚡ **UI Otimizada** - Atualização instantânea de comentários sem reload  
-🎨 **Interface Renovada** - Navegação "Casa" e "Aulas" mais intuitiva  
-🚀 **Performance 3x melhor** - Cache inteligente e índices de banco otimizados
+Monorepo enxuto: na raiz existem atalhos npm que delegam para a aplicação principal em **`aurum-plataforma/`** (Next.js). Use este documento como ponto de entrada para ambientes locais, deploy e visão geral da arquitetura.
 
 ---
 
-## 📋 Pré-requisitos
+## O que o projeto faz
 
-Antes de começar, certifique-se de ter instalado:
-
-✅ **Node.js** (versão 18 ou superior) - [Download](https://nodejs.org)  
-✅ **PostgreSQL** (versão 15 ou superior) - [Download](https://www.postgresql.org/download/windows/)  
-✅ **npm** (vem automaticamente com o Node.js)
-
----
-
-## 🚀 Como Rodar o Projeto
-
-### **Método 1: Script Automatizado (Recomendado) ⚡**
-
-1. Abra a pasta do projeto no Windows Explorer
-2. Localize o arquivo **`iniciar-projeto.ps1`**
-3. Clique com botão direito → **"Executar com PowerShell"**
-4. Aguarde o servidor iniciar (15-30 segundos)
-5. Acesse: **http://localhost:3000**
-
-### **Método 2: Manual via PowerShell 💻**
-
-#### **1️⃣ Abra o PowerShell e navegue até o projeto**
-```powershell
-cd "C:\Users\gusge\OneDrive\Documentos\programs\Aurum\AURUM\nextjs-app\aurum-plataforma"
-```
-
-#### **2️⃣ Configure as variáveis de ambiente**
-```powershell
-$env:PATH += ";C:\Program Files\nodejs"
-$env:PATH += ";C:\Program Files\PostgreSQL\17\bin"
-$env:DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/aurum_plataforma"
-```
-
-#### **3️⃣ Instale as dependências** *(apenas na primeira vez)*
-```powershell
-npm install --legacy-peer-deps
-```
-
-#### **4️⃣ Execute as migrações do banco** *(apenas na primeira vez)*
-```powershell
-npx prisma migrate deploy
-npx prisma generate
-```
-
-#### **5️⃣ Inicie o servidor**
-```powershell
-npm run dev
-```
-
-#### **6️⃣ Acesse no navegador**
-```
-http://localhost:3000
-```
+- **Área do aluno:** login com JWT, painel em `/dashboard`, consumo de aulas (Vimeo), progresso por módulo/aula, comentários por aula com respostas, notificações quando há retorno às dúvidas, seção de perguntas do próprio usuário.
+- **Administração:** gestão de usuários, visão de perguntas, cadastro/edição de lives (conteúdo ao vivo).
+- **Público:** landing, blog em `(public)/blog`, checkout de assinatura (AbacatePay), página de confirmação de presença em eventos.
+- **Banco:** PostgreSQL modelado com **Prisma 7** (cliente com adapter **`pg`**).
 
 ---
 
-## 👥 Credenciais de Acesso
+## Requisitos
 
-### 🔴 **Administrador**
-```
-📧 Email: admin@aurum.com.br
-🔑 Senha: admin123
-```
-**Permissões:**
-- Responder dúvidas dos estudantes
-- Gerenciar cursos e conteúdo
-- Acessar painel administrativo
-
-### 🔵 **Estudante Principal - João Silva**
-```
-📧 Email: joao@estudante.com
-🔑 Senha: estudante123
-```
-**Status:** Já tem 3 aulas concluídas e comentários
-
-### 🔵 **Outros Estudantes**
-```
-📧 maria@estudante.com | 🔑 estudante123
-📧 pedro@estudante.com | 🔑 estudante123
-```
+| Ferramenta | Notas |
+|------------|--------|
+| **Node.js** | Recomendado **20 LTS** ou superior (compatível com Next.js 16). |
+| **npm** | Acompanha o Node. |
+| **PostgreSQL** | Versão recente (15+); o projeto usa URL única em `DATABASE_URL`. |
 
 ---
 
-## 🔄 Script Rápido (Copie e Cole)
-
-Se você já rodou o projeto antes, use este script para iniciar rapidamente:
-
-```powershell
-cd "C:\Users\gusge\OneDrive\Documentos\programs\Aurum\AURUM\nextjs-app\aurum-plataforma"
-$env:PATH += ";C:\Program Files\nodejs"
-$env:PATH += ";C:\Program Files\PostgreSQL\17\bin"
-$env:DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/aurum_plataforma"
-npm run dev
-```
-
----
-
-## ✨ Funcionalidades
-
-### 🎥 **Sistema de Aulas**
-- Player Vimeo integrado com API
-- Progresso automático por aula
-- Desbloqueio sequencial de conteúdo
-- Marcação de aulas concluídas
-- Navegação direta para conteúdo (sem tela intermediária)
-
-### 👥 **Gestão de Usuários**
-- Autenticação com JWT
-- Perfis: Administrador e Estudante
-- Dashboard personalizado por tipo de usuário
-- Sistema de matrículas
-
-### 💬 **Comentários e Dúvidas** ⭐ *OTIMIZADO*
-- Comentários públicos por aula
-- Sistema de respostas em threads
-- Admin pode responder oficialmente
-- Todos os usuários podem interagir
-- **Atualização otimista da UI** - comentários aparecem instantaneamente
-- **Loading states** - indicadores visuais durante postagem
-- **Cache inteligente** - revalidação automática
-- **Seção "Perguntas realizadas"** - cada aluno vê apenas suas perguntas e respostas
-
-### 🔔 **Sistema de Notificações** ⭐ *NOVO*
-- **Notificação em tempo real** quando professor responde suas perguntas
-- **Badge visual** no sino da navbar com contador
-- **Dropdown completo** com histórico de notificações
-- **Atualização automática** a cada 30 segundos
-- **Marcar como lida** individual ou todas de uma vez
-- **Redirecionamento inteligente** para "Perguntas realizadas"
-
-### 📊 **Progresso do Aluno**
-- Tracking automático de aulas assistidas
-- Porcentagem de conclusão do curso
-- Histórico completo de progresso
-- Estatísticas por módulo
-- **Dashboard otimizado** - interface responsiva e moderna
-
-### 🎓 **Certificados**
-- Geração automática ao concluir curso
-- Download em PDF personalizado
-- Dados do aluno e data de conclusão
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-| Tecnologia | Uso |
-|------------|-----|
-| **Next.js 15** | Framework React com SSR |
-| **React 19** | Biblioteca UI |
-| **TypeScript** | Tipagem estática |
-| **Tailwind CSS** | Estilização |
-| **Prisma ORM** | ORM para banco de dados |
-| **PostgreSQL** | Banco de dados relacional |
-| **JWT** | Autenticação |
-| **Vimeo API** | Player de vídeos |
-| **Radix UI** | Componentes acessíveis |
-| **Bcrypt** | Criptografia de senhas |
-
----
-
-## 📂 Estrutura do Projeto
+## Estrutura do repositório
 
 ```
-nextjs-app/aurum-plataforma/
-├── src/
-│   ├── app/                      # Páginas e rotas (App Router)
-│   │   ├── api/                 # API Routes
-│   │   │   ├── auth/           # Login, registro, JWT
-│   │   │   ├── courses/        # CRUD de cursos
-│   │   │   ├── lessons/        # Aulas e conteúdo
-│   │   │   │   └── [id]/
-│   │   │   │       └── comments/  # Comentários otimizados + notificações
-│   │   │   ├── comments/       
-│   │   │   │   └── my-questions/  # ⭐ Perguntas do usuário logado
-│   │   │   ├── notifications/  # ⭐ Sistema de notificações
-│   │   │   ├── progress/       # Tracking de progresso
-│   │   │   └── certificates/   # Geração de certificados
-│   │   ├── cursos/             # Páginas de cursos
-│   │   │   └── [id]/          # Visualização de aulas
-│   │   ├── dashboard/          # Dashboard do aluno ("Casa")
-│   │   ├── admin/              # Painel administrativo
-│   │   └── login/              # Autenticação
-│   ├── components/              # Componentes React
-│   │   ├── ui/                 # Componentes base (shadcn)
-│   │   ├── VimeoPlayer.tsx     # Player personalizado
-│   │   ├── navigation.tsx      # Menu com notificações ⭐
-│   │   └── student-dashboard.tsx  # Dashboard otimizado ⭐
-│   ├── lib/                     # Utilitários
-│   │   ├── auth.ts             # JWT e autenticação
-│   │   ├── database.ts         # Cliente Prisma
-│   │   ├── cache.ts            # Redis (opcional)
-│   │   └── utils.ts            # Helpers gerais
-│   └── types/                   # TypeScript types
-├── prisma/
-│   ├── schema.prisma           # Schema do banco (com Notification model)
-│   ├── migrations/             # Migrações SQL
-│   └── seed.js                # Dados iniciais do curso
-├── public/                      # Arquivos estáticos
-├── .env                         # Variáveis de ambiente
-├── .env.local                  # Variáveis locais (git ignore)
-├── iniciar-projeto.ps1         # Script de inicialização
-├── package.json                # Dependências NPM
-└── README.md                   # Este arquivo
+Aurum/
+├── package.json              # Scripts de conveniência: dev/build na pasta da app
+└── aurum-plataforma/       # Aplicação Next.js (código-fonte, Prisma, scripts PowerShell)
+    ├── prisma/             # schema.prisma, migrations, seed.js
+    ├── public/
+    ├── src/
+    │   ├── app/            # App Router (páginas, layouts, API routes)
+    │   ├── components/
+    │   └── lib/            # auth, database (Prisma), AbacatePay, cache em memória, etc.
+    ├── .env.example        # Modelo de variáveis (copiar para .env)
+    ├── iniciar-projeto.ps1 # Windows: PATH + checagens + npm run dev (porta padrão)
+    └── iniciar-porta-3001.ps1  # Mesmo fluxo na porta 3001 (dois browsers / perfis)
 ```
 
----
-
-## 🎯 Estrutura do Curso AURUM
-
-O curso está organizado em 4 módulos principais:
-
-### **📚 Módulo 01: MENTALIDADE** (15 aulas)
-Fundamentos da mentalidade financeira de sucesso, crenças limitantes, hábitos e mindset de longo prazo.
-
-### **💰 Módulo 02: DINHEIRO, BANCOS E GOVERNOS** (10 aulas)
-História do dinheiro, sistema financeiro, inflação, moedas fiduciárias e capitalismo.
-
-### **💳 Módulo 03: DÍVIDAS, GASTOS E ORÇAMENTO** (10 aulas)
-Controle financeiro, eliminação de dívidas, orçamento pessoal e primeiros passos para investir.
-
-### **📈 Módulo 04: RENDA FIXA** (12 aulas)
-Investimentos em renda fixa: Tesouro Direto, CDB, LCI, LCA, debêntures e como investir na prática.
-
-**Total:** 47 aulas de conteúdo completo
+Documentação complementar gerada pelo time (mais detalhada por arquivo) pode existir em `aurum-plataforma/DOCUMENTACAO-PLATAFORMA.md`.
 
 ---
 
-## 🔧 Comandos Disponíveis
+## Primeiro uso (qualquer SO)
+
+1. **Criar o banco** `aurum_plataforma` (ou outro nome, desde que coincida com a URL).
+
+2. **Configurar ambiente**
+
+   ```bash
+   cd aurum-plataforma
+   cp .env.example .env
+   ```
+
+   Ajuste `DATABASE_URL` e, se for usar pagamentos reais ou webhooks, as chaves **AbacatePay** e `NEXT_PUBLIC_BASE_URL` (URL pública da app — usada em `returnUrl` / `completionUrl` do checkout).
+
+3. **Instalar dependências e aplicar schema**
+
+   ```bash
+   npm install
+   npx prisma migrate deploy
+   npx prisma generate
+   ```
+
+4. **Dados de curso (módulos e aulas)**
+
+   ```bash
+   npm run seed
+   ```
+
+5. **Usuários de desenvolvimento**
+
+   - Opção A — chamada HTTP: `POST /api/dev/create-users` (sem body).
+   - Opção B — interface: abra `/setup` no navegador e execute o assistente (cria usuários, opcionalmente reseta e semeia usando token de admin).
+
+   Credenciais criadas por **`/api/dev/create-users`** (ver código em `src/app/api/dev/create-users/route.ts`):
+
+   | Perfil | E-mail | Senha |
+   |--------|--------|--------|
+   | Admin | `admin@aurum.com.br` | `admin123` |
+   | Estudante | `estudante@teste.com` | `student123` |
+
+6. **Subir o servidor de desenvolvimento**
+
+   Na raiz do repositório:
+
+   ```bash
+   npm run dev
+   ```
+
+   Ou diretamente em `aurum-plataforma`:
+
+   ```bash
+   npm run dev
+   ```
+
+   O `package.json` da app usa **`next dev --turbopack`**. A porta padrão é **3000**; use `-p 3001` ou o script `iniciar-porta-3001.ps1` se precisar de duas instâncias.
+
+---
+
+## Windows: scripts PowerShell
+
+- **`aurum-plataforma/iniciar-projeto.ps1`:** define PATH comum para Node e PostgreSQL 17, garante `DATABASE_URL` se não houver `.env`, copia `.env.example` → `.env` na primeira vez, sobe `npm run dev`.
+- **`aurum-plataforma/iniciar-porta-3001.ps1`:** igual na prática, com `PORT=3001` e `npm run dev -- -p 3001`.
+
+> Os scripts exibem credenciais antigas (`joao@estudante.com`) em algumas mensagens; a fonte de verdade para seeds de usuário é o endpoint **`create-users`** acima.
+
+---
+
+## Variáveis de ambiente
+
+Todas as variáveis esperadas estão documentadas em **`aurum-plataforma/.env.example`**. Resumo:
+
+| Variável | Obrigatório | Uso |
+|----------|-------------|-----|
+| `DATABASE_URL` | Sim | Conexão PostgreSQL para o Prisma. |
+| `JWT_SECRET` | Opcional em dev | Assinatura dos JWT; em produção deve ser forte e estável. |
+| `ABACATEPAY_API_KEY` | Para checkout | Integração AbacatePay (billing / assinatura). |
+| `ABACATEPAY_WEBHOOK_SECRET` | Recomendado em prod | Validação de webhooks. |
+| `ABACATEPAY_SUBSCRIPTION_PRODUCT_ID` | Se usar plano recorrente no fluxo v2 | ID do produto de assinatura no painel AbacatePay. |
+| `NEXT_PUBLIC_BASE_URL` | Sim em fluxos de pagamento | Base para URLs de retorno e sucesso do checkout. |
+
+Não há **NextAuth** nem **Redis** ativo no código atual: o módulo `src/lib/cache.ts` expõe uma interface compatível com Redis, mas a implementação é **em memória** (útil para desenvolvimento).
+
+---
+
+## Scripts npm
+
+### Raiz (`Aurum/package.json`)
 
 | Comando | Descrição |
 |---------|-----------|
-| `npm run dev` | Inicia servidor de desenvolvimento (porta 3000) |
-| `npm run build` | Build de produção |
-| `npm run start` | Inicia servidor de produção |
-| `npm run seed` | Popula banco com dados do curso |
-| `npm run lint` | Verifica código com ESLint |
-| `npx prisma studio` | Abre interface visual do banco de dados |
-| `npx prisma migrate dev` | Cria nova migração |
-| `npx prisma migrate deploy` | Aplica migrações no banco |
-| `npx prisma generate` | Gera cliente Prisma |
-| `npx prisma db push` | ⭐ Sincroniza schema (útil para notificações) |
-| `Remove-Item -Recurse -Force .next` | ⭐ Limpa cache do Next.js |
+| `npm run dev` | `cd aurum-plataforma && npm run dev` |
+| `npm run build` | `cd aurum-plataforma && npm run build` |
+
+### App (`aurum-plataforma/package.json`)
+
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Next.js com Turbopack (desenvolvimento). |
+| `npm run build` | `prisma generate` + `next build`. |
+| `npm run start` | Servidor de produção após build. |
+| `npm run lint` | ESLint (Next). |
+| `npm run seed` | Executa `prisma/seed.js` (curso, módulos, aulas). |
+| `npm run migrate` | `prisma migrate deploy`. |
+| `npm run postinstall` | `prisma generate` (útil em CI/hosting). |
+| `npm run vercel-build` | Fluxo típico Vercel: generate + migrate deploy + build. |
 
 ---
 
-## 🐛 Solução de Problemas
+## Conteúdo pedagógico no seed
 
-### ❌ **"npm não é reconhecido"**
-**Causa:** Node.js não está no PATH  
-**Solução:**
-```powershell
-$env:PATH += ";C:\Program Files\nodejs"
-```
+O `prisma/seed.js` cria um curso principal (`id` fixo `aurum-course-id`), **cinco módulos** (mentalidade, dinheiro/bancos, dívidas/orçamento, renda fixa, renda variável) e **64 aulas** com IDs de vídeo Vimeo de exemplo. Ajuste títulos e `vimeoVideoId` no seed conforme o catálogo real.
 
-### ❌ **"PostgreSQL não conecta"**
-**Causa:** Serviço do PostgreSQL não está rodando  
-**Solução:**
-```powershell
-Get-Service -Name "*postgres*"
-Start-Service -Name "postgresql-x64-17"
-```
-
-### ❌ **"Erro de migração do Prisma"**
-**Causa:** Banco desatualizado ou corrompido  
-**Solução:**
-```powershell
-$env:PGPASSWORD="postgres"
-psql -U postgres -h localhost -c "DROP DATABASE IF EXISTS aurum_plataforma;"
-psql -U postgres -h localhost -c "CREATE DATABASE aurum_plataforma;"
-npx prisma migrate deploy
-npx prisma generate
-```
-
-### ❌ **"Vídeos não carregam"**
-**Causa:** Vídeos do Vimeo com configuração de privacidade incorreta  
-**Solução:**
-1. Acesse as configurações do vídeo no Vimeo
-2. Em **Privacy**, selecione "Anyone" ou "Hide from Vimeo"
-3. Em **Where can this be embedded?**, selecione "Anywhere"
-4. Remova qualquer senha do vídeo
-
-### ❌ **"Cache desatualizado / Página não atualiza"**
-**Causa:** Cache do Next.js com dados antigos  
-**Solução:**
-```powershell
-Remove-Item -Recurse -Force .next
-npm run dev
-```
-
-### ❌ **"Erro ao fazer login"**
-**Causa:** Usuários não foram criados  
-**Solução:**
-Use a rota de desenvolvimento para criar usuários:
-```
-http://localhost:3000/api/dev/create-users
-```
-
-### ❌ **"Notificações não aparecem"**
-**Causa:** Tabela de notificações não foi criada  
-**Solução:**
-```powershell
-npx prisma db push
-npx prisma generate
-npm run dev
-```
-
-### ❌ **"Comentário não posta / Erro 400"**
-**Causa:** Erro na API de comentários ou falta de token  
-**Solução:**
-1. Verifique o console do navegador (F12)
-2. Faça logout e login novamente
-3. Limpe o cache do navegador
-4. Verifique logs do terminal do servidor
-
-### ❌ **"Página 'Casa' não carrega"**
-**Causa:** Erro de compilação ou cache desatualizado  
-**Solução:**
-```powershell
-Remove-Item -Recurse -Force .next
-npm run dev
-```
+**Lives** são entidades separadas (`model Live`); o cadastro é feito pela área admin (`/admin/lives`), não pelo seed do curso.
 
 ---
 
-## 🔌 APIs e Endpoints
+## Autenticação e autorização
 
-### **Autenticação**
-- `POST /api/auth/login` - Login de usuário
-- `POST /api/auth/register` - Registro de novo usuário
-- `GET /api/auth/me` - Dados do usuário logado
-
-### **Cursos e Aulas**
-- `GET /api/courses` - Lista todos os cursos
-- `GET /api/courses/[id]` - Detalhes de um curso específico
-- `GET /api/lessons/[id]` - Detalhes de uma aula
-
-### **Comentários** ⭐ *OTIMIZADO*
-- `GET /api/lessons/[id]/comments` - Lista comentários de uma aula
-- `POST /api/lessons/[id]/comments` - Cria comentário ou resposta (com notificação automática)
-- `GET /api/comments/my-questions` - **Perguntas do usuário logado**
-
-### **Notificações** ⭐ *NOVO*
-- `GET /api/notifications` - Lista notificações não lidas do usuário
-- `PUT /api/notifications` - Marca uma notificação como lida
-- `DELETE /api/notifications` - Marca todas as notificações como lidas
-
-### **Progresso**
-- `GET /api/progress/[courseId]` - Progresso do usuário em um curso
-- `POST /api/progress/[courseId]` - Atualiza progresso de uma aula
-
-### **Certificados**
-- `GET /api/certificates/check-completion` - Verifica se curso foi concluído
-- `POST /api/certificates/generate` - Gera certificado em PDF
-
-### **Admin**
-- `GET /api/admin/users` - Lista todos os usuários
-- `GET /api/users/[id]` - Detalhes de um usuário
-- `DELETE /api/users/[id]` - Remove um usuário
+- Login e registro em **`/api/auth/login`** e **`/api/auth/register`**; sessão no cliente via **JWT** armazenado (ex.: `localStorage`) e enviado no header **`Authorization: Bearer <token>`**.
+- Senhas com **bcryptjs** (ver `src/lib/auth.ts`).
+- Rotas admin no front (`/admin/*`) dependem de checagem no cliente; APIs sensíveis validam token e papel **`ADMIN`** individualmente.
 
 ---
 
-## 📝 Variáveis de Ambiente
+## Rotas da API (referência)
 
-O projeto usa variáveis de ambiente para configuração. O arquivo `.env` já está configurado com:
+Prefixo: `/api`. Autenticação: header `Authorization: Bearer …` quando indicado.
 
-```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/aurum_plataforma"
-JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
-NEXTAUTH_URL="http://localhost:3000"
-```
+**Auth**
 
-Para configurações adicionais (produção), crie um arquivo `.env.local`:
+- `POST /api/auth/login` — corpo JSON: `email`, `password`.
+- `POST /api/auth/register`
+- `GET /api/auth/me` — usuário atual.
 
-```env
-# Banco de Dados
-DATABASE_URL="postgresql://usuario:senha@host:porta/banco"
+**Cursos, módulos e aulas**
 
-# Autenticação
-JWT_SECRET="chave-secreta-muito-segura"
-NEXTAUTH_SECRET="outra-chave-secreta"
-NEXTAUTH_URL="https://seu-dominio.com"
+- `GET /api/courses`, `GET /api/courses/[id]`
+- `GET /api/modules`, `GET /api/modules/[id]`
+- `GET /api/lessons`, `GET /api/lessons/[id]`
 
-# Cache (Opcional)
-REDIS_URL="redis://localhost:6379"
+**Progresso**
 
-# Vimeo (Opcional)
-VIMEO_ACCESS_TOKEN="seu-token-vimeo"
+- `GET /api/progress/[courseId]` — matrícula e progresso (cache em memória por ~30s no servidor).
+- `POST /api/progress/update` — corpo: `courseId`, `moduleIndex`, `lessonIndex`, `completed`.
 
-# Pagamentos (Futuro)
-MERCADOPAGO_ACCESS_TOKEN="seu-token-mp"
-MERCADOPAGO_WEBHOOK_SECRET="seu-webhook-secret"
-```
+**Comentários e dúvidas**
 
----
+- `GET/POST /api/lessons/[id]/comments`
+- `GET /api/comments/my-questions` — perguntas do usuário logado.
 
-## ⚡ Otimizações Recentes (Outubro 2025)
+**Notificações** (lista apenas não lidas no `GET`)
 
-### 🚀 **Performance e UX**
-- **Atualização Otimista**: Comentários aparecem instantaneamente antes da confirmação do servidor
-- **Loading States**: Indicadores visuais durante todas as operações assíncronas
-- **Cache Inteligente**: Cabeçalhos Cache-Control otimizados para reduzir carga no servidor
-- **Índices de Banco**: Queries 3x mais rápidas com índices em `lessonId` e `parentId`
+- `GET /api/notifications`
+- `PUT /api/notifications` — corpo: `notificationId` (marca uma como lida).
+- `DELETE /api/notifications` — marca todas como lidas.
 
-### 🎨 **Interface Renovada**
-- **"Casa" em vez de "Dashboard"**: Navegação mais intuitiva e amigável
-- **"Aulas" em vez de "Cursos"**: Acesso direto ao conteúdo sem telas intermediárias
-- **Dashboard Limpo**: Removidos componentes "Pontos" e "Dias seguidos" para foco no essencial
-- **Responsividade Total**: Layout adaptado para mobile, tablet e desktop
+**Usuários (admin)**
 
-### 🔔 **Sistema de Notificações**
-- **Notificação Individual**: Cada aluno recebe notificação quando o professor responde SUA pergunta específica
-- **Badge em Tempo Real**: Contador visual no sino da navbar
-- **Polling de 30s**: Atualização automática sem sobrecarregar o servidor
-- **Mensagem Personalizada**: "Sua dúvida foi respondida pelo professor..."
+- `GET /api/users` — lista (admin).
+- `GET /api/users/[id]`, `DELETE /api/users/[id]` — detalhe e exclusão (admin; não permite apagar a si mesmo).
+- `PUT /api/users/profile` — atualizar perfil (e opcionalmente senha) do usuário autenticado.
 
-### 📝 **Perguntas Realizadas**
-- **Seção Exclusiva**: Cada aluno vê apenas suas perguntas e as respostas do professor
-- **Filtro Automático**: Sistema busca apenas comentários do usuário logado
-- **Feedback Claro**: Mensagem específica quando não há perguntas
-- **Navegação Integrada**: Link direto da notificação para a seção
+**Lives**
 
-### 🗄️ **Banco de Dados**
-```sql
--- Nova tabela de notificações
-CREATE TABLE notifications (
-  id VARCHAR PRIMARY KEY,
-  user_id VARCHAR NOT NULL,
-  comment_id VARCHAR NOT NULL,
-  message TEXT NOT NULL,
-  read BOOLEAN DEFAULT false,
-  created_at TIMESTAMP DEFAULT now(),
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  INDEX idx_user_read (user_id, read)
-);
-```
+- `GET /api/lives` — listagem (query `status` opcional).
+- `POST /api/lives` — criar live (admin, Bearer).
+- `GET /api/lives/[id]` — detalhe (público).
+- `PUT /api/lives/[id]` — atualizar (admin).
+- `DELETE /api/lives/[id]` — remover (admin).
+
+**Pagamentos (AbacatePay)**
+
+- `POST /api/payment/checkout` — inicia cobrança (PIX ou cartão conforme corpo).
+- `POST /api/payment/webhook` — webhook do provedor.
+- `GET /api/payment/status/[id]` — consulta de status.
+
+**Desenvolvimento (não usar em produção exposta)**
+
+- `POST /api/dev/create-users` — admin + estudante de teste.
+- `POST /api/dev/reset-db` — requer Bearer de **admin** (apaga dados conforme implementação).
+- `POST /api/dev/seed` — re-semear via API com token de admin.
+
+**Outros**
+
+- `POST /api/evento-presenca` — registro de presença em evento (fluxo público da landing).
 
 ---
 
-## 🎯 Fluxo de Uso da Plataforma
+## Frontend: navegação principal (logado)
 
-### **Para Estudantes:**
-1. Acesse `/login` e faça login
-2. Clique em **"Aulas"** na navegação (acesso direto ao curso)
-3. Assista as aulas em ordem sequencial
-4. Comente suas dúvidas em cada aula (atualização instantânea)
-5. Acompanhe seu progresso na página **"Casa"**
-6. Visualize suas perguntas e respostas em **"Perguntas realizadas"**
-7. **Receba notificações** 🔔 quando o professor responder suas dúvidas
-8. Receba certificado ao concluir 100%
+Definido em `src/components/navigation.tsx`:
 
-### **Para Administradores:**
-1. Acesse `/login` com credenciais de admin
-2. Clique em **"Aulas"** para ver comentários dos alunos
-3. Responda dúvidas nos comentários (notificação automática para o aluno)
-4. Acesse **"Administração"** → **"Gerenciamento de Usuários"** para gestão
-5. Acesse **"Administração"** → **"Perguntas dos Usuários"** para ver todas as dúvidas
-6. Acompanhe progresso dos alunos
+- **Home** → `/dashboard`
+- **Aulas** → `/cursos/aurum-course-id` (ID do curso seed)
+- **Live** → `/lives`
+- Menu **Administração:** usuários, perguntas, lives.
+
+Existem também páginas públicas (`/`, blog, checkout), login em `/login` e setup em `/setup`.
 
 ---
 
-## 📊 Status do Projeto
+## Componente de certificado
 
-| Funcionalidade | Status |
-|----------------|--------|
-| Autenticação JWT | ✅ Completo |
-| Gestão de Cursos | ✅ Completo |
-| Player Vimeo | ✅ Completo |
-| Sistema de Comentários | ✅ Completo + Otimizado |
-| Atualização Otimista (UI) | ✅ Completo |
-| Sistema de Notificações | ✅ Completo |
-| Perguntas Realizadas | ✅ Completo |
-| Progresso do Aluno | ✅ Completo |
-| Certificados PDF | ✅ Completo |
-| Dashboard Admin | ✅ Completo |
-| Dashboard Aluno ("Casa") | ✅ Completo + Otimizado |
-| Navegação Otimizada | ✅ Completo |
-| Responsividade Mobile | ✅ Completo |
-| Cache e Performance | ✅ Completo |
-| Índices de Banco | ✅ Completo |
-| Pagamentos MercadoPago | 🚧 Em desenvolvimento |
-| Notificações Email | 🚧 Planejado |
-| WebSockets (Real-time) | 🚧 Planejado |
+Existe **`CertificateTemplate.tsx`** para exibição/layout de certificado na interface. **Não** há rotas dedicadas em `src/app/api/certificates/` no estado atual do repositório; qualquer fluxo de emissão em PDF ou download deve ser tratado como evolução da aplicação ou confirmado no código antes de documentar endpoints.
 
 ---
 
-## 🧪 Testando as Novas Funcionalidades
+## Banco de dados e Prisma
 
-### **Sistema de Notificações** 🔔
-1. Faça login como **estudante** (joao@estudante.com)
-2. Vá para qualquer aula e **poste uma pergunta**
-3. Em outra aba/navegador, faça login como **admin** (admin@aurum.com.br)
-4. **Responda a pergunta** do estudante
-5. Volte para a aba do estudante
-6. Em até **30 segundos**, o sino 🔔 mostrará a notificação
-7. Clique no sino e veja a mensagem
-8. Clique na notificação para ir à seção **"Perguntas realizadas"**
+- Schema: `aurum-plataforma/prisma/schema.prisma` (usuários, curso, módulos, aulas, matrículas, progresso, comentários, notificações, lives, assinaturas AbacatePay).
+- Cliente singleton com adapter PostgreSQL: `src/lib/database.ts`.
+- Nova migração local: `npx prisma migrate dev --nome_descritivo`.
+- Apenas aplicar migrações existentes (CI/prod): `npx prisma migrate deploy`.
 
-### **Perguntas Realizadas** 📝
-1. Faça login como estudante
-2. Vá para a página **"Casa"** (dashboard)
-3. Role até o final para ver **"Perguntas realizadas"**
-4. Você verá apenas **suas perguntas** e as **respostas do professor**
-5. Se não tiver perguntas, verá a mensagem de feedback
-
-### **Atualização Otimista** ⚡
-1. Vá para qualquer aula
-2. Poste um comentário ou resposta
-3. Observe que ele **aparece instantaneamente** (sem reload)
-4. O spinner mostra quando está sendo enviado ao servidor
-5. Se der erro, o comentário é removido automaticamente
+Se o schema estiver inconsistente com o banco apenas em ambiente de experimentação, **não** use `db push` em produção sem critério; prefira migrações versionadas.
 
 ---
 
-## 👨‍💻 Desenvolvimento
-
-### **Primeiro Setup (Completo)**
+## Build de produção
 
 ```bash
-# 1. Clonar repositório (se aplicável)
-git clone <url-do-repo>
-cd nextjs-app/aurum-plataforma
-
-# 2. Instalar dependências
-npm install --legacy-peer-deps
-
-# 3. Configurar variáveis de ambiente
-# Edite o arquivo .env com suas credenciais
-
-# 4. Configurar banco de dados
-npx prisma migrate deploy
-npx prisma generate
-
-# 5. Popular banco com dados do curso
-npm run seed
-
-# 6. Criar usuários de teste
-# Acesse: http://localhost:3000/api/dev/create-users
-
-# 7. Iniciar desenvolvimento
-npm run dev
+cd aurum-plataforma
+npm install
+npm run build
+npm run start
 ```
 
-### **Modificar Estrutura do Banco**
-
-```bash
-# 1. Edite prisma/schema.prisma
-
-# 2. Crie uma migração
-npx prisma migrate dev --name descricao_da_mudanca
-
-# 3. Gere o cliente Prisma
-npx prisma generate
-```
-
-### **Adicionar Novos Vídeos**
-
-1. Edite `prisma/seed.js`
-2. Substitua os `videoId` pelos IDs reais do Vimeo
-3. Execute: `npm run seed`
+Garanta `DATABASE_URL` e segredos corretos no ambiente. Em Vercel ou similar, use o script `vercel-build` ou replique `prisma generate` + `migrate deploy` + `next build`.
 
 ---
 
-## 🔒 Segurança
+## Solução de problemas
 
-- ✅ Senhas criptografadas com bcrypt (10 rounds)
-- ✅ Autenticação com JWT
-- ✅ Tokens com expiração configurável
-- ✅ Proteção de rotas por role (ADMIN/STUDENT)
-- ✅ Validação de dados no backend
-- ✅ Sanitização de inputs
-- ⚠️ **IMPORTANTE:** Altere as chaves secretas em produção!
-
----
-
-## 📄 Licença
-
-Todos os direitos reservados © 2025 AURUM Academy
+| Sintoma | O que verificar |
+|---------|------------------|
+| Erro ao conectar no PostgreSQL | Serviço do banco ativo, `DATABASE_URL`, firewall/porta. |
+| Prisma Client desatualizado | `npx prisma generate` após puxar alterações no schema. |
+| Migrações falhando | Backup; `migrate deploy` na ordem; evitar editar migrações já aplicadas. |
+| Login inválido após reset | Executar de novo `POST /api/dev/create-users` ou fluxo `/setup`. |
+| JWT inválido entre ambientes | Mesmo `JWT_SECRET` usado na geração e na verificação. |
+| Vídeos Vimeo não reproduzem | Privacidade do vídeo no Vimeo (“embed anywhere” / domínios permitidos). |
+| Cache estranho em dev | Apagar pasta `.next` e subir de novo o `npm run dev`. |
 
 ---
 
-## 🤝 Suporte e Recursos
+## Segurança (checklist rápido)
 
-- 📖 [Documentação Next.js](https://nextjs.org/docs)
-- 🗄️ [Documentação Prisma](https://www.prisma.io/docs)
-- 🎥 [API Vimeo](https://developer.vimeo.com)
-- 🎨 [Tailwind CSS](https://tailwindcss.com/docs)
-- 🧩 [Radix UI](https://www.radix-ui.com)
-
----
-
-## 📞 Contato
-
-- 🐛 Reportar Bug: Crie uma issue no repositório
-- 💡 Sugestões: Entre em contato com a equipe
-- 📧 Email: suporte@aurum.com.br
+- Trocar **`JWT_SECRET`** e chaves de pagamento em produção.
+- Não expor publicamente rotas **`/api/dev/*`** em produção (proteger por rede, feature flag ou remoção do build).
+- Revisar CORS e origens confiáveis se a API for consumida por outro domínio.
+- Manter dependências atualizadas (`npm audit`).
 
 ---
 
-**Desenvolvido com ❤️ pela AURUM Academy**
+## Licença e suporte
+
+Todos os direitos reservados © 2026 Aurum / AURUM Academy (conforme política da organização).
+
+Para dúvidas sobre código, prefira issues no repositório ou documentação interna do time.
 
 ---
 
-## 📈 Changelog
+## Referências externas
 
-### **v2.0.0 - Outubro 2025** ⭐
-- ✅ Sistema de notificações em tempo real
-- ✅ Seção "Perguntas realizadas" personalizada por aluno
-- ✅ Atualização otimista de comentários (UX instantânea)
-- ✅ Navegação renovada ("Casa" e "Aulas")
-- ✅ Dashboard otimizado e responsivo
-- ✅ Índices de banco para melhor performance
-- ✅ Cache inteligente com headers otimizados
-
-### **v1.0.0 - Setembro 2025**
-- ✅ Sistema completo de autenticação
-- ✅ Player Vimeo integrado
-- ✅ Sistema de comentários
-- ✅ Tracking de progresso
-- ✅ Geração de certificados
-- ✅ Dashboard admin e aluno
-
----
-
-*Última atualização: 31 de Outubro de 2025*
+- [Next.js](https://nextjs.org/docs)
+- [Prisma](https://www.prisma.io/docs)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [AbacatePay](https://docs.abacatepay.com/) (conforme uso no SDK `abacatepay-nodejs-sdk`)
+- [Vimeo — privacidade e embed](https://help.vimeo.com/)
