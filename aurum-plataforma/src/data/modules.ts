@@ -534,6 +534,26 @@ export const courseContents: CourseContent[] = [
       },
     ],
   },
+  {
+    courseId: "ia-pratica",
+    description: "Uso prático de inteligência artificial, com Gustavo Gomes.",
+    longDescription:
+      "Série em quatro episódios com Gustavo Gomes: IA aplicada de forma direta para ganhar produtividade e clareza — do essencial ao uso no dia a dia, com foco no que realmente funciona na prática.",
+    duration: "4 episódios",
+    modules: [
+      {
+        id: "ia-mod-serie",
+        title: "IA na Prática",
+        subtitle: "Com Gustavo Gomes — títulos dos episódios podem ser atualizados quando o conteúdo for publicado",
+        lessons: [
+          { id: "ia-l1", title: "Episódio 1", duration: "Em breve" },
+          { id: "ia-l2", title: "Episódio 2", duration: "Em breve" },
+          { id: "ia-l3", title: "Episódio 3", duration: "Em breve" },
+          { id: "ia-l4", title: "Episódio 4", duration: "Em breve" },
+        ],
+      },
+    ],
+  },
 ]
 
 export function getCourseContent(courseId: string): CourseContent | undefined {

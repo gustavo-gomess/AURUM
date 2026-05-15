@@ -8,6 +8,11 @@ const courseVisuals: Record<string, {
   glow: string
   image?: string
 }> = {
+  "ia-pratica": {
+    gradient: "from-violet-950 via-purple-900 to-fuchsia-950",
+    glow: "shadow-fuchsia-500/15",
+    image: "/cursos/ia-pratica.png",
+  },
   "energia-fotovoltaica": {
     gradient: "from-zinc-950 via-zinc-900 to-zinc-800",
     glow: "shadow-yellow-500/10",
@@ -39,9 +44,12 @@ function CourseCard({ course }: { course: Course }) {
   const visuals = courseVisuals[course.id]
   if (!visuals) return null
 
+  // Curso também no Prisma (/cursos = player + progresso); demais extras seguem só prévia em /curso
+  const href = course.id === "ia-pratica" ? `/cursos/${course.id}` : `/curso/${course.id}`
+
   return (
     <a
-      href={`/curso/${course.id}`}
+      href={href}
       className={`
         group relative block shrink-0 w-52 sm:w-60 h-80
         rounded-2xl overflow-hidden

@@ -254,11 +254,81 @@ async function main() {
   }
   console.log(`   ✓ ${lessons05.length} aulas criadas no Módulo 05\n`);
 
+  // ── Subcurso: IA na Prática (IDs Vimeo: edite cada aula no banco ou reexecute este bloco após atualizar este arquivo)
+  // Placeholder oficial do player na app: `000000000` → mensagem «Conteúdo em breve» até você colocar o id real do Vimeo.
+  const PLACEHOLDER_VIMEO = '000000000';
+
+  const iaCourse = await prisma.course.upsert({
+    where: { id: 'ia-pratica' },
+    update: {
+      title: 'IA na Prática',
+      description:
+        'Série em quatro episódios com Gustavo Gomes: IA aplicada de forma direta para produtividade e clareza no dia a dia.',
+      instructor: 'Gustavo Gomes',
+    },
+    create: {
+      id: 'ia-pratica',
+      title: 'IA na Prática',
+      description:
+        'Série em quatro episódios com Gustavo Gomes: IA aplicada de forma direta para produtividade e clareza no dia a dia.',
+      instructor: 'Gustavo Gomes',
+      price: 0,
+    },
+  });
+  console.log('✅ Curso extra criado/atualizado:', iaCourse.title);
+
+  const iaMod = await prisma.module.upsert({
+    where: { id: 'ia-pratica-mod-01' },
+    update: {
+      title: '01 IA NA PRÁTICA',
+      description: 'Quatro episódios da série',
+      order: 1,
+      courseId: iaCourse.id,
+    },
+    create: {
+      id: 'ia-pratica-mod-01',
+      courseId: iaCourse.id,
+      title: '01 IA NA PRÁTICA',
+      description: 'Quatro episódios da série',
+      order: 1,
+    },
+  });
+
+  const iaEpisodes = [
+    { id: 'ia-pratica-ep-1', title: 'Episódio 1', order: 1 },
+    { id: 'ia-pratica-ep-2', title: 'Episódio 2', order: 2 },
+    { id: 'ia-pratica-ep-3', title: 'Episódio 3', order: 3 },
+    { id: 'ia-pratica-ep-4', title: 'Episódio 4', order: 4 },
+  ];
+
+  for (const ep of iaEpisodes) {
+    await prisma.lesson.upsert({
+      where: { id: ep.id },
+      update: {
+        title: ep.title,
+        order: ep.order,
+        moduleId: iaMod.id,
+        courseId: iaCourse.id,
+      },
+      create: {
+        id: ep.id,
+        moduleId: iaMod.id,
+        courseId: iaCourse.id,
+        title: ep.title,
+        description: '',
+        vimeoVideoId: PLACEHOLDER_VIMEO,
+        order: ep.order,
+        tasks: [],
+      },
+    });
+  }
+  console.log(`   ✓ ${iaEpisodes.length} episódios (IA na Prática) — vimeo: substitua ${PLACEHOLDER_VIMEO} pelos IDs reais\n`);
+
   console.log('✨ Seed concluído com sucesso!');
   console.log('\n📊 Resumo:');
-  console.log(`   - 1 curso criado`);
-  console.log(`   - 5 módulos criados`);
-  console.log(`   - ${lessons01.length + lessons02.length + lessons03.length + lessons04.length + lessons05.length} aulas criadas`);
+  console.log(`   - 2 cursos (principal + IA na Prática)`);
+  console.log(`   - 6 módulos no total (curso principal + IA)`);
+  console.log(`   - ${lessons01.length + lessons02.length + lessons03.length + lessons04.length + lessons05.length + iaEpisodes.length} aulas criadas/atualizadas`);
 }
 
 main()

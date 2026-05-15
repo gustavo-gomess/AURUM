@@ -21,6 +21,14 @@ export const courses: Course[] = [
     locked: false,
   },
   {
+    id: "ia-pratica",
+    title: "IA na Prática",
+    lessons: 4,
+    type: "extra",
+    image: "/cursos/ia-pratica.png",
+    locked: false,
+  },
+  {
     id: "energia-fotovoltaica",
     title: "Energia Fotovoltaica",
     lessons: 8,
